@@ -16,9 +16,15 @@ import pandas as pd
 
 # generate mixture model
 # means and sds should be lists of lists (sds just scale variances)
-def generate_gaussian_data(N, means=[[0], [1]], sds=[1, 1], labs=[0, 1]):
+def generate_gaussian_data(N, means=[0, 1], sds=[1, 1], labs=[0, 1]):
     num_means = len(means)
-    P = len(means[0])
+    # deal with 1D
+    if type(means[0]) == int:
+        means = [[m] for m in means]
+        sds = [[sd] for sd in sds]
+        P = 1
+    else:
+        P = len(means[0])
     X = np.zeros((N, P), dtype=np.float32)
     y_plot = np.zeros((N, 1), dtype=np.float32)
     y_one_hot = np.zeros((N, 2), dtype=np.float32)
@@ -38,6 +44,6 @@ class dset:
         self.X = X
         self.y = y
     def __getitem__(self, idx):
-        return {'x': torch.from_numpy(X[idx, :]), 'y': torch.from_numpy(y[idx])}
+        return {'x': torch.from_numpy(self.X[idx, :]), 'y': torch.from_numpy(self.y[idx])}
     def __len__(self):
-        return X.shape[0]
+        return self.X.shape[0]

@@ -1,2 +1,4 @@
 **.ipynb_checkpoints
-**cache
+**cache*
+scripts/logs
+scripts/slurm-scripts

@@ -5,6 +5,7 @@ from slurmpy import Slurm
 
 params_to_vary = {
     'seed': [1, 2, 3, 4],
+    'hidden1': [1, 2, 3, 4, 5, 6, 10]
 }
 
 
