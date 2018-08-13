@@ -17,7 +17,7 @@ import pickle as pkl
 import pandas as pd
 
 # saving
-out_dir = '/scratch/users/vision/chandan/dl_theory/sweep_seed_and_hidden1' # differs for chandan/raaz
+out_dir = '/scratch/users/vision/chandan/dl_theory/resweep_seed_and_hidden1' # differs for chandan/raaz
 
 class p:
     # data parameters
