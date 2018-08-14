@@ -17,7 +17,7 @@ param_combinations = list(itertools.product(*vals)) # list of tuples
 
 # iterate
 for i in range(len(param_combinations)):
-    param_str = 'module load python; module load pytorch; python3 nn_basic.py '
+    param_str = 'module load python; module load pytorch; python3 ../fit.py'
     for j, key in enumerate(ks):
         param_str += key + ' ' + str(param_combinations[i][j]) + ' '
     s.run(param_str)
