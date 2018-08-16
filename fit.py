@@ -54,31 +54,66 @@ def fit(p):
     norms = np.zeros((p.num_iters, p.num_layers))
     accs = np.zeros(p.num_iters)
 
+    X_torch = torch.from_numpy(X)
+    y_torch = torch.from_numpy(y)
 
     # fit
+    # batch gd
     for it in tqdm(range(p.num_iters)):
-        for batch in dataloader:
-            y_pred = model(Variable(batch['x'], requires_grad=True)) # predict
-            loss = loss_fn(y_pred, Variable(batch['y'])) # calculate loss
-            optimizer.zero_grad() # zero the gradients
-            loss.backward() # backward pass
-            optimizer.step() # update weights
-            scheduler.step() # step for incrementing optimizer
+        y_pred = model(Variable(X_torch, requires_grad=True)) # predict
+        loss = loss_fn(y_pred, Variable(y_torch)) # calculate loss
+        optimizer.zero_grad() # zero the gradients
+        loss.backward() # backward pass
+        optimizer.step() # update weights
+        scheduler.step() # step for incrementing optimizer
 
-            # output
-            weight_dict = deepcopy({x[0]:x[1].data.numpy() for x in model.named_parameters()})
-            if it % 100 == 0:
-                weights[it] = weight_dict
-            losses[it] = loss.data[0] 
-            accs[it] = np.mean(np.argmax(y_pred.data.numpy(), axis=1) == y_plot) * 100
-            norms[it, 0] = np.linalg.norm(weight_dict['0.weight'])**2 + np.sum(weight_dict['0.bias']**2)
-            norms[it, 1] = np.linalg.norm(weight_dict['2.weight'])**2 + np.sum(weight_dict['2.bias']**2)
+
+        # output
+        if it % 100 == 0 or it==p.num_iters-1:
+            weight_dict = {x[0]:x[1].data.numpy() for x in model.named_parameters()}
+    #         ws.append(list(model.parameters()).copy())
+    #         print(weights[it]['2.bias'])
+            weights[it] = deepcopy(weight_dict)
+        losses[it] = loss.data.item()
+        accs[it] = np.mean(np.argmax(y_pred.data.numpy(), axis=1) == y_plot.flatten()) * 100
+        norms[it, 0] = np.linalg.norm(weight_dict['0.weight'])**2 + np.sum(weight_dict['0.bias']**2)
+        norms[it, 1] = np.linalg.norm(weight_dict['2.weight'])**2
+
+
+#     # fit
+#     for it in tqdm(range(p.num_iters)):
+#             y_pred = model(Variable(batch['x'], requires_grad=True)) # predict
+#             loss = loss_fn(y_pred, Variable(batch['y'])) # calculate loss
+#             optimizer.zero_grad() # zero the gradients
+#             loss.backward() # backward pass
+#             optimizer.step() # update weights
+#             scheduler.step() # step for incrementing optimizer
+
+#             # output
+#             weight_dict = deepcopy({x[0]:x[1].data.numpy() for x in model.named_parameters()})
+#             if it % 100 == 0:
+#                 weights[it] = weight_dict
+#             losses[it] = loss.data.item() 
+#             accs[it] = np.mean(np.argmax(y_pred.data.numpy(), axis=1) == y_plot) * 100
+#             norms[it, 0] = np.linalg.norm(weight_dict['0.weight'])**2 + np.sum(weight_dict['0.bias']**2)
+#             norms[it, 1] = np.linalg.norm(weight_dict['2.weight'])**2 + np.sum(weight_dict['2.bias']**2)
+
 
     # save
     if not os.path.exists(p.out_dir):  # delete the features if they already exist
         os.makedirs(p.out_dir)
     params = p._dict(p)
-    results = {'weights': weights, 'losses': losses, 'norms': norms, 'accs': accs, 'min_loss': np.min(losses), 'max_acc': np.max(accs), 'model': model}
+    
+    # predict things
+    X_train = X
+    y_train = y_plot
+    pred_train = model(Variable(torch.from_numpy(X_train), requires_grad=True)).data.numpy() # predict
+
+    X_test = np.linspace(np.min(X), np.max(X), 1000, dtype=np.float32)
+    X_test = X_test.reshape(X_test.shape[0], 1)
+    pred_test = model(Variable(torch.from_numpy(X_test), requires_grad=True)).data.numpy() #
+    
+    results = {'weights': weights, 'losses': losses, 'norms': norms, 'accs': accs, 'min_loss': np.min(losses), 'max_acc': np.max(accs), 'model': model, 'X_train': X_train, 'y_train':y_train, 'pred_train': pred_train, 'X_test': X_test, 'pred_test':pred_test}
     results_combined = {**params, **results}
     pkl.dump(results_combined, open(oj(p.out_dir, p._str(p) + '.pkl'), 'wb'))
     return results_combined

@@ -16,8 +16,8 @@ class p:
     num_layers = 2
     
     # fitting paramters
-    lr = 1e-6
-    num_iters = 900
+    lr = 1e-5
+    num_iters = int(20e3)
     step_size_optimizer = 1000
     gamma_optimizer = 0.9
     
@@ -25,8 +25,10 @@ class p:
     seed = 2
     
     # saving
-    out_dir = '/scratch/users/vision/chandan/dl_theory/sweep_seed_and_hidden1' # differs for chandan/raaz
+#     out_dir = '/scratch/users/vision/chandan/dl_theory/sweep_seed_and_hidden1' # differs for chandan/raaz
     
+    out_dir = '/accounts/projects/binyu/raaz.rsk/dl/dl_theory/data/large_mean/sweep_seed_and_hidden1'
+#     out_dir = '/accounts/projects/binyu/raaz.rsk/dl/dl_theory/data/small_mean/sweep_seed_and_hidden1'
     
     def _str(self):
         s = '___'.join("%s=%s" % (attr, val) for (attr, val) in vars(p).items()
