@@ -13,7 +13,8 @@ from torch.utils.data import DataLoader
 from copy import deepcopy
 import pickle as pkl
 
-def fit(p):
+# cross entropy loss
+def fit_ce(p):
     # set random seed        
     np.random.seed(p.seed) 
     torch.manual_seed(p.seed)
@@ -123,8 +124,7 @@ if __name__ == '__main__':
         t = type(getattr(p, sys.argv[i]))
         setattr(p, sys.argv[i], t(sys.argv[i+1]))
         
-    fit(p)
+    fit_ce(p)
             
     
-
 

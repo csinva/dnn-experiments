@@ -13,7 +13,8 @@ from torch.utils.data import DataLoader
 from copy import deepcopy
 import pickle as pkl
 
-def fit(p):
+# MSE loss setup
+def fit_mse(p):
     # set random seed        
     np.random.seed(p.seed) 
     torch.manual_seed(p.seed)
@@ -33,6 +34,7 @@ def fit(p):
         torch.nn.Linear(p.d_in, p.hidden1),
         torch.nn.ReLU(),
         torch.nn.Linear(p.hidden1, p.d_out),
+        torch.nn.Softmax()
     )
 
 
@@ -43,7 +45,7 @@ def fit(p):
     # set up optimization
     optimizer = torch.optim.SGD(model.parameters(), lr=p.lr) # only optimize ridge (otherwise use model.parameters())
     scheduler = StepLR(optimizer, step_size=p.step_size_optimizer, gamma=p.gamma_optimizer)
-    loss_fn = torch.nn.CrossEntropyLoss()
+    loss_fn = torch.nn.MSELoss(size_average=False)
     dataloader = DataLoader(dset, batch_size=p.batch_size, shuffle=True)
 
 
@@ -54,13 +56,14 @@ def fit(p):
     accs = np.zeros(p.num_iters)
 
     X_torch = torch.from_numpy(X)
-    y_torch = Variable(torch.from_numpy(y_plot.flatten()).long(), requires_grad = False)
+    y_torch = torch.from_numpy(y)
+#     y_torch = Variable(torch.from_numpy(y_plot.flatten()).long(), requires_grad = False)
     
     # fit
     # batch gd
     for it in tqdm(range(p.num_iters)):
-        y_pred = model(Variable(X_torch)) # predict
-        loss = loss_fn(y_pred, y_torch) # long target is needed for crossentropy loss
+        y_pred = model(Variable(X_torch, requires_grad=True)) # predict
+        loss = loss_fn(y_pred, y_torch) # calculate loss
         optimizer.zero_grad() # zero the gradients
         loss.backward() # backward pass
         optimizer.step() # update weights
@@ -123,7 +126,7 @@ if __name__ == '__main__':
         t = type(getattr(p, sys.argv[i]))
         setattr(p, sys.argv[i], t(sys.argv[i+1]))
         
-    fit(p)
+    fit_mse(p)
             
     
 

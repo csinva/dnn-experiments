@@ -4,8 +4,9 @@ from slurmpy import Slurm
 
 
 params_to_vary = {
-    'seed': range(100),
-    'hidden1': [1, 2, 3, 4, 5, 6, 10]
+    'seed': range(50),
+    'hidden1': [1, 2, 3, 4, 5, 6, 10, 20, 30, 40, 50, 100]
+#     'hidden1': [20, 30, 40, 50, 100]
 }
 
 

@@ -27,8 +27,10 @@ class p:
     # saving
 #     out_dir = '/scratch/users/vision/chandan/dl_theory/sweep_seed_and_hidden1' # differs for chandan/raaz
     
-    out_dir = '/accounts/projects/binyu/raaz.rsk/dl/dl_theory/data/large_mean/sweep_seed_and_hidden1'
-#     out_dir = '/accounts/projects/binyu/raaz.rsk/dl/dl_theory/data/small_mean/sweep_seed_and_hidden1'
+#     out_dir = '/accounts/projects/binyu/raaz.rsk/dl/dl_theory/data/large_mean/sweep_seed_and_hidden1/large_h'
+#     out_dir = '/accounts/projects/binyu/raaz.rsk/dl/dl_theory/data'
+#     out_dir = '/accounts/projects/binyu/raaz.rsk/dl/dl_theory/data/small_mean/cross_entropy'
+    out_dir = '/accounts/projects/binyu/raaz.rsk/dl/dl_theory/data/large_mean/cross_entropy'
     
     def _str(self):
         s = '___'.join("%s=%s" % (attr, val) for (attr, val) in vars(p).items()
