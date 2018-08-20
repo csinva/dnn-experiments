@@ -19,26 +19,17 @@ def fit(p):
     torch.manual_seed(p.seed)
 
     # generate data
-    X, y, y_plot = data.generate_gaussian_data(p.N, means=p.means, sds=p.sds, labs=p.labs)
-    dset = data.dset(X, y)
-    '''
-    plt.scatter(X, y_plot)
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.show()
-    '''
+    X, y_onehot, y_scalar = data.generate_gaussian_data(p.N, means=p.means, sds=p.sds, labs=p.labs)
+    dset = data.dset(X, y_scalar)
+    # viz.plot_data()
 
     # make model
     model = torch.nn.Sequential(
         torch.nn.Linear(p.d_in, p.hidden1),
         torch.nn.ReLU(),
         torch.nn.Linear(p.hidden1, p.d_out),
+        # don't use softmax with crossentropy loss
     )
-
-
-    # freeze
-    # model.2.weight = 2
-    # instead of model.parameters(), only pass what you wanna optimize
 
     # set up optimization
     optimizer = torch.optim.SGD(model.parameters(), lr=p.lr) # only optimize ridge (otherwise use model.parameters())
@@ -54,7 +45,7 @@ def fit(p):
     accs = np.zeros(p.num_iters)
 
     X_torch = torch.from_numpy(X)
-    y_torch = Variable(torch.from_numpy(y_plot.flatten()).long(), requires_grad = False)
+    y_torch = Variable(torch.from_numpy(y_scalar.flatten()).long(), requires_grad = False)
     
     # fit
     # batch gd
@@ -71,8 +62,8 @@ def fit(p):
         if it % 100 == 0 or it==p.num_iters-1:
             weight_dict = {x[0]:x[1].data.numpy() for x in model.named_parameters()}
             weights[it] = deepcopy(weight_dict)
-        losses[it] = loss.data.item()
-        accs[it] = np.mean(np.argmax(y_pred.data.numpy(), axis=1) == y_plot.flatten()) * 100
+        losses[it] = loss.data #.item()
+        accs[it] = np.mean(np.argmax(y_pred.data.numpy(), axis=1) == y_scalar.flatten()) * 100
         norms[it, 0] = np.linalg.norm(weight_dict['0.weight'])**2 + np.sum(weight_dict['0.bias']**2)
         norms[it, 1] = np.linalg.norm(weight_dict['2.weight'])**2
 
@@ -103,14 +94,14 @@ def fit(p):
     
     # predict things
     X_train = X
-    y_train = y_plot
+    y_train = y_scalar
     pred_train = model(Variable(torch.from_numpy(X_train), requires_grad=True)).data.numpy() # predict
 
     X_test = np.linspace(np.min(X), np.max(X), 1000, dtype=np.float32)
     X_test = X_test.reshape(X_test.shape[0], 1)
     pred_test = model(Variable(torch.from_numpy(X_test), requires_grad=True)).data.numpy() #
     
-    results = {'weights': weights, 'losses': losses, 'norms': norms, 'accs': accs, 'min_loss': np.min(losses), 'max_acc': np.max(accs), 'model': model, 'X_train': X_train, 'y_train':y_train, 'pred_train': pred_train, 'X_test': X_test, 'pred_test':pred_test}
+    results = {'weights': weights, 'losses': losses, 'norms': norms, 'accs': accs, 'min_loss': np.min(losses), 'max_acc': np.max(accs), 'model': model, 'X_train': X_train, 'y_train': y_scalar, 'pred_train': pred_train, 'X_test': X_test, 'pred_test':pred_test}
     results_combined = {**params, **results}
     pkl.dump(results_combined, open(oj(p.out_dir, p._str(p) + '.pkl'), 'wb'))
     return results_combined
