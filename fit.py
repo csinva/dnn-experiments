@@ -35,12 +35,20 @@ def fit(p):
     # viz.plot_data()
 
     # make model
-    model = torch.nn.Sequential(
-        torch.nn.Linear(p.d_in, p.hidden1),
-        torch.nn.ReLU(),
-        torch.nn.Linear(p.hidden1, p.d_out),
-        # don't use softmax with crossentropy loss
-    )
+    if p.loss_func == 'cross_entropy':
+        model = torch.nn.Sequential(
+            torch.nn.Linear(p.d_in, p.hidden1),
+            torch.nn.ReLU(),
+            torch.nn.Linear(p.hidden1, p.d_out),
+            # don't use softmax with crossentropy loss
+        )
+    else:
+        model = torch.nn.Sequential(
+            torch.nn.Linear(p.d_in, p.hidden1),
+            torch.nn.ReLU(),
+            torch.nn.Linear(p.hidden1, p.d_out),
+            torch.nn.Softmax()
+        )      
 
     # set up optimization
     optimizer = torch.optim.SGD(model.parameters(), lr=p.lr) # only optimize ridge (otherwise use model.parameters())
@@ -48,7 +56,7 @@ def fit(p):
     if p.loss_func == 'cross_entropy':
         loss_fn = torch.nn.CrossEntropyLoss()
     else:
-        print('loss func not supported!')
+        loss_fn = torch.nn.MSELoss(size_average=False)
     dataloader = DataLoader(dset, batch_size=p.batch_size, shuffle=True)
 
     if p.init == 'data-driven':
@@ -62,7 +70,11 @@ def fit(p):
     accs = np.zeros(p.num_iters)
 
     X_torch = torch.from_numpy(X)
-    y_torch = Variable(torch.from_numpy(y_scalar.flatten()).long(), requires_grad = False)
+    if p.loss_func == 'cross_entropy':
+        y_torch = Variable(torch.from_numpy(y_scalar.flatten()).long(), requires_grad = False)
+    else:
+        y_torch = Variable(torch.from_numpy(y_onehot), requires_grad=False)
+
     
     # fit
     # batch gd

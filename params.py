@@ -19,7 +19,7 @@ class p:
     num_iters = int(2e3)
     step_size_optimizer = 500
     gamma_optimizer = 0.5
-    loss_func = 'cross_entropy'
+    loss_func = 'cross-entropy' # cross-entropy or mse
     init = 'data-driven' # data-driven
     
     # random seed
