@@ -13,6 +13,17 @@ from torch.utils.data import DataLoader
 from copy import deepcopy
 import pickle as pkl
 
+
+# initializes the bs in the first layer based on random xs * -1 * ws (elementwise)
+def initialize_bs_as_neg_x_times_w(X, model):
+    num_weights = model[0].weight.shape[0]
+    xs = X[np.random.randint(X.shape[0], size=num_weights)].flatten()
+    ws = model[0].weight.data
+    xs_torch = torch.from_numpy(xs).view(-1, 1)
+    bs = -xs_torch * ws
+    model[0].bias.data = bs.view(-1) #bs.view(-1, 1)
+
+
 def fit(p):
     # set random seed        
     np.random.seed(p.seed) 
@@ -34,9 +45,15 @@ def fit(p):
     # set up optimization
     optimizer = torch.optim.SGD(model.parameters(), lr=p.lr) # only optimize ridge (otherwise use model.parameters())
     scheduler = StepLR(optimizer, step_size=p.step_size_optimizer, gamma=p.gamma_optimizer)
-    loss_fn = torch.nn.CrossEntropyLoss()
+    if p.loss_func == 'cross_entropy':
+        loss_fn = torch.nn.CrossEntropyLoss()
+    else:
+        print('loss func not supported!')
     dataloader = DataLoader(dset, batch_size=p.batch_size, shuffle=True)
 
+    if p.init == 'data-driven':
+        initialize_bs_as_neg_x_times_w(X, model)
+    
 
     # to record
     weights = {}
@@ -68,25 +85,6 @@ def fit(p):
         norms[it, 1] = np.linalg.norm(weight_dict['2.weight'])**2
 
 
-#     # fit
-#     for it in tqdm(range(p.num_iters)):
-#             y_pred = model(Variable(batch['x'], requires_grad=True)) # predict
-#             loss = loss_fn(y_pred, Variable(batch['y'])) # calculate loss
-#             optimizer.zero_grad() # zero the gradients
-#             loss.backward() # backward pass
-#             optimizer.step() # update weights
-#             scheduler.step() # step for incrementing optimizer
-
-#             # output
-#             weight_dict = deepcopy({x[0]:x[1].data.numpy() for x in model.named_parameters()})
-#             if it % 100 == 0:
-#                 weights[it] = weight_dict
-#             losses[it] = loss.data.item() 
-#             accs[it] = np.mean(np.argmax(y_pred.data.numpy(), axis=1) == y_plot) * 100
-#             norms[it, 0] = np.linalg.norm(weight_dict['0.weight'])**2 + np.sum(weight_dict['0.bias']**2)
-#             norms[it, 1] = np.linalg.norm(weight_dict['2.weight'])**2 + np.sum(weight_dict['2.bias']**2)
-
-
     # save
     if not os.path.exists(p.out_dir):  # delete the features if they already exist
         os.makedirs(p.out_dir)
@@ -101,10 +99,10 @@ def fit(p):
     X_test = X_test.reshape(X_test.shape[0], 1)
     pred_test = model(Variable(torch.from_numpy(X_test), requires_grad=True)).data.numpy() #
     
-    results = {'weights': weights, 'losses': losses, 'norms': norms, 'accs': accs, 'min_loss': np.min(losses), 'max_acc': np.max(accs), 'model': model, 'X_train': X_train, 'y_train': y_scalar, 'pred_train': pred_train, 'X_test': X_test, 'pred_test':pred_test}
+    results = {'weights': weights, 'losses': losses, 'norms': norms, 'accs': accs, 'min_loss': np.min(losses), 'max_acc': np.max(accs), 'model': model, 'X_train': X_train, 'y_train': y_scalar, 'pred_train': pred_train, 'X_test': X_test, 'pred_test': pred_test}
     results_combined = {**params, **results}
     pkl.dump(results_combined, open(oj(p.out_dir, p._str(p) + '.pkl'), 'wb'))
-    return results_combined
+    return results_combined, model
 
 if __name__ == '__main__':
     from params import p
