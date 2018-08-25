@@ -3,13 +3,23 @@ class p:
     N = 1000 # N is number of points
     # means = [0, 20, 40] # means of gaussian data 
     #sds = [1, 1, 1] # sds of data
-    means = [[-.5], [.25], [1.]] # means of gaussian data
+    
+    # small data
+    # means = [[-.5], [.25], [1.]] # means of gaussian data
+    #sds = [[.1], [.1], [.1]] # sds of data
+    
+    # centered data
+    means = [[-1., -1., -1., -1, -1, -1], [0, 0, 0, 0, 0, 0], [1., 1., 1., 1., 1., 1.]] # means of gaussian data
     sds = [[.1], [.1], [.1]] # sds of data
+    
+    
+    # big data
+    
     labs = [0, 1, 0] # labels of these gaussians
     batch_size = N
     
     # model parameters
-    d_in = 1 # input dim (should be 1)
+    d_in = len(means[0]) # input dim (should be 1)
     hidden1 = 10
     d_out = 2 # number of classes (should be 2)
     num_layers = 2
@@ -26,7 +36,7 @@ class p:
     seed = 2
     
     # saving
-    out_dir = '/scratch/users/vision/chandan/dl_theory/sweep_init_small' # differs for chandan/raaz
+    out_dir = '/scratch/users/vision/chandan/dl_theory/sweep_init_d=3_centered' # sweep_init_large, sweep_init_small, sweep_init_centered, sweep_init_d=3_centered
     
 #     out_dir = '/accounts/projects/binyu/raaz.rsk/dl/dl_theory/data/large_mean/sweep_seed_and_hidden1/large_h'
 #     out_dir = '/accounts/projects/binyu/raaz.rsk/dl/dl_theory/data'

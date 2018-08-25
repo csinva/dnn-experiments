@@ -16,12 +16,14 @@ import pickle as pkl
 
 # initializes the bs in the first layer based on random xs * -1 * ws (elementwise)
 def initialize_bs_as_neg_x_times_w(X, model):
+#     print('weights.shape', model[0].weight.shape)
     num_weights = model[0].weight.shape[0]
-    xs = X[np.random.randint(X.shape[0], size=num_weights)].flatten()
+    xs = X[np.random.randint(X.shape[0], size=num_weights)]
     ws = model[0].weight.data
-    xs_torch = torch.from_numpy(xs).view(-1, 1)
-    bs = -xs_torch * ws
+    xs_torch = torch.from_numpy(xs)
+    bs = torch.sum(-xs_torch * ws, dim=1)
     model[0].bias.data = bs.view(-1) #bs.view(-1, 1)
+#     print(model[0].bias.shape)
 
 
 def fit(p):
@@ -107,9 +109,13 @@ def fit(p):
     y_train = y_scalar
     pred_train = model(Variable(torch.from_numpy(X_train), requires_grad=True)).data.numpy() # predict
 
-    X_test = np.linspace(np.min(X), np.max(X), 1000, dtype=np.float32)
-    X_test = X_test.reshape(X_test.shape[0], 1)
-    pred_test = model(Variable(torch.from_numpy(X_test), requires_grad=True)).data.numpy() #
+    if p.d_in == 1:
+        X_test = np.linspace(np.min(X), np.max(X), 1000, dtype=np.float32)
+        X_test = X_test.reshape(X_test.shape[0], 1)
+        pred_test = model(Variable(torch.from_numpy(X_test), requires_grad=True)).data.numpy()
+    else:
+        X_test = None
+        pred_test = None
     
     # calculate time to min loss
     min_loss = np.min(losses)
