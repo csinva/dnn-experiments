@@ -26,9 +26,9 @@ class p:
     
     # fitting paramters
     lr = 1e-3
-    num_iters = int(2e3)
-    step_size_optimizer = 500
-    gamma_optimizer = 0.5
+    num_iters = int(1e4)
+    step_size_optimizer = 1000
+    gamma_optimizer = 0.9
     loss_func = 'cross-entropy' # cross-entropy or mse
     init = 'data-driven' # data-driven
     
@@ -36,7 +36,7 @@ class p:
     seed = 2
     
     # saving
-    out_dir = '/scratch/users/vision/chandan/dl_theory/sweep_init_d=3_centered' # sweep_init_large, sweep_init_small, sweep_init_centered, sweep_init_d=3_centered
+    out_dir = '/scratch/users/vision/chandan/dl_theory/sweep_init_d=3_centered_long' # sweep_init_large, sweep_init_small, sweep_init_centered, sweep_init_d=3_centered
     
 #     out_dir = '/accounts/projects/binyu/raaz.rsk/dl/dl_theory/data/large_mean/sweep_seed_and_hidden1/large_h'
 #     out_dir = '/accounts/projects/binyu/raaz.rsk/dl/dl_theory/data'
