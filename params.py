@@ -1,10 +1,10 @@
 class p:
     # data parameters
     N = 1000 # N is number of points
-    means = [0, 20, 40] # means of gaussian data 
-    sds = [1, 1, 1] # sds of data
-#     means = [[-.5], [.25], [1.]] # means of gaussian data
-#     sds = [[.1], [.1], [.1]] # sds of data
+    # means = [0, 20, 40] # means of gaussian data 
+    #sds = [1, 1, 1] # sds of data
+    means = [[-.5], [.25], [1.]] # means of gaussian data
+    sds = [[.1], [.1], [.1]] # sds of data
     labs = [0, 1, 0] # labels of these gaussians
     batch_size = N
     
@@ -26,7 +26,7 @@ class p:
     seed = 2
     
     # saving
-    out_dir = '/scratch/users/vision/chandan/dl_theory/sweep_init_large' # differs for chandan/raaz
+    out_dir = '/scratch/users/vision/chandan/dl_theory/sweep_init_small' # differs for chandan/raaz
     
 #     out_dir = '/accounts/projects/binyu/raaz.rsk/dl/dl_theory/data/large_mean/sweep_seed_and_hidden1/large_h'
 #     out_dir = '/accounts/projects/binyu/raaz.rsk/dl/dl_theory/data'

@@ -111,7 +111,13 @@ def fit(p):
     X_test = X_test.reshape(X_test.shape[0], 1)
     pred_test = model(Variable(torch.from_numpy(X_test), requires_grad=True)).data.numpy() #
     
-    results = {'weights': weights, 'losses': losses, 'norms': norms, 'accs': accs, 'min_loss': np.min(losses), 'max_acc': np.max(accs), 'model': model, 'X_train': X_train, 'y_train': y_scalar, 'pred_train': pred_train, 'X_test': X_test, 'pred_test': pred_test}
+    # calculate time to min loss
+    min_loss = np.min(losses)
+    t_min_loss_plus_5_perc = np.argmax(losses <= min_loss * 1.05)
+    t_min_loss_plus_10_perc = np.argmax(losses <= min_loss * 1.10)
+    t_min_loss_plus_20_perc = np.argmax(losses <= min_loss * 1.20) 
+    
+    results = {'weights': weights, 'losses': losses, 'norms': norms, 'accs': accs, 'min_loss': min_loss, 'max_acc': np.max(accs), 'model': model, 'X_train': X_train, 'y_train': y_scalar, 'pred_train': pred_train, 'X_test': X_test, 'pred_test': pred_test, 't_min_loss_plus_5_perc': t_min_loss_plus_5_perc, 't_min_loss_plus_10_perc': t_min_loss_plus_10_perc, 't_min_loss_plus_20_perc': t_min_loss_plus_20_perc}
     results_combined = {**params, **results}
     pkl.dump(results_combined, open(oj(p.out_dir, p._str(p) + '.pkl'), 'wb'))
     return results_combined, model

@@ -4,7 +4,7 @@ from slurmpy import Slurm
 
 
 params_to_vary = {
-    'seed': range(40),
+    'seed': range(100),
     'hidden1': [1, 2, 3, 5, 10, 30, 50, 100],
     'init': ['default', 'data-driven']
 }
