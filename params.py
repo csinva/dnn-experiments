@@ -15,6 +15,7 @@ class p:
     
     # concentrated data
     means = [[-1.1], [-1], [-0.9], [.9], [1], [1.1]]
+    means = [x * 10 for x in means]
     sds = [0.01 for i in range(len(means))]
     
     # labs of these gaussians
@@ -30,7 +31,7 @@ class p:
     
     # fitting paramters
     lr = 1e-3
-    num_iters = int(1e4)
+    num_iters = int(5e4)
     step_size_optimizer = 1000
     gamma_optimizer = 0.9
     loss_func = 'cross-entropy' # cross-entropy or mse
@@ -40,7 +41,7 @@ class p:
     seed = 2
     
     # saving
-    out_dir = '/scratch/users/vision/chandan/dl_theory/sweep_init_d=1_concentrated' # sweep_init_large, sweep_init_small, sweep_init_centered, sweep_init_d=3_centered, sweep_init_d=3_centered_long
+    out_dir = '/scratch/users/vision/chandan/dl_theory/test' # sweep_init_large, sweep_init_small, sweep_init_centered, sweep_init_d=3_centered, sweep_init_d=3_centered_long, sweep_init_d=1_concentrated, sweep_init_d=10_concentrated
     
 #     out_dir = '/accounts/projects/binyu/raaz.rsk/dl/dl_theory/data/large_mean/sweep_seed_and_hidden1/large_h'
 #     out_dir = '/accounts/projects/binyu/raaz.rsk/dl/dl_theory/data'
