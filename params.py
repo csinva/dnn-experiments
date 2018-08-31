@@ -41,7 +41,7 @@ class p:
     seed = 2
     
     # saving
-    out_dir = '/scratch/users/vision/chandan/dl_theory/test' # sweep_init_large, sweep_init_small, sweep_init_centered, sweep_init_d=3_centered, sweep_init_d=3_centered_long, sweep_init_d=1_concentrated, sweep_init_d=10_concentrated
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/test' # sweep_init_large, sweep_init_small, sweep_init_centered, sweep_init_d=3_centered, sweep_init_d=3_centered_long, sweep_init_d=1_concentrated, sweep_init_d=10_concentrated
     
 #     out_dir = '/accounts/projects/binyu/raaz.rsk/dl/dl_theory/data/large_mean/sweep_seed_and_hidden1/large_h'
 #     out_dir = '/accounts/projects/binyu/raaz.rsk/dl/dl_theory/data'
