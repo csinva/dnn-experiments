@@ -36,6 +36,103 @@ def generate_gaussian_data(N, means=[0, 1], sds=[1, 1], labs=[0, 1]):
     return X, y_one_hot, y_plot
 
 
+# Relu non-linearity
+def relu(a):
+    return a * (a>0)
+
+def tanh(a):
+    return np.tanh(a)
+
+# generate Laplace data
+def generate_laplace(d, params, N):
+    loc = np.asarray(params['loc'])
+    scale = params['scale']
+    return np.random.laplace(loc=loc, scale=scale, size=[N, d])
+    
+# generate Gaussian data
+def generate_normal(d, params, N):
+    # mean is a np array even if 1d.
+    mean = np.asarray(params['mean'])
+    sd = params['sd']
+ 
+    return np.random.multivariate_normal(mean, np.eye(d) * np.power(sd, 2), N)
+
+# generate Mixture of Gaussian data
+def generate_mog(d, params, N):
+    # mean is a np array of arrays
+    
+    means = params['means']
+    weights = params['weights']
+    weights /= np.sum(weights)
+    sds = params['sds']
+    
+    idxs = np.random.choice(a=np.arange(0, len(weights)), size=N, p=weights)
+    data = np.zeros((N, d))
+    for i in range(N):
+        mean = means[idxs[i]]
+        sd = sds[idxs[i]]
+        data[i, :] = np.random.multivariate_normal(mean, np.eye(d) * np.power(sd, 2))
+    
+    return data
+
+# generate n random points in d dimensions based on the dictionary which has all parameters
+def generate_data_from_dict(dparams, d, n):
+    assert(len(dparams['params']) == dist_num_param_dict[dparams['name']])
+    return dist_gen_dict[dparams['name']](d, dparams['params'], n)
+
+def compute_2_layer(X, W, b, W2, non_lin, use_bias=False):
+    if use_bias:
+        layer_1 = X.dot(W.T) + b.flatten()
+    else:
+        layer_1 = X.dot(W.T)
+    
+    nlayer_1 = non_lin(layer_1)
+    y = nlayer_1.dot(W2)
+    
+    return y
+
+# generate data from teacher network
+def generate_2_layer_data(d, dist_x, dist_w, 
+                          num_data, num_hidden, 
+                          use_bias=False, dist_b=None,
+                          non_lin=relu):
+
+    X = generate_data_from_dict(dparams=dist_x, d=d, n=num_data)
+    W = generate_data_from_dict(dparams=dist_w, d=d, n=num_hidden)
+    
+    if use_bias:
+        b = generate_data_from_dict(dparams=dist_b, d=1, n=num_hidden)
+    else:
+        b = None
+
+    # layer 2 Fixed
+    W2 = np.ones(num_hidden)/num_hidden    
+
+    # compute y
+    y = compute_2_layer(X, W, b, W2, non_lin, use_bias)
+
+    # reshape W2
+    W2 = np.reshape(W2, (-1, 1))
+    
+    return X, y, W, b, W2
+
+
+# Dictionary for various mappings across distributions
+
+# ***** Update These Dictionaries for New Distributions *********
+
+# distribution generation function dictionary
+dist_gen_dict = {"normal":  generate_normal,
+            "mog":  generate_mog,
+            "laplace": generate_laplace}
+
+# distribution generation function number of parameters dictionary
+dist_num_param_dict = {"normal":  2,
+            "mog":  3,
+            "laplace": 2}
+
+
+
 
 
 # data to torch

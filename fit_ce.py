@@ -69,7 +69,7 @@ def fit_ce(p):
 
 
         # output
-        if it % 100 == 0 or it==p.num_iters-1:
+        if it % 1 == 0 or it==p.num_iters-1:
             weight_dict = {x[0]:x[1].data.numpy() for x in model.named_parameters()}
             weights[it] = deepcopy(weight_dict)
         losses[it] = loss.data.item()
