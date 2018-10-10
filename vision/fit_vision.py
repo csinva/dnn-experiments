@@ -9,17 +9,18 @@ import torch.optim as optim
 from os.path import join as oj
 import sys
 import numpy as np
+from copy import deepcopy
+import pickle as pkl
+from torch.optim.lr_scheduler import StepLR
 
 def fit_vision(p):
     # set random seed        
     np.random.seed(p.seed) 
     torch.manual_seed(p.seed)    
-    
 
     use_cuda = torch.cuda.is_available()
 
     root = '/scratch/users/vision/yu_dl/raaz.rsk/data'
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd'
     if not os.path.exists(root):
         os.mkdir(root)
 
@@ -62,13 +63,26 @@ def fit_vision(p):
     model = MLPNet()
     if use_cuda:
         model = model.cuda()
-        
-    optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
+    if p.optimizer == 'sgd':    
+        optimizer = optim.SGD(model.parameters(), lr=p.lr)
+    elif p.optimizer == 'adam':
+        optimizer = optim.Adam(model.parameters(), lr=p.lr, betas=(p.beta1, p.beta2), eps=1e-8)
+    scheduler = StepLR(optimizer, step_size=p.step_size_optimizer, gamma=p.gamma_optimizer)
 
+        
+    # things to record
+    weights = {}
+    losses_train = np.zeros(p.num_iters)
+    losses_test = np.zeros(p.num_iters)
+    accs_test = np.zeros(p.num_iters)
+    
+        
     # run    
-    for epoch in range(10):
+    for it in range(p.num_iters):
+
         # training
-        ave_loss = 0
+        tot_loss = 0
+        n_train = len(train_loader) * batch_size
         for batch_idx, (x, target) in enumerate(train_loader):
             optimizer.zero_grad()
             if use_cuda:
@@ -76,15 +90,15 @@ def fit_vision(p):
             x, target = Variable(x), Variable(target)
             out = model(x)
             loss = criterion(out, target)
-            ave_loss = ave_loss * 0.9 + loss.data[0] * 0.1
+            tot_loss += loss.data[0]
             loss.backward()
             optimizer.step()
-            if (batch_idx+1) % 100 == 0 or (batch_idx+1) == len(train_loader):
-                print('==>>> epoch: {}, batch index: {}, train loss: {:.6f}'.format(
-                    epoch, batch_idx+1, ave_loss))
+        scheduler.step()
+        print('==>>> it: {}, train loss: {:.6f}'.format(it, tot_loss / n_train))
+            
         # testing
-        correct_cnt, ave_loss = 0, 0
-        total_cnt = 0
+        correct_cnt, tot_loss_test = 0, 0
+        n_test = len(test_loader) * batch_size
         for batch_idx, (x, target) in enumerate(test_loader):
             if use_cuda:
                 x, target = x.cuda(), target.cuda()
@@ -92,17 +106,29 @@ def fit_vision(p):
             out = model(x)
             loss = criterion(out, target)
             _, pred_label = torch.max(out.data, 1)
-            total_cnt += x.data.size()[0]
             correct_cnt += (pred_label == target.data).sum()
-            # smooth average
-            ave_loss = ave_loss * 0.9 + loss.data[0] * 0.1
+            tot_loss_test += loss.data[0]
+        print('==>>> it: {}, test loss: {:.6f}, acc: {:.3f}'.format(
+            it, tot_loss_test / n_test, correct_cnt * 1.0 / n_test))
+        
+        # record things         
+        weight_dict = {x[0]:x[1].data.cpu().numpy() for x in model.named_parameters()}
+        weights[it] = deepcopy(weight_dict)
+        losses_train[it] = tot_loss / n_train
+        losses_test[it] = tot_loss_test / n_test
+        accs_test[it] = correct_cnt * 1.0 / n_test
 
-            if(batch_idx+1) % 100 == 0 or (batch_idx+1) == len(test_loader):
-                print('==>>> epoch: {}, batch index: {}, test loss: {:.6f}, acc: {:.3f}'.format(
-                    epoch, batch_idx+1, ave_loss, correct_cnt * 1.0 / total_cnt))
-
-    torch.save(model.state_dict(), oj(out_dir, model.name() + '_epoch_{}_acc_{:.3f}.model'.format(epoch, correct_cnt * 1.0 / total_cnt)))
-
+    # dimensionality reduction save
+        
+        
+    # save final
+    if not os.path.exists(p.out_dir):  # delete the features if they already exist
+        os.makedirs(p.out_dir)
+    params = p._dict(p)
+    results = {'weights': weights, 'losses_train': losses_train, 'losses_test': losses_test,
+               'accs_test': accs_test}
+    results_combined = {**params, **results}
+    pkl.dump(results_combined, open(oj(p.out_dir, p._str(p) + '.pkl'), 'wb'))
     
 if __name__ == '__main__':
     from params_vision import p
@@ -113,3 +139,5 @@ if __name__ == '__main__':
         setattr(p, sys.argv[i], t(sys.argv[i+1]))
         
     fit_vision(p)
+    
+    print('success! saved to ', p.out_dir)
