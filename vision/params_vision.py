@@ -2,7 +2,7 @@ class p:
     # optimizer params
     optimizer = 'sgd' # 'sgd' or 'adam'
     lr = 0.01 # default 0.01
-    num_iters = 10
+    num_iters = 80
     
     # steps
     step_size_optimizer = 1
@@ -17,7 +17,8 @@ class p:
     seed = 2
     
     # saving
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/simple_setup'
+    save_freq = 100 # how often to save all the weights (if high will never save)
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/long_sweep'
     
     def _str(self):
         s = '___'.join("%s=%s" % (attr, val) for (attr, val) in vars(p).items()

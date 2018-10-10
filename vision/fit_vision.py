@@ -12,6 +12,18 @@ import numpy as np
 from copy import deepcopy
 import pickle as pkl
 from torch.optim.lr_scheduler import StepLR
+from sklearn.decomposition import PCA
+
+# get explained_var
+def get_explained_var_from_weight_dict(weight_dict):
+    explained_var_dict = {}
+    for layer_name in weight_dict.keys():
+        if 'weight' in layer_name:
+            w = weight_dict[layer_name]
+            pca = PCA(n_components=w.shape[1])
+            pca.fit(w)
+            explained_var_dict[layer_name] = deepcopy(pca.explained_variance_ratio_)
+    return explained_var_dict
 
 def fit_vision(p):
     # set random seed        
@@ -75,9 +87,11 @@ def fit_vision(p):
     losses_train = np.zeros(p.num_iters)
     losses_test = np.zeros(p.num_iters)
     accs_test = np.zeros(p.num_iters)
+    explained_var_dicts = []
     
         
     # run    
+    print('training...')
     for it in range(p.num_iters):
 
         # training
@@ -112,13 +126,13 @@ def fit_vision(p):
             it, tot_loss_test / n_test, correct_cnt * 1.0 / n_test))
         
         # record things         
-        weight_dict = {x[0]:x[1].data.cpu().numpy() for x in model.named_parameters()}
-        weights[it] = deepcopy(weight_dict)
+        weight_dict = deepcopy({x[0]:x[1].data.cpu().numpy() for x in model.named_parameters()})
+        explained_var_dicts.append(get_explained_var_from_weight_dict(weight_dict))        
+        if it  % p.save_freq == p.save_freq - 1:
+            weights[it] = weight_dict
         losses_train[it] = tot_loss / n_train
         losses_test[it] = tot_loss_test / n_test
         accs_test[it] = correct_cnt * 1.0 / n_test
-
-    # dimensionality reduction save
         
         
     # save final
@@ -126,11 +140,13 @@ def fit_vision(p):
         os.makedirs(p.out_dir)
     params = p._dict(p)
     results = {'weights': weights, 'losses_train': losses_train, 'losses_test': losses_test,
-               'accs_test': accs_test}
+               'accs_test': accs_test, 'explained_var_dicts': explained_var_dicts}
     results_combined = {**params, **results}
     pkl.dump(results_combined, open(oj(p.out_dir, p._str(p) + '.pkl'), 'wb'))
     
+    
 if __name__ == '__main__':
+    print('starting...')
     from params_vision import p
     
     # set params
