@@ -82,6 +82,7 @@ def fit_vision(p):
     elif p.optimizer == 'adam':
         optimizer = optim.Adam(model.parameters(), lr=p.lr, betas=(p.beta1, p.beta2), eps=1e-8)
     scheduler = StepLR(optimizer, step_size=p.step_size_optimizer, gamma=p.gamma_optimizer)
+    scheduler2 = StepLR(optimizer, step_size=p.step_size_optimizer_2, gamma=p.gamma_optimizer2)
 
         
     # things to record
@@ -130,6 +131,8 @@ def fit_vision(p):
                 break
                     
         scheduler.step()
+        if it > p.num_iters_small:
+            scheduler2.step()
         print('==>>> it: {}, train loss: {:.6f}'.format(it, tot_loss / n_train))
             
         # testing
