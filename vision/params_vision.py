@@ -2,7 +2,6 @@ class p:
     # optimizer params
     optimizer = 'sgd' # 'sgd' or 'adam'
     lr = 0.01 # default 0.01
-    num_iters = 80
     
     # steps
     step_size_optimizer = 1
@@ -17,8 +16,11 @@ class p:
     seed = 2
     
     # saving
-    save_freq = 100 # how often to save all the weights (if high will never save)
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/long_sweep'
+    saves_per_iter = 13 # really each iter is only iter / 10
+    saves_per_iter_end = 5 # stop saving densely after saves_per_iter * save_per_iter_end
+    num_iters = saves_per_iter * saves_per_iter_end + 4 # note: tied to saves_per_iter
+    save_all_weights_freq = 100 # how often to save all the weights (if high will never save)
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/long_full_correct' # test_setup
     
     def _str(self):
         s = '___'.join("%s=%s" % (attr, val) for (attr, val) in vars(p).items()
