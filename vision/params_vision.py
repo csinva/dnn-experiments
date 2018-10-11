@@ -7,7 +7,7 @@ class p:
     
     # steps
     step_size_optimizer = 1
-    gamma_optimizer = 0.99 # remember to change 
+    gamma_optimizer = 0.99 # remember to change (mnist run at .98 - might be too high)
     
     # adam-specific
     beta1 = 0.9 # close to 0.9
@@ -16,14 +16,21 @@ class p:
     
     # random seed
     seed = 2
+    dset = 'cifar10' # mnist or cifar10
     
     # saving
-    saves_per_iter = 13 # really each iter is only iter / 10
-    saves_per_iter_end = 5 # stop saving densely after saves_per_iter * save_per_iter_end
-    num_iters = saves_per_iter * saves_per_iter_end + 4 # note: tied to saves_per_iter
-    save_all_weights_freq = 13 # how often to save all the weights (if high will never save)
+    if dset == 'mnist':
+        saves_per_iter = 13 # really each iter is only iter / this
+        saves_per_iter_end = 5 # stop saving densely after saves_per_iter * save_per_iter_end
+        num_iters = saves_per_iter * saves_per_iter_end + 4 # note: tied to saves_per_iter
+    elif dset == 'cifar10':
+        saves_per_iter = 6 # really each iter is only iter / this
+        saves_per_iter_end = 2 # stop saving densely after saves_per_iter * save_per_iter_end
+        num_iters = saves_per_iter * saves_per_iter_end + 25 # note: tied to saves_per_iter        
+    
+    save_all_weights_freq = saves_per_iter*2 # how often to save all the weights (if high will never save)
     save_all_weights_mod = 0 # when to start saving (0 starts at first epoch)
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/long_full_correct' # test_setup
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/cifar10_long' # test_setup
     
     # its
     num_iters_small = saves_per_iter * saves_per_iter_end
