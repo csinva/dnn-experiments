@@ -7,7 +7,7 @@ class p:
     
     # steps
     step_size_optimizer = 1
-    gamma_optimizer = 0.9
+    gamma_optimizer = 0.99 # remember to change 
     
     # adam-specific
     beta1 = 0.9 # close to 0.9
@@ -23,7 +23,7 @@ class p:
     num_iters = saves_per_iter * saves_per_iter_end + 4 # note: tied to saves_per_iter
     save_all_weights_freq = 13 # how often to save all the weights (if high will never save)
     save_all_weights_mod = 0 # when to start saving (0 starts at first epoch)
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/long_full_with_saves' # test_setup
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/long_full_correct' # test_setup
     
     # its
     num_iters_small = saves_per_iter * saves_per_iter_end

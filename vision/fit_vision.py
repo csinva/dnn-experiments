@@ -15,33 +15,8 @@ from torch.optim.lr_scheduler import StepLR
 from sklearn.decomposition import PCA
 from sklearn.metrics import pairwise
 
-# get explained_var
-def get_explained_var_from_weight_dict(weight_dict):
-    explained_var_dict = {}
-    for layer_name in weight_dict.keys():
-        if 'weight' in layer_name:
-            w = weight_dict[layer_name]
-            pca = PCA(n_components=w.shape[1])
-            pca.fit(w)
-            explained_var_dict[layer_name] = deepcopy(pca.explained_variance_ratio_)
-    return explained_var_dict
-
-# get explained_var
-def get_explained_var_kernels(weight_dict, kernel='cosine'):
-    explained_var_dict = {}
-    for layer_name in weight_dict.keys():
-        if 'weight' in layer_name:
-            w = weight_dict[layer_name] # w is output x input so don't transpose
-            if kernel == 'cosine':
-                K = pairwise.cosine_similarity(w)
-            elif kernel == 'rbf':
-                K = pairwise.rbf_kernel(w)
-            elif kernel == 'laplacian':
-                K = pairwise.laplacian_kernel(w)       
-            pca = PCA()
-            pca.fit(K)
-            explained_var_dict[layer_name] = deepcopy(pca.explained_variance_ratio_)
-    return explained_var_dict
+from models import MLPNet
+from dim_reduction import *
 
 def calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion):
     correct_cnt, tot_loss_test = 0, 0
@@ -87,23 +62,6 @@ def fit_vision(p):
                     dataset=test_set,
                     batch_size=batch_size,
                     shuffle=False)
-
-    ## network
-    class MLPNet(nn.Module):
-        def __init__(self):
-            super(MLPNet, self).__init__()
-            self.fc1 = nn.Linear(28*28, 500)
-            self.fc2 = nn.Linear(500, 256)
-            self.fc3 = nn.Linear(256, 10)
-        def forward(self, x):
-            x = x.view(-1, 28*28)
-            x = F.relu(self.fc1(x))
-            x = F.relu(self.fc2(x))
-            x = self.fc3(x)
-            return x
-
-        def name(self):
-            return "mlp"
 
     model = MLPNet()
     if use_cuda:
@@ -157,10 +115,9 @@ def fit_vision(p):
             
             n_train += batch_size
             # don't go through whole dataset
-            if batch_idx > len(train_loader) / p.saves_per_iter and it < p.saves_per_iter * p.saves_per_iter_end:
+            if batch_idx > len(train_loader) / p.saves_per_iter and it <= p.saves_per_iter * p.saves_per_iter_end:
                 break
-                
-            
+                    
         scheduler.step()
         print('==>>> it: {}, train loss: {:.6f}'.format(it, tot_loss / n_train))
             
