@@ -1,3 +1,5 @@
+import numpy as np
+
 class p:
     # optimizer params
     optimizer = 'sgd' # 'sgd' or 'adam'
@@ -19,8 +21,13 @@ class p:
     saves_per_iter = 13 # really each iter is only iter / 10
     saves_per_iter_end = 5 # stop saving densely after saves_per_iter * save_per_iter_end
     num_iters = saves_per_iter * saves_per_iter_end + 4 # note: tied to saves_per_iter
-    save_all_weights_freq = 100 # how often to save all the weights (if high will never save)
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/long_full_correct' # test_setup
+    save_all_weights_freq = 13 # how often to save all the weights (if high will never save)
+    save_all_weights_mod = 0 # when to start saving (0 starts at first epoch)
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/test_setup' # test_setup
+    
+    # its
+    num_iters_small = saves_per_iter * saves_per_iter_end
+    its = np.hstack((1.0 * np.arange(num_iters_small) / saves_per_iter, saves_per_iter_end + np.arange(num_iters - num_iters_small)))
     
     def _str(self):
         s = '___'.join("%s=%s" % (attr, val) for (attr, val) in vars(p).items()

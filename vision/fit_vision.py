@@ -125,6 +125,8 @@ def fit_vision(p):
     
     # save things for iter 0
     weight_dict = deepcopy({x[0]:x[1].data.cpu().numpy() for x in model.named_parameters()})
+    if p.save_all_weights_mod == 0:
+            weights[it] = weight_dict
     explained_var_dicts.append(get_explained_var_from_weight_dict(weight_dict))    
     explained_var_dicts_cosine.append(get_explained_var_kernels(weight_dict, 'cosine'))
     explained_var_dicts_rbf.append(get_explained_var_kernels(weight_dict, 'rbf'))
@@ -171,8 +173,8 @@ def fit_vision(p):
         explained_var_dicts_cosine.append(get_explained_var_kernels(weight_dict, 'cosine'))
         explained_var_dicts_rbf.append(get_explained_var_kernels(weight_dict, 'rbf'))
         explained_var_dicts_lap.append(get_explained_var_kernels(weight_dict, 'laplacian'))
-        if it  % p.save_all_weights_freq == p.save_all_weights_freq - 1:
-            weights[it] = weight_dict
+        if it  % p.save_all_weights_freq == p.save_all_weights_mod - 1:
+            weights[p.its[it]] = weight_dict
         losses_train[it] = tot_loss / n_train
         losses_test[it] = ave_loss_test
         accs_test[it] = acc_test
@@ -182,13 +184,16 @@ def fit_vision(p):
     if not os.path.exists(p.out_dir):  # delete the features if they already exist
         os.makedirs(p.out_dir)
     params = p._dict(p)
-    num_iters_small = p.saves_per_iter * p.saves_per_iter_end
-    results = {'weights': weights, 'losses_train': losses_train, 'losses_test': losses_test,
-               'accs_test': accs_test, 'explained_var_dicts': explained_var_dicts, 
-               'explained_var_dicts_cosine': explained_var_dicts_cosine,
-              'explained_var_dicts_rbf': explained_var_dicts_rbf, 'explained_var_dicts_lap': explained_var_dicts_lap, 
-               'its': np.hstack((np.arange(num_iters_small) / p.saves_per_iter, p.saves_per_iter + np.arange(num_iters - num_iters_small)))}
-    results_combined = {**params, **results}
+    
+    results = {'weights': weights, 'losses_train': losses_train, 
+               'losses_test': losses_test, 'accs_test': accs_test, 
+               'explained_var_dicts': explained_var_dicts, 
+               'explained_var_dicts_cosine': explained_var_dicts_cosine, 
+               'explained_var_dicts_rbf': explained_var_dicts_rbf, 
+               'explained_var_dicts_lap': explained_var_dicts_lap}
+#     print(30)
+    results_combined = {}
+#     results_combined = {**params, **results}    
     pkl.dump(results_combined, open(oj(p.out_dir, p._str(p) + '.pkl'), 'wb'))
     
 if __name__ == '__main__':
