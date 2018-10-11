@@ -31,13 +31,13 @@ def get_explained_var_kernels(weight_dict, kernel='cosine'):
     explained_var_dict = {}
     for layer_name in weight_dict.keys():
         if 'weight' in layer_name:
-            w = weight_dict[layer_name]
+            w = weight_dict[layer_name] # w is output x input so don't transpose
             if kernel == 'cosine':
-                K = pairwise.cosine_similarity(w.T) # uses 1st dim so must transpose
+                K = pairwise.cosine_similarity(w)
             elif kernel == 'rbf':
-                K = pairwise.rbf_kernel(w.T) # uses 1st dim so must transpose
+                K = pairwise.rbf_kernel(w)
             elif kernel == 'laplacian':
-                K = pairwise.laplacian_kernel(w.T) # uses 1st dim so must transpose                
+                K = pairwise.laplacian_kernel(w)       
             pca = PCA()
             pca.fit(K)
             explained_var_dict[layer_name] = deepcopy(pca.explained_variance_ratio_)
@@ -126,7 +126,7 @@ def fit_vision(p):
     # save things for iter 0
     weight_dict = deepcopy({x[0]:x[1].data.cpu().numpy() for x in model.named_parameters()})
     if p.save_all_weights_mod == 0:
-            weights[it] = weight_dict
+        weights[0] = weight_dict
     explained_var_dicts.append(get_explained_var_from_weight_dict(weight_dict))    
     explained_var_dicts_cosine.append(get_explained_var_kernels(weight_dict, 'cosine'))
     explained_var_dicts_rbf.append(get_explained_var_kernels(weight_dict, 'rbf'))
@@ -169,12 +169,12 @@ def fit_vision(p):
         
         # record things         
         weight_dict = deepcopy({x[0]:x[1].data.cpu().numpy() for x in model.named_parameters()})
+        if it  % p.save_all_weights_freq == p.save_all_weights_mod:
+            weights[p.its[it]] = weight_dict 
         explained_var_dicts.append(get_explained_var_from_weight_dict(weight_dict))    
         explained_var_dicts_cosine.append(get_explained_var_kernels(weight_dict, 'cosine'))
         explained_var_dicts_rbf.append(get_explained_var_kernels(weight_dict, 'rbf'))
         explained_var_dicts_lap.append(get_explained_var_kernels(weight_dict, 'laplacian'))
-        if it  % p.save_all_weights_freq == p.save_all_weights_mod - 1:
-            weights[p.its[it]] = weight_dict
         losses_train[it] = tot_loss / n_train
         losses_test[it] = ave_loss_test
         accs_test[it] = acc_test
@@ -191,9 +191,7 @@ def fit_vision(p):
                'explained_var_dicts_cosine': explained_var_dicts_cosine, 
                'explained_var_dicts_rbf': explained_var_dicts_rbf, 
                'explained_var_dicts_lap': explained_var_dicts_lap}
-#     print(30)
-    results_combined = {}
-#     results_combined = {**params, **results}    
+    results_combined = {**params, **results}    
     pkl.dump(results_combined, open(oj(p.out_dir, p._str(p) + '.pkl'), 'wb'))
     
 if __name__ == '__main__':
