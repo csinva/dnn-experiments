@@ -7,7 +7,7 @@ class p:
     
     # steps
     step_size_optimizer = 1
-    gamma_optimizer = 0.99 # remember to change (mnist run at .98 - might be too high)
+    gamma_optimizer = 0.98 # remember to change (mnist run at .98 - might be too high)
     
     # adam-specific
     beta1 = 0.9 # close to 0.9
@@ -22,7 +22,7 @@ class p:
     if dset == 'mnist':
         saves_per_iter = 13 # really each iter is only iter / this
         saves_per_iter_end = 5 # stop saving densely after saves_per_iter * save_per_iter_end
-        num_iters = saves_per_iter * saves_per_iter_end + 12 # note: tied to saves_per_iter
+        num_iters = saves_per_iter * saves_per_iter_end + 45 # note: tied to saves_per_iter
         step_size_optimizer_2 = 1 # only does this for large steps        
         gamma_optimizer2 = 1
     elif dset == 'cifar10':
@@ -32,7 +32,7 @@ class p:
         step_size_optimizer_2 = 5 # only does this for large steps
         gamma_optimizer2 = 0.5
     
-    save_all_weights_freq = saves_per_iter*4 # how often to save all the weights (if high will never save)
+    save_all_weights_freq = saves_per_iter * 4 # how often to save all the weights (if high will never save)
     save_all_weights_mod = 0 # when to start saving (0 starts at first epoch)
     out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/mnist_long' # test
     
@@ -42,8 +42,9 @@ class p:
     
     def _str(self):
         s = '___'.join("%s=%s" % (attr, val) for (attr, val) in vars(p).items()
-                       if not attr.startswith('_') and not attr.startswith('out'))
-        return s.replace('/', '')[:251] # filenames must fit in byte 
+                       if not attr.startswith('_') and not attr.startswith('out') and not attr.startswith('its'))
+        return s.replace('/', '')[:100] + '_' + ''.join(["%s" % randint(0, 9) for num in range(0, 20)])
+ # filenames must fit in byte 
     
     def _dict(self):
         return {attr: val for (attr, val) in vars(p).items()
