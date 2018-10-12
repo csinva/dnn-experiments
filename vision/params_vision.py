@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.random import randint
 
 class p:
     # optimizer params
@@ -34,7 +35,7 @@ class p:
     
     save_all_weights_freq = saves_per_iter * 4 # how often to save all the weights (if high will never save)
     save_all_weights_mod = 0 # when to start saving (0 starts at first epoch)
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/mnist_long' # test
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/test' # test
     
     # its
     num_iters_small = saves_per_iter * saves_per_iter_end

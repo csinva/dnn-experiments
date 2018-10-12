@@ -31,9 +31,10 @@ def frac_dims_to_explain_X_percent(arr, percent_to_explain):
         dim += 1
     return dim / arr.size
 
+
 def plot_dims(results):
     # params for plotting
-    plt.figure(figsize=(10, 15), dpi=100)
+    plt.figure(figsize=(10, 18), dpi=100)
     percent_to_explain = 0.90
     dim_types = ['pca', 'rbf', 'lap', 'cosine']
 
