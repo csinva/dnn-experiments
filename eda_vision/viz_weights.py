@@ -32,12 +32,77 @@ def frac_dims_to_explain_X_percent(arr, percent_to_explain):
     return dim / arr.size
 
 
-def plot_dims(results):
+def plot_losses(results):
     # params for plotting
-    plt.figure(figsize=(10, 18), dpi=100)
+    plt.figure(figsize=(12, 8), dpi=100)
     percent_to_explain = 0.90
     dim_types = ['pca', 'rbf', 'lap', 'cosine']
 
+
+    dim_dicts = {}
+    R, C = 2, 4
+    for index, row in results.iterrows():
+
+        color = 'red' if row.optimizer == 'sgd' else 'blue'
+        style = {0.1: '.', 0.01: '-', 0.001: '^'}[row.lr]
+        alpha = {0.1: 0.3, 0.01: 0.5, 0.001: .8}[row.lr]
+        xlim = None #20 # None
+
+
+        # accs
+        plt.subplot(R, C, 1)
+        plt.ylabel('full model')        
+        plt.plot(row.its, row.losses_train, style, label= row.optimizer + ' ' + str(row.lr), color=color, alpha=alpha)
+        plt.yscale('log')
+        plt.title('train loss')
+
+        plt.subplot(R, C, 2)
+        plt.plot(row.its, row.losses_train, style, color=color, alpha=alpha)
+        plt.yscale('log')    
+        plt.title('test loss')
+
+        plt.subplot(R, C, 3)
+        plt.plot(row.its, row.accs_train, style, label= row.optimizer + ' ' + str(row.lr), color=color, alpha=alpha)
+        plt.title('train acc')
+        
+        plt.subplot(R, C, 4)
+        plt.plot(row.its, row.accs_test, style, color=color, alpha=alpha)
+        plt.title('test acc')
+        
+        plt.subplot(R, C, 5)
+        plt.ylabel('reconstructed with 85% PCs')
+        plt.plot(row.its, row.losses_train_r, style, label= row.optimizer + ' ' + str(row.lr), color=color, alpha=alpha)
+        plt.yscale('log')
+        plt.title('train loss')
+
+        plt.subplot(R, C, 6)
+        plt.plot(row.its, row.losses_train_r, style, color=color, alpha=alpha)
+        plt.yscale('log')    
+        plt.title('test loss')
+
+        plt.subplot(R, C, 7)
+        plt.plot(row.its, row.accs_train_r, style, label= row.optimizer + ' ' + str(row.lr), color=color, alpha=alpha)
+        plt.title('train acc')
+        
+        plt.subplot(R, C, 8)
+        plt.plot(row.its, row.accs_test_r, style, color=color, alpha=alpha)
+        plt.title('test acc')
+
+
+      
+                
+    plt.subplot(R, C, 1)    
+    # remove duplicate labels
+    handles, labels = plt.gca().get_legend_handles_labels()
+    by_label = OrderedDict(zip(labels, handles))
+    plt.legend(by_label.values(), by_label.keys())
+    plt.show()
+
+def plot_dims(results, xlim=None, percent_to_explain=0.85):
+    # params for plotting
+    plt.figure(figsize=(10, 18), dpi=100)
+
+    dim_types = ['pca', 'rbf', 'lap', 'cosine']
 
     dim_dicts = {}
     R, C = 5, 3
@@ -48,7 +113,6 @@ def plot_dims(results):
         color = 'red' if row.optimizer == 'sgd' else 'blue'
         style = {0.1: '.', 0.01: '-', 0.001: '^'}[row.lr]
         alpha = {0.1: 0.3, 0.01: 0.5, 0.001: .8}[row.lr]
-        xlim = None #20 # None
 
 
         # accs

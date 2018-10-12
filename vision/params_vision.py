@@ -17,7 +17,7 @@ class p:
     
     # random seed
     seed = 2
-    dset = 'mnist' # mnist or cifar10
+    dset = 'cifar10' # mnist or cifar10
     
     # saving
     if dset == 'mnist':
@@ -29,13 +29,13 @@ class p:
     elif dset == 'cifar10':
         saves_per_iter = 6 # really each iter is only iter / this
         saves_per_iter_end = 2 # stop saving densely after saves_per_iter * save_per_iter_end
-        num_iters = saves_per_iter * saves_per_iter_end + 60 # note: tied to saves_per_iter        
+        num_iters = saves_per_iter * saves_per_iter_end + 40 # note: tied to saves_per_iter        
         step_size_optimizer_2 = 5 # only does this for large steps
         gamma_optimizer2 = 0.5
     
     save_all_weights_freq = saves_per_iter * 4 # how often to save all the weights (if high will never save)
     save_all_weights_mod = 0 # when to start saving (0 starts at first epoch)
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/test' # test
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/cifar10_full' # test
     
     # its
     num_iters_small = saves_per_iter * saves_per_iter_end
