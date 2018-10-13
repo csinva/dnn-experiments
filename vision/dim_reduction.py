@@ -21,7 +21,6 @@ def get_explained_var_from_weight_dict(weight_dict, activation=False):
     for layer_name in weight_dict.keys():
         if 'weight' in layer_name or activation:
             w = weight_dict[layer_name]
-            print('shape', w.shape, 'ncomps=', w.shape[1])
             pca = PCA(n_components=w.shape[1])
             pca.fit(w)
             explained_var_dict[layer_name] = deepcopy(pca.explained_variance_ratio_)

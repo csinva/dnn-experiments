@@ -17,7 +17,10 @@ class p:
     
     # random seed
     seed = 2
-    dset = 'mnist' # mnist or cifar10
+    dset = 'cifar10' # mnist or cifar10
+    
+    calc_activations = 10000 # (0) calculate activations for diff number of data points and then do dim reduction...
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/mnist_with_act' # test
     
     # saving
     if dset == 'mnist':
@@ -32,9 +35,14 @@ class p:
         num_iters = saves_per_iter * saves_per_iter_end + 40 # note: tied to saves_per_iter        
         step_size_optimizer_2 = 5 # only does this for large steps
         gamma_optimizer2 = 0.5
-    
-    calc_activations = 100 # (0) calculate activations for diff number of data points and then do dim reduction...
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/test' # test
+    elif dset == 'test':
+        dset = 'mnist'
+        num_iters = 1
+        saves_per_iter = 1
+        saves_per_iter_end = 1
+        step_size_optimizer_2 = 1 # only does this for large steps        
+        gamma_optimizer2 = 1        
+        out_dir = out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/test' # test
     
     # its
     save_all_weights_freq = saves_per_iter * 4 # how often to save all the weights (if high will never save)

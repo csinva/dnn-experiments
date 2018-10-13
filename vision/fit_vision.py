@@ -46,6 +46,33 @@ def reduce_model(model, percent_to_explain=0.85):
     model_r.load_state_dict(weight_dict_new)
     return model_r
 
+def calc_activation_dims(use_cuda, model, dset_train, dset_test, calc_activations=0):
+    if calc_activations > 0:
+        dicts_dict = {}
+        for d in [dset_train, dset_test]:
+            dd = {}
+            loader = torch.utils.data.DataLoader(
+                     dataset=d,
+                     batch_size=calc_activations,
+                     shuffle=False)
+
+            # just use 1 big batch
+            for batch_idx, (x, target) in enumerate(loader):
+                if use_cuda:
+                    x, target = x.cuda(), target.cuda()
+                x = Variable(x, volatile=True)
+                y = model.forward_all(x)
+                y = {key: y[key].data.cpu().numpy().T for key in y.keys()}
+                if batch_idx >= 0:
+                    break
+            act_var_dict = get_explained_var_from_weight_dict(y, activation=True)
+            act_var_dict_rbf = get_explained_var_kernels(y, kernel='rbf', activation=True)       
+            if d == dset_train:
+                dicts_dict['train'] = {'pca': act_var_dict, 'rbf': act_var_dict_rbf}
+            else:
+                dicts_dict['test'] = {'pca': act_var_dict, 'rbf': act_var_dict_rbf}                
+        return dicts_dict
+
 def layer_norms(weight_dict):
     return {lay_name: np.linalg.norm(weight_dict[lay_name])**2 for lay_name in weight_dict.keys() if 'weight' in lay_name}
 
@@ -122,9 +149,10 @@ def fit_vision(p):
     losses_train_r, losses_test_r = np.zeros(p.num_iters), np.zeros(p.num_iters)
     accs_train_r, accs_test_r = np.zeros(p.num_iters), np.zeros(p.num_iters)    
     explained_var_dicts, explained_var_dicts_cosine, explained_var_dicts_rbf, explained_var_dicts_lap = [], [], [], []
-    
+    act_var_dicts_train, act_var_dicts_test, act_var_dicts_train_rbf, act_var_dicts_test_rbf = [], [], [], []        
     
     # save things for iter 0
+    print('initial saving...')
     weight_dict = deepcopy({x[0]:x[1].data.cpu().numpy() for x in model.named_parameters()})
     if p.save_all_weights_mod == 0:
         weights[0] = weight_dict
@@ -134,6 +162,11 @@ def fit_vision(p):
     explained_var_dicts_cosine.append(get_explained_var_kernels(weight_dict, 'cosine'))
     explained_var_dicts_rbf.append(get_explained_var_kernels(weight_dict, 'rbf'))
     explained_var_dicts_lap.append(get_explained_var_kernels(weight_dict, 'laplacian'))
+    act_var_dicts = calc_activation_dims(use_cuda, model, train_set, test_set, calc_activations=p.calc_activations)
+    act_var_dicts_train = act_var_dicts['train']['pca']
+    act_var_dicts_test = act_var_dicts['test']['pca']
+    act_var_dicts_train_rbf = act_var_dicts['train']['rbf']
+    act_var_dicts_test_rbf = act_var_dicts['test']['rbf']
     ave_loss_train, acc_train = calc_loss_acc(train_loader, batch_size, use_cuda, model, criterion)
     ave_loss_test, acc_test = calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion)
     losses_train[0] = ave_loss_train   
@@ -189,6 +222,11 @@ def fit_vision(p):
         explained_var_dicts_cosine.append(get_explained_var_kernels(weight_dict, 'cosine'))
         explained_var_dicts_rbf.append(get_explained_var_kernels(weight_dict, 'rbf'))
         explained_var_dicts_lap.append(get_explained_var_kernels(weight_dict, 'laplacian'))
+        act_var_dicts = calc_activation_dims(use_cuda, model, train_set, test_set, calc_activations=p.calc_activations)
+        act_var_dicts_train = act_var_dicts['train']['pca']
+        act_var_dicts_test = act_var_dicts['test']['pca']
+        act_var_dicts_train_rbf = act_var_dicts['train']['rbf']
+        act_var_dicts_test_rbf = act_var_dicts['test']['rbf']        
         
         
         
@@ -205,7 +243,11 @@ def fit_vision(p):
                'explained_var_dicts_pca': explained_var_dicts, 
                'explained_var_dicts_cosine': explained_var_dicts_cosine, 
                'explained_var_dicts_rbf': explained_var_dicts_rbf, 
-               'explained_var_dicts_lap': explained_var_dicts_lap}
+               'explained_var_dicts_lap': explained_var_dicts_lap,
+               'act_var_dicts_train': act_var_dicts_train, 
+               'act_var_dicts_test': act_var_dicts_test, 
+               'act_var_dicts_train_rbf': act_var_dicts_train_rbf, 
+               'act_var_dicts_test_rbf': act_var_dicts_test_rbf}
     weights_results = {'weights': weights, 'weights_first10': weights_first10}    
     results_combined = {**params, **results}    
     weights_results_combined = {**params, **weights_results}
