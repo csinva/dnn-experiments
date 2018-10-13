@@ -10,7 +10,6 @@ from copy import deepcopy
 import pickle as pkl
 import pandas as pd
 import math
-# plt.style.use('dark_background')
 plt.style.use('seaborn-notebook')
 from data_load_preprocess import data
 from collections import OrderedDict
@@ -43,9 +42,9 @@ def plot_losses(results):
     R, C = 2, 4
     for index, row in results.iterrows():
 
-        color = 'red' if row.optimizer == 'sgd' else 'blue'
-        style = {0.1: '.', 0.01: '-', 0.001: '^'}[row.lr]
-        alpha = {0.1: 0.3, 0.01: 0.5, 0.001: .8}[row.lr]
+        color = 'orange' if row.optimizer == 'sgd' else 'deepskyblue'
+        style = {1: '^', 0.1: '-', 0.01: '--', 0.001: '.'}[row.lr]
+        alpha = {1.0: 0.3, 0.1: 0.8, 0.01: 0.8, 0.001: .3}[row.lr]
         xlim = None #20 # None
 
 
@@ -98,11 +97,9 @@ def plot_losses(results):
     plt.legend(by_label.values(), by_label.keys())
     plt.show()
 
-def plot_dims(results, xlim=None, percent_to_explain=0.85):
+def plot_dims(results, xlim=None, percent_to_explain=0.85, dim_types=['explained_var_dicts_pca', 'explained_var_dicts_rbf', 'explained_var_dicts_lap', 'explained_var_dicts_cosine']):
     # params for plotting
     plt.figure(figsize=(10, 18), dpi=100)
-
-    dim_types = ['pca', 'rbf', 'lap', 'cosine']
 
     dim_dicts = {}
     R, C = 5, 3
@@ -110,10 +107,10 @@ def plot_dims(results, xlim=None, percent_to_explain=0.85):
         # style for plotting
     #     style = '^' if row.optimizer == 'sgd' else '.'
     #     color = {0.1: 'red', 0.01: 'blue', 0.001: 'green'}[row.lr]
-        color = 'red' if row.optimizer == 'sgd' else 'blue'
-        style = {0.1: '.', 0.01: '-', 0.001: '^'}[row.lr]
-        alpha = {0.1: 0.3, 0.01: 0.5, 0.001: .8}[row.lr]
-
+        color = 'orange' if row.optimizer == 'sgd' else 'deepskyblue'
+        style = {1: '^', 0.1: '-', 0.01: '--', 0.001: '.'}[row.lr]
+        alpha = {1.0: 0.3, 0.1: 0.8, 0.01: 0.8, 0.001: .3}[row.lr]
+    
 
         # accs
         try:
@@ -139,23 +136,32 @@ def plot_dims(results, xlim=None, percent_to_explain=0.85):
         for j in range(4):
             offset = 3 * (1 + j)
             plt.subplot(R, C, offset + 1)
-            dim_dicts = row['explained_var_dicts_' + dim_types[j]]
-            plt.plot(row.its, [frac_dims_to_explain_X_percent(d['fc1.weight'], percent_to_explain) 
+            dim_dicts = row[dim_types[j]]
+            print(dim_dicts.keys())
+            if 'explained' in dim_types[j]:
+                lays = ['fc1.weight', 'fc2.weight', 'fc3.weight']
+            elif 'act' in dim_types[j]:
+                lays = ['fc1', 'fc2', 'fc3']
+                        
+            lab = dim_types[j].replace('_var_dicts_', '')
+            lab = lab.replace('explained', '')
+            lab = lab.replace('act', '')              
+            plt.plot(row.its, [frac_dims_to_explain_X_percent(d[lays[0]], percent_to_explain) 
                       for d in dim_dicts], style, color=color, alpha=alpha)
-            plt.ylabel(dim_types[j] + ' frac dims to explain\n' + str(100 * percent_to_explain) + '% (out of ' + str(dim_dicts[0]['fc1.weight'].size)+ ')')
-            plt.title('lay 1')
+            plt.ylabel(lab + '\n' + str(100 * percent_to_explain) + '% frac dims (of ' + str(dim_dicts[0][lays[0]].size)+ ')')
+            plt.title(lays[0])
 
             plt.subplot(R, C, offset + 2)
-            plt.plot(row.its, [frac_dims_to_explain_X_percent(d['fc2.weight'], percent_to_explain) 
+            plt.plot(row.its, [frac_dims_to_explain_X_percent(d[lays[[1]]], percent_to_explain) 
                       for d in dim_dicts], style, color=color, alpha=alpha)
-            plt.title('lay 2')
-            plt.ylabel('out of ' + str(dim_dicts[0]['fc2.weight'].size))
+            plt.title(lays[1])
+            plt.ylabel('out of ' + str(dim_dicts[0][lays[1]].size))
 
             plt.subplot(R, C, offset + 3)
-            plt.plot(row.its, [frac_dims_to_explain_X_percent(d['fc3.weight'], percent_to_explain) 
+            plt.plot(row.its, [frac_dims_to_explain_X_percent(d[lays[2]], percent_to_explain) 
                       for d in dim_dicts], style, color=color, alpha=alpha)
-            plt.title('lay 3')
-            plt.ylabel('out of ' + str(dim_dicts[0]['fc3.weight'].size))
+            plt.title(lays[2])
+            plt.ylabel('out of ' + str(dim_dicts[0][lays[2]].size))
 
         if not xlim is None:
             for i in range(R * C):

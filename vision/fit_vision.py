@@ -223,10 +223,10 @@ def fit_vision(p):
         explained_var_dicts_rbf.append(get_explained_var_kernels(weight_dict, 'rbf'))
         explained_var_dicts_lap.append(get_explained_var_kernels(weight_dict, 'laplacian'))
         act_var_dicts = calc_activation_dims(use_cuda, model, train_set, test_set, calc_activations=p.calc_activations)
-        act_var_dicts_train = act_var_dicts['train']['pca']
-        act_var_dicts_test = act_var_dicts['test']['pca']
-        act_var_dicts_train_rbf = act_var_dicts['train']['rbf']
-        act_var_dicts_test_rbf = act_var_dicts['test']['rbf']        
+        act_var_dicts_train.append(act_var_dicts['train']['pca'])
+        act_var_dicts_test.append(act_var_dicts['test']['pca'])
+        act_var_dicts_train_rbf.append(act_var_dicts['train']['rbf'])
+        act_var_dicts_test_rbf.append(act_var_dicts['test']['rbf'])
         
         
         
@@ -244,8 +244,8 @@ def fit_vision(p):
                'explained_var_dicts_cosine': explained_var_dicts_cosine, 
                'explained_var_dicts_rbf': explained_var_dicts_rbf, 
                'explained_var_dicts_lap': explained_var_dicts_lap,
-               'act_var_dicts_train': act_var_dicts_train, 
-               'act_var_dicts_test': act_var_dicts_test, 
+               'act_var_dicts_train_pca': act_var_dicts_train, 
+               'act_var_dicts_test_pca': act_var_dicts_test, 
                'act_var_dicts_train_rbf': act_var_dicts_train_rbf, 
                'act_var_dicts_test_rbf': act_var_dicts_test_rbf}
     weights_results = {'weights': weights, 'weights_first10': weights_first10}    
