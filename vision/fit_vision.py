@@ -44,9 +44,10 @@ def reduce_model(model, percent_to_explain=0.85):
             weight_dict_new[layer_name] = torch.Tensor(w2)
             
     model_r.load_state_dict(weight_dict_new)
-            
-    
     return model_r
+
+def layer_norms(weight_dict):
+    return {lay_name: np.linalg.norm(weight_dict[lay_name])**2 for lay_name in weight_dict.keys() if 'weight' in lay_name}
 
 def calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion):
     correct_cnt, tot_loss_test = 0, 0
@@ -115,7 +116,7 @@ def fit_vision(p):
 
         
     # things to record
-    weights = {}
+    weights, weights_first10, weight_norms = {}, {}, {}
     losses_train, losses_test = np.zeros(p.num_iters), np.zeros(p.num_iters)
     accs_train, accs_test = np.zeros(p.num_iters), np.zeros(p.num_iters)
     losses_train_r, losses_test_r = np.zeros(p.num_iters), np.zeros(p.num_iters)
@@ -127,15 +128,19 @@ def fit_vision(p):
     weight_dict = deepcopy({x[0]:x[1].data.cpu().numpy() for x in model.named_parameters()})
     if p.save_all_weights_mod == 0:
         weights[0] = weight_dict
+        weights_first10[0] = deepcopy(model.state_dict()['fc1.weight'][:20].cpu().numpy())
+    weight_norms[0] = layer_norms(model.state_dict())    
     explained_var_dicts.append(get_explained_var_from_weight_dict(weight_dict))    
     explained_var_dicts_cosine.append(get_explained_var_kernels(weight_dict, 'cosine'))
     explained_var_dicts_rbf.append(get_explained_var_kernels(weight_dict, 'rbf'))
     explained_var_dicts_lap.append(get_explained_var_kernels(weight_dict, 'laplacian'))
-    ave_loss_train, _ = calc_loss_acc(train_loader, batch_size, use_cuda, model, criterion)
+    ave_loss_train, acc_train = calc_loss_acc(train_loader, batch_size, use_cuda, model, criterion)
     ave_loss_test, acc_test = calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion)
     losses_train[0] = ave_loss_train   
     losses_test[0] = ave_loss_test
+    accs_train[0] = acc_train
     accs_test[0] = acc_test
+
         
     # run    
     print('training...')
@@ -178,6 +183,8 @@ def fit_vision(p):
         weight_dict = deepcopy({x[0]:x[1].data.cpu().numpy() for x in model.named_parameters()})
         if it % p.save_all_weights_freq == p.save_all_weights_mod or it == p.num_iters - 1:
             weights[p.its[it]] = weight_dict 
+        weights_first10[p.its[it]] = deepcopy(model.state_dict()['fc1.weight'][:20].cpu().numpy())            
+        weight_norms[p.its[it]] = layer_norms(model.state_dict())        
         explained_var_dicts.append(get_explained_var_from_weight_dict(weight_dict))    
         explained_var_dicts_cosine.append(get_explained_var_kernels(weight_dict, 'cosine'))
         explained_var_dicts_rbf.append(get_explained_var_kernels(weight_dict, 'rbf'))
@@ -190,17 +197,20 @@ def fit_vision(p):
         os.makedirs(p.out_dir)
     params = p._dict(p)
     
-    results = {'weights': weights, 
-               'losses_train': losses_train, 'losses_test': losses_test, 
+    results = {'losses_train': losses_train, 'losses_test': losses_test, 
                'accs_test': accs_test, 'accs_train': accs_train,
                'losses_train_r': losses_train_r, 'losses_test_r': losses_test_r, 
-               'accs_test_r': accs_test_r, 'accs_train_r': accs_train_r,               
+               'accs_test_r': accs_test_r, 'accs_train_r': accs_train_r,  
+               'weight_norms': weight_norms,
                'explained_var_dicts_pca': explained_var_dicts, 
                'explained_var_dicts_cosine': explained_var_dicts_cosine, 
                'explained_var_dicts_rbf': explained_var_dicts_rbf, 
                'explained_var_dicts_lap': explained_var_dicts_lap}
+    weights_results = {'weights': weights, 'weights_first10': weights_first10}    
     results_combined = {**params, **results}    
+    weights_results_combined = {**params, **weights_results}
     pkl.dump(results_combined, open(oj(p.out_dir, p._str(p) + '.pkl'), 'wb'))
+    pkl.dump(weights_results_combined, open(oj(p.out_dir, 'weights_' + p._str(p) + '.pkl'), 'wb'))    
     
 if __name__ == '__main__':
     print('starting...')

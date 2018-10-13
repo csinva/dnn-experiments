@@ -28,6 +28,15 @@ class MnistNet(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
+    
+    def forward_all(self, x):
+        x = x.view(-1, 28*28)
+        x1 = self.fc1(x)
+        x2 = F.relu(x1)
+        x3 = self.fc2(x2)
+        x4 = F.relu(x3)
+        x5 = self.fc3(x4)
+        return {'fc1': x1, 'relu1': x2, 'fc2': x3, 'relu2': x4, 'fc3': x5}
 
     def name(self):
         return "mlp"

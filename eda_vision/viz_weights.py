@@ -57,7 +57,7 @@ def plot_losses(results):
         plt.title('train loss')
 
         plt.subplot(R, C, 2)
-        plt.plot(row.its, row.losses_train, style, color=color, alpha=alpha)
+        plt.plot(row.its, row.losses_test, style, color=color, alpha=alpha)
         plt.yscale('log')    
         plt.title('test loss')
 
@@ -76,7 +76,7 @@ def plot_losses(results):
         plt.title('train loss')
 
         plt.subplot(R, C, 6)
-        plt.plot(row.its, row.losses_train_r, style, color=color, alpha=alpha)
+        plt.plot(row.its, row.losses_test_r, style, color=color, alpha=alpha)
         plt.yscale('log')    
         plt.title('test loss')
 
@@ -126,7 +126,7 @@ def plot_dims(results, xlim=None, percent_to_explain=0.85):
         plt.title('train loss')
 
         plt.subplot(R, C, 2)
-        plt.plot(row.its, row.losses_train, style, color=color, alpha=alpha)
+        plt.plot(row.its, row.losses_test, style, color=color, alpha=alpha)
         plt.yscale('log')    
         plt.title('test loss')
 
