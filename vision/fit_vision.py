@@ -76,9 +76,10 @@ def calc_activation_dims(use_cuda, model, dset_train, dset_test, calc_activation
 def layer_norms(weight_dict):
     return {lay_name: np.linalg.norm(weight_dict[lay_name])**2 for lay_name in weight_dict.keys() if 'weight' in lay_name}
 
-def calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion):
+def calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion, calc_margin=False):
     correct_cnt, tot_loss_test = 0, 0
     n_test = len(test_loader) * batch_size
+    margin_sum = 0
     for batch_idx, (x, target) in enumerate(test_loader):
         if use_cuda:
             x, target = x.cuda(), target.cuda()
@@ -88,9 +89,18 @@ def calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion):
         _, pred_label = torch.max(out.data, 1)
         correct_cnt += (pred_label == target.data).sum()
         tot_loss_test += loss.data[0]
+        
+        if calc_margin:
+            preds = F.softmax(out).data.cpu().numpy()
+            preds.sort(axis=1)
+            margin_sum += np.sum(preds[:, -1]) - np.sum(preds[:, -2])
+        
+        
     print('==>>> loss: {:.6f}, acc: {:.3f}'.format(tot_loss_test / n_test, correct_cnt * 1.0 / n_test))
-    return tot_loss_test / n_test, correct_cnt * 1.0 / n_test
-    
+    if calc_margin:
+        return tot_loss_test / n_test, correct_cnt * 1.0 / n_test, margin_sum / n_test
+    else:
+        return tot_loss_test / n_test, correct_cnt * 1.0 / n_test
 
 def fit_vision(p):
     # set random seed        
@@ -147,9 +157,10 @@ def fit_vision(p):
     losses_train, losses_test = np.zeros(p.num_iters), np.zeros(p.num_iters)
     accs_train, accs_test = np.zeros(p.num_iters), np.zeros(p.num_iters)
     losses_train_r, losses_test_r = np.zeros(p.num_iters), np.zeros(p.num_iters)
-    accs_train_r, accs_test_r = np.zeros(p.num_iters), np.zeros(p.num_iters)    
+    accs_train_r, accs_test_r = np.zeros(p.num_iters), np.zeros(p.num_iters)  
+    mean_margin_train, mean_margin_test = np.zeros(p.num_iters), np.zeros(p.num_iters)    
     explained_var_dicts, explained_var_dicts_cosine, explained_var_dicts_rbf, explained_var_dicts_lap = [], [], [], []
-    act_var_dicts_train, act_var_dicts_test, act_var_dicts_train_rbf, act_var_dicts_test_rbf = [], [], [], []        
+    act_var_dicts_train, act_var_dicts_test, act_var_dicts_train_rbf, act_var_dicts_test_rbf = [], [], [], []    
     
     # save things for iter 0
     print('initial saving...')
@@ -157,18 +168,18 @@ def fit_vision(p):
     if p.save_all_weights_mod == 0:
         weights[0] = weight_dict
         weights_first10[0] = deepcopy(model.state_dict()['fc1.weight'][:20].cpu().numpy())
-    weight_norms[0] = layer_norms(model.state_dict())    
+    weight_norms[0] = layer_norms(model.state_dict()) 
     explained_var_dicts.append(get_explained_var_from_weight_dict(weight_dict))    
     explained_var_dicts_cosine.append(get_explained_var_kernels(weight_dict, 'cosine'))
     explained_var_dicts_rbf.append(get_explained_var_kernels(weight_dict, 'rbf'))
     explained_var_dicts_lap.append(get_explained_var_kernels(weight_dict, 'laplacian'))
     act_var_dicts = calc_activation_dims(use_cuda, model, train_set, test_set, calc_activations=p.calc_activations)
-    act_var_dicts_train = act_var_dicts['train']['pca']
-    act_var_dicts_test = act_var_dicts['test']['pca']
-    act_var_dicts_train_rbf = act_var_dicts['train']['rbf']
-    act_var_dicts_test_rbf = act_var_dicts['test']['rbf']
-    ave_loss_train, acc_train = calc_loss_acc(train_loader, batch_size, use_cuda, model, criterion)
-    ave_loss_test, acc_test = calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion)
+    act_var_dicts_train.append(act_var_dicts['train']['pca'])
+    act_var_dicts_test.append(act_var_dicts['test']['pca'])
+    act_var_dicts_train_rbf.append(act_var_dicts['train']['rbf'])
+    act_var_dicts_test_rbf.append(act_var_dicts['test']['rbf'])
+    ave_loss_train, acc_train, mean_margin_train[0] = calc_loss_acc(train_loader, batch_size, use_cuda, model, criterion, calc_margin=True)
+    ave_loss_test, acc_test, mean_margin_test[0] = calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion, calc_margin=True)
     losses_train[0] = ave_loss_train   
     losses_test[0] = ave_loss_test
     accs_train[0] = acc_train
@@ -200,15 +211,13 @@ def fit_vision(p):
             
         # calc stats and record
         print('it', it)
-        ave_loss_train, acc_train = calc_loss_acc(train_loader, batch_size, use_cuda, model, criterion)
-        ave_loss_test, acc_test = calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion)
         losses_train[it], losses_test[it] = ave_loss_train, ave_loss_test
         accs_train[it], accs_test[it] = acc_train, acc_test
         
         # calculated reduced stats
         model_r = reduce_model(model)
-        ave_loss_train_r, acc_train_r = calc_loss_acc(train_loader, batch_size, use_cuda, model_r, criterion)
-        ave_loss_test_r, acc_test_r = calc_loss_acc(test_loader, batch_size, use_cuda, model_r, criterion)
+        ave_loss_train_r, acc_train_r = calc_loss_acc(train_loader, batch_size, use_cuda, model_r, criterion, calc_margin=True)
+        ave_loss_test_r, acc_test_r = calc_loss_acc(test_loader, batch_size, use_cuda, model_r, criterion, calc_margin=True)
         losses_train_r[it], losses_test_r[it] = ave_loss_train_r, ave_loss_test_r
         accs_train_r[it], accs_test_r[it] = acc_train_r, acc_test_r
         
@@ -239,7 +248,8 @@ def fit_vision(p):
                'accs_test': accs_test, 'accs_train': accs_train,
                'losses_train_r': losses_train_r, 'losses_test_r': losses_test_r, 
                'accs_test_r': accs_test_r, 'accs_train_r': accs_train_r,  
-               'weight_norms': weight_norms,
+               'weight_norms': weight_norms, 'mean_margin_train': mean_margin_train, 
+               'mean_margin_test': mean_margin_test,
                'explained_var_dicts_pca': explained_var_dicts, 
                'explained_var_dicts_cosine': explained_var_dicts_cosine, 
                'explained_var_dicts_rbf': explained_var_dicts_rbf, 
