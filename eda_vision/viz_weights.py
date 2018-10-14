@@ -56,7 +56,7 @@ def plot_losses(results):
     plt.figure(figsize=(12, 8), dpi=100)
     percent_to_explain = 0.90
     dim_types = ['pca', 'rbf', 'lap', 'cosine']
-
+    skips = [('adam', 0.1), ('sgd', 1.0)]
 
     dim_dicts = {}
     R, C = 2, 4
@@ -67,45 +67,45 @@ def plot_losses(results):
         alpha = {1.0: 0.3, 0.1: 0.8, 0.01: 0.8, 0.001: .3}[row.lr]
         xlim = None #20 # None
 
+        if not (row.optimizer, row.lr) in skips:
+            # accs
+            plt.subplot(R, C, 1)
+            plt.ylabel('full model')        
+            plt.plot(row.its, row.losses_train, style, label= row.optimizer + ' ' + str(row.lr), color=color, alpha=alpha)
+            plt.yscale('log')
+            plt.title('train loss')
 
-        # accs
-        plt.subplot(R, C, 1)
-        plt.ylabel('full model')        
-        plt.plot(row.its, row.losses_train, style, label= row.optimizer + ' ' + str(row.lr), color=color, alpha=alpha)
-        plt.yscale('log')
-        plt.title('train loss')
+            plt.subplot(R, C, 2)
+            plt.plot(row.its, row.losses_test, style, color=color, alpha=alpha)
+            plt.yscale('log')    
+            plt.title('test loss')
 
-        plt.subplot(R, C, 2)
-        plt.plot(row.its, row.losses_test, style, color=color, alpha=alpha)
-        plt.yscale('log')    
-        plt.title('test loss')
+            plt.subplot(R, C, 3)
+            plt.plot(row.its, row.accs_train, style, label= row.optimizer + ' ' + str(row.lr), color=color, alpha=alpha)
+            plt.title('train acc')
 
-        plt.subplot(R, C, 3)
-        plt.plot(row.its, row.accs_train, style, label= row.optimizer + ' ' + str(row.lr), color=color, alpha=alpha)
-        plt.title('train acc')
-        
-        plt.subplot(R, C, 4)
-        plt.plot(row.its, row.accs_test, style, color=color, alpha=alpha)
-        plt.title('test acc')
-        
-        plt.subplot(R, C, 5)
-        plt.ylabel('reconstructed with 85% PCs')
-        plt.plot(row.its, row.losses_train_r, style, label= row.optimizer + ' ' + str(row.lr), color=color, alpha=alpha)
-        plt.yscale('log')
-        plt.title('train loss')
+            plt.subplot(R, C, 4)
+            plt.plot(row.its, row.accs_test, style, color=color, alpha=alpha)
+            plt.title('test acc')
 
-        plt.subplot(R, C, 6)
-        plt.plot(row.its, row.losses_test_r, style, color=color, alpha=alpha)
-        plt.yscale('log')    
-        plt.title('test loss')
+            plt.subplot(R, C, 5)
+            plt.ylabel('reconstructed with 85% PCs')
+            plt.plot(row.its, row.losses_train_r, style, label= row.optimizer + ' ' + str(row.lr), color=color, alpha=alpha)
+            plt.yscale('log')
+            plt.title('train loss')
 
-        plt.subplot(R, C, 7)
-        plt.plot(row.its, row.accs_train_r, style, label= row.optimizer + ' ' + str(row.lr), color=color, alpha=alpha)
-        plt.title('train acc')
-        
-        plt.subplot(R, C, 8)
-        plt.plot(row.its, row.accs_test_r, style, color=color, alpha=alpha)
-        plt.title('test acc')
+            plt.subplot(R, C, 6)
+            plt.plot(row.its, row.losses_test_r, style, color=color, alpha=alpha)
+            plt.yscale('log')    
+            plt.title('test loss')
+
+            plt.subplot(R, C, 7)
+            plt.plot(row.its, row.accs_train_r, style, label= row.optimizer + ' ' + str(row.lr), color=color, alpha=alpha)
+            plt.title('train acc')
+
+            plt.subplot(R, C, 8)
+            plt.plot(row.its, row.accs_test_r, style, color=color, alpha=alpha)
+            plt.title('test acc')
 
 
       
@@ -118,11 +118,11 @@ def plot_losses(results):
     plt.show()
 
     
-def plot_weight_norms(results, xlim=None):
+def plot_weight_norms_and_margin(results, xlim=None):
     # params for plotting
     skips = [('adam', 0.1)]
     dim_dicts = {}
-    R, C = 2, 3
+    R, C = 3, 3
     for index, row in results.iterrows():
         # style for plotting
         color = 'orange' if row.optimizer == 'sgd' else 'deepskyblue'
@@ -147,6 +147,14 @@ def plot_weight_norms(results, xlim=None):
                     plt.subplot(R, C, 4 + j)
                     vals = [wnorms[key][lays[j]] for key in keys]                
                     plt.plot(keys, vals, style, color=color, alpha=alpha, label= row.optimizer + ' ' + str(row.lr))
+            
+            plt.subplot(R, C, 7)
+            plt.plot(row.its, row.mean_margin_train, style, color=color, alpha=alpha, label= row.optimizer + ' ' + str(row.lr))
+            plt.ylabel('mean train margin')
+            
+            plt.subplot(R, C, 8)
+            plt.plot(row.its, row.mean_margin_test, style, color=color, alpha=alpha, label= row.optimizer + ' ' + str(row.lr))
+            plt.ylabel('mean test margin')            
             
         if not xlim is None:
             for i in range(R * C):

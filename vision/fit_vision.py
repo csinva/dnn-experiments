@@ -218,13 +218,15 @@ def fit_vision(p):
             
         # calc stats and record
         print('it', it)
+        ave_loss_train, ave_loss_test, mean_margin_train[it] = calc_loss_acc(train_loader, batch_size, use_cuda, model, criterion, calc_margin=True)
+        acc_train, acc_test, mean_margin_test[it] = calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion, calc_margin=True)        
         losses_train[it], losses_test[it] = ave_loss_train, ave_loss_test
         accs_train[it], accs_test[it] = acc_train, acc_test
         
         # calculated reduced stats
         model_r = reduce_model(model)
-        ave_loss_train_r, acc_train_r, mean_margin_train[it] = calc_loss_acc(train_loader, batch_size, use_cuda, model_r, criterion, calc_margin=True)
-        ave_loss_test_r, acc_test_r, mean_margin_test[0] = calc_loss_acc(test_loader, batch_size, use_cuda, model_r, criterion, calc_margin=True)
+        ave_loss_train_r, acc_train_r, _ = calc_loss_acc(train_loader, batch_size, use_cuda, model_r, criterion, calc_margin=True)
+        ave_loss_test_r, acc_test_r, _ = calc_loss_acc(test_loader, batch_size, use_cuda, model_r, criterion, calc_margin=True)
         losses_train_r[it], losses_test_r[it] = ave_loss_train_r, ave_loss_test_r
         accs_train_r[it], accs_test_r[it] = acc_train_r, acc_test_r
         
