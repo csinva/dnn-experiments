@@ -117,6 +117,57 @@ def plot_losses(results):
     plt.legend(by_label.values(), by_label.keys())
     plt.show()
 
+    
+def plot_weight_norms(results, xlim=None):
+    # params for plotting
+    skips = [('adam', 0.1)]
+    dim_dicts = {}
+    R, C = 2, 3
+    for index, row in results.iterrows():
+        # style for plotting
+        color = 'orange' if row.optimizer == 'sgd' else 'deepskyblue'
+        style = {1: '^', 0.1: '-', 0.01: '--', 0.001: '.'}[row.lr]
+        alpha = {1.0: 0.3, 0.1: 0.8, 0.01: 0.8, 0.001: .3}[row.lr]
+        
+        if not (row.optimizer, row.lr) in skips:
+
+            # dims
+            wnorms = row.weight_norms
+
+            lays = ['fc1.weight', 'fc2.weight', 'fc3.weight']
+            keys = sorted(wnorms.keys())
+            if row.optimizer == 'sgd':
+                for j in range(3):
+                    plt.subplot(R, C, 1 + j)
+                    vals = [wnorms[key][lays[j]] for key in keys]    
+                    plt.plot(keys, vals, style, color=color, alpha=alpha, label= row.optimizer + ' ' + str(row.lr))
+                    plt.title(lays[j] + ' mean l2 norm')
+            else:
+                for j in range(3):
+                    plt.subplot(R, C, 4 + j)
+                    vals = [wnorms[key][lays[j]] for key in keys]                
+                    plt.plot(keys, vals, style, color=color, alpha=alpha, label= row.optimizer + ' ' + str(row.lr))
+            
+        if not xlim is None:
+            for i in range(R * C):
+                plt.subplot(R, C, 1 + i)
+                plt.xlim((0, xlim))
+                
+    plt.subplot(R, C, 1)    
+    # remove duplicate labels
+    handles, labels = plt.gca().get_legend_handles_labels()
+    by_label = OrderedDict(zip(labels, handles))
+    plt.legend(by_label.values(), by_label.keys())
+    
+    plt.subplot(R, C, 4)    
+    # remove duplicate labels
+    handles, labels = plt.gca().get_legend_handles_labels()
+    by_label = OrderedDict(zip(labels, handles))
+    plt.legend(by_label.values(), by_label.keys())
+    
+    plt.show()
+    
+    
 def plot_dims(results, xlim=None, percent_to_explain=0.85, dim_types=['explained_var_dicts_pca', 'explained_var_dicts_rbf', 'explained_var_dicts_lap', 'explained_var_dicts_cosine']):
     # params for plotting
     plt.figure(figsize=(10, 18), dpi=100)

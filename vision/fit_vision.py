@@ -15,7 +15,7 @@ import pickle as pkl
 from torch.optim.lr_scheduler import StepLR
 from sklearn.decomposition import PCA
 from sklearn.metrics import pairwise
-
+import random
 import models
 from dim_reduction import *
 
@@ -106,6 +106,7 @@ def fit_vision(p):
     # set random seed        
     np.random.seed(p.seed) 
     torch.manual_seed(p.seed)    
+    random.seed(p.seed)
     use_cuda = torch.cuda.is_available()
     batch_size = 100
     root = oj('/scratch/users/vision/yu_dl/raaz.rsk/data', p.dset)
@@ -117,6 +118,9 @@ def fit_vision(p):
     if p.dset == 'mnist':
         trans = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (1.0,))])
         train_set = dset.MNIST(root=root, train=True, transform=trans, download=True)
+        if p.shuffle_labels:
+            print('shuffling labels...')
+            train_set.train_labels = torch.Tensor(np.random.randint(0, 10, 60000)).long()
         test_set = dset.MNIST(root=root, train=False, transform=trans, download=True)
         train_loader = torch.utils.data.DataLoader(
                          dataset=train_set,
@@ -132,6 +136,9 @@ def fit_vision(p):
             [transforms.ToTensor(),
              transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
         train_set = dset.CIFAR10(root=root, train=True, download=True, transform=trans)
+        if p.shuffle_labels:
+            print('shuffling labels...')
+            train_set.train_labels = [random.randint(0, 10) for _ in range(50000)]
         test_set = dset.CIFAR10(root=root, train=False, download=True, transform=trans)
         train_loader = torch.utils.data.DataLoader(train_set, 
                                                    batch_size=batch_size,
@@ -216,8 +223,8 @@ def fit_vision(p):
         
         # calculated reduced stats
         model_r = reduce_model(model)
-        ave_loss_train_r, acc_train_r = calc_loss_acc(train_loader, batch_size, use_cuda, model_r, criterion, calc_margin=True)
-        ave_loss_test_r, acc_test_r = calc_loss_acc(test_loader, batch_size, use_cuda, model_r, criterion, calc_margin=True)
+        ave_loss_train_r, acc_train_r, mean_margin_train[it] = calc_loss_acc(train_loader, batch_size, use_cuda, model_r, criterion, calc_margin=True)
+        ave_loss_test_r, acc_test_r, mean_margin_test[0] = calc_loss_acc(test_loader, batch_size, use_cuda, model_r, criterion, calc_margin=True)
         losses_train_r[it], losses_test_r[it] = ave_loss_train_r, ave_loss_test_r
         accs_train_r[it], accs_test_r[it] = acc_train_r, acc_test_r
         
