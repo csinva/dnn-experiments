@@ -56,7 +56,7 @@ def plot_losses(results):
     plt.figure(figsize=(12, 8), dpi=100)
     percent_to_explain = 0.90
     dim_types = ['pca', 'rbf', 'lap', 'cosine']
-    skips = [('adam', 0.1), ('sgd', 1.0)]
+    skips = [('adam', 0.1), ('sgd', 1.0)] #, ('sgd', 0.1)]
 
     dim_dicts = {}
     R, C = 2, 4
