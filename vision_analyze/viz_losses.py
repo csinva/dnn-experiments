@@ -30,29 +30,6 @@ def frac_dims_to_explain_X_percent(arr, percent_to_explain):
         dim += 1
     return dim / arr.size
 
-
-# plot all the weights
-def plot_weights(W, dset='mnist'): # W is num_filters x im_size
-    num_filters = W.shape[0]
-    if dset in ['mnist', np.nan]:
-        filts = W.reshape((num_filters, 28, 28))
-    elif dset in ['bars', 'noise']:
-        filts = W.reshape((num_filters, 8, 8))        
-    elif dset =='cifar10':
-        W = (W - np.min(W)) / (np.max(W) - np.min(W))
-        filts = W.reshape((num_filters, 3, 32, 32))
-        filts = filts.transpose((0, 2, 3, 1))
-
-    R = math.floor(np.sqrt(num_filters))
-    C = math.ceil(num_filters / R)
-    ratio = 1.0 * R/C
-    plt.figure(figsize=(6, 6*R/C))
-    for i in range(num_filters):
-        plt.subplot(R, C, i+1)
-        plt.imshow(filts[i], cmap='gray')
-        plt.axis('off')
-    plt.subplots_adjust(hspace=0, wspace=0)
-
 def plot_losses(results):
     # params for plotting
     plt.figure(figsize=(12, 8), dpi=100)
@@ -261,3 +238,5 @@ def plot_dims(results, xlim=None, percent_to_explain=0.85, dim_types=['explained
     plt.legend(by_label.values(), by_label.keys())
     plt.savefig('figs/dims.png', bbox_inches='tight')
     plt.show()
+    
+    
