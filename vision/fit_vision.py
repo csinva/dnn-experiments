@@ -155,7 +155,10 @@ def fit_vision(p):
                         batch_size=batch_size,
                         shuffle=False)
         if p.dset == 'mnist':
-            model = models.MnistNet()        
+            if p.use_conv:
+                model = models.LeNet()
+            else:
+                model = models.MnistNet()        
         else:
             model = models.MnistNet_small()
     elif p.dset == 'cifar10':

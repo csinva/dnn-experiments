@@ -34,8 +34,10 @@ def frac_dims_to_explain_X_percent(arr, percent_to_explain):
 # plot all the weights
 def plot_weights(W, dset='mnist'): # W is num_filters x im_size
     num_filters = W.shape[0]
-    if dset == 'mnist' or dset is np.nan:
+    if dset in ['mnist', np.nan]:
         filts = W.reshape((num_filters, 28, 28))
+    elif dset in ['bars', 'noise']:
+        filts = W.reshape((num_filters, 8, 8))        
     elif dset =='cifar10':
         W = (W - np.min(W)) / (np.max(W) - np.min(W))
         filts = W.reshape((num_filters, 3, 32, 32))

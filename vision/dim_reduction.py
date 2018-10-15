@@ -48,6 +48,8 @@ def get_explained_var_from_weight_dict(weight_dict, activation=False):
     for layer_name in weight_dict.keys():
         if 'weight' in layer_name or activation:
             w = weight_dict[layer_name]
+            if len(w.shape) > 2: # conv layer
+                w = w.reshape(w.shape[0] * w.shape[1], -1)
             pca = PCA(n_components=w.shape[1])
             pca.fit(w)
             explained_var_dict[layer_name] = deepcopy(pca.explained_variance_ratio_)
@@ -59,6 +61,8 @@ def get_explained_var_kernels(weight_dict, kernel='cosine', activation=False):
     for layer_name in weight_dict.keys():
         if 'weight' in layer_name or activation:
             w = weight_dict[layer_name] # w is output x input so don't transpose
+            if len(w.shape) > 2: # conv layer
+                w = w.reshape(w.shape[0] * w.shape[1], -1)            
             if kernel == 'cosine':
                 K = pairwise.cosine_similarity(w)
             elif kernel == 'rbf':
