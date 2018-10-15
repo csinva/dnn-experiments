@@ -118,6 +118,8 @@ def fit_vision(p):
     if p.dset == 'mnist':
         trans = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (1.0,))])
         train_set = dset.MNIST(root=root, train=True, transform=trans, download=True)
+        if p.input_noise:
+            train_set.train_data = torch.Tensor(np.random.randn(60000, 28, 28))
         if p.shuffle_labels:
             print('shuffling labels...')
             train_set.train_labels = torch.Tensor(np.random.randint(0, 10, 60000)).long()

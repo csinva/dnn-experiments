@@ -180,6 +180,7 @@ def plot_dims(results, xlim=None, percent_to_explain=0.85, dim_types=['explained
     # params for plotting
     plt.figure(figsize=(10, 18), dpi=100)
     skips = [('adam', 0.1)]
+#     skips = []
     
     dim_dicts = {}
     R, C = 5, 3
