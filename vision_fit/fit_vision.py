@@ -29,6 +29,11 @@ def reduce_model(model, percent_to_explain=0.85):
         if 'weight' in layer_name:
             w = weight_dict[layer_name]
             
+            wshape = w.shape
+            if len(w.shape) > 2: # conv layer
+                w = w.reshape(w.shape[0] * w.shape[1], -1)
+
+            
             # get number of components
             pca = PCA(n_components=w.shape[1])
             pca.fit(w)
@@ -41,7 +46,7 @@ def reduce_model(model, percent_to_explain=0.85):
             # actually project
             pca = PCA(n_components=dim)            
             w2 = pca.inverse_transform(pca.fit_transform(w))
-            weight_dict_new[layer_name] = torch.Tensor(w2)
+            weight_dict_new[layer_name] = torch.Tensor(w2.reshape(wshape))
             
     model_r.load_state_dict(weight_dict_new)
     return model_r
