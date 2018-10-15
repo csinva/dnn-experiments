@@ -46,32 +46,41 @@ def reduce_model(model, percent_to_explain=0.85):
     model_r.load_state_dict(weight_dict_new)
     return model_r
 
-def calc_activation_dims(use_cuda, model, dset_train, dset_test, calc_activations=0):
-    if calc_activations > 0:
-        dicts_dict = {}
-        for d in [dset_train, dset_test]:
-            dd = {}
-            loader = torch.utils.data.DataLoader(
-                     dataset=d,
-                     batch_size=calc_activations,
-                     shuffle=False)
+def get_binary_bars(numInputs, numDatapoints, probabilityOn):
+    """
+    Generate random dataset of images containing lines. Each image has a mean value of 0.
+    Inputs:
+        numInputs [int] number of pixels for each image, must have integer sqrt()
+        numDatapoints [int] number of images to generate
+        probabilityOn [float] probability of a line (row or column of 1 pixels) appearing in the image,
+            must be between 0.0 (all zeros) and 1.0 (all ones)
+    Outputs:
+        outImages [np.ndarray] batch of images, each of size
+            (numDatapoints, numInputs)
+    """
+    if probabilityOn < 0.0 or probabilityOn > 1.0:
+        assert False, "probabilityOn must be between 0.0 and 1.0"
 
-            # just use 1 big batch
-            for batch_idx, (x, target) in enumerate(loader):
-                if use_cuda:
-                    x, target = x.cuda(), target.cuda()
-                x = Variable(x, volatile=True)
-                y = model.forward_all(x)
-                y = {key: y[key].data.cpu().numpy().T for key in y.keys()}
-                if batch_idx >= 0:
-                    break
-            act_var_dict = get_explained_var_from_weight_dict(y, activation=True)
-            act_var_dict_rbf = get_explained_var_kernels(y, kernel='rbf', activation=True)       
-            if d == dset_train:
-                dicts_dict['train'] = {'pca': act_var_dict, 'rbf': act_var_dict_rbf}
-            else:
-                dicts_dict['test'] = {'pca': act_var_dict, 'rbf': act_var_dict_rbf}                
-        return dicts_dict
+    # Each image is a square, rasterized into a vector
+    outImages = np.zeros((numInputs, numDatapoints))
+    labs = np.zeros(numDatapoints, dtype=np.int)
+    numEdgePixels = int(np.sqrt(numInputs))
+    for batchIdx in range(numDatapoints):
+        outImage = np.zeros((numEdgePixels, numEdgePixels))
+        # Construct a set of random rows & columns that will have lines with probablityOn chance
+        rowIdx = [0]; colIdx = [0];
+        #while not np.any(rowIdx) and not np.any(colIdx): # uncomment to remove blank inputs
+        row_sel = np.random.uniform(low=0, high=1, size=numEdgePixels) < probabilityOn
+        col_sel = np.random.uniform(low=0, high=1, size=numEdgePixels) < probabilityOn
+        rowIdx = np.where(row_sel)
+        colIdx = np.where(col_sel)
+        if np.any(rowIdx):
+            outImage[rowIdx, :] = 1
+        if np.any(colIdx):
+            outImage[:, colIdx] = 1
+        outImages[:, batchIdx] = outImage.reshape((numInputs))
+        labs[batchIdx] = int(np.sum(row_sel) + np.sum(col_sel))
+    return outImages.T, labs
 
 def layer_norms(weight_dict):
     return {lay_name: np.linalg.norm(weight_dict[lay_name])**2 for lay_name in weight_dict.keys() if 'weight' in lay_name}
@@ -109,21 +118,34 @@ def fit_vision(p):
     random.seed(p.seed)
     use_cuda = torch.cuda.is_available()
     batch_size = 100
-    root = oj('/scratch/users/vision/yu_dl/raaz.rsk/data', p.dset)
+    if p.dset == 'cifar10':
+        root = oj('/scratch/users/vision/yu_dl/raaz.rsk/data/cifar10')
+    else:
+        root = oj('/scratch/users/vision/yu_dl/raaz.rsk/data/mnist')
     if not os.path.exists(root):
         os.mkdir(root)
     
         
     ## load mnist dataset     
-    if p.dset == 'mnist':
+    if p.dset in ['mnist', 'bars', 'noise']:
         trans = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (1.0,))])
         train_set = dset.MNIST(root=root, train=True, transform=trans, download=True)
-        if p.input_noise:
-            train_set.train_data = torch.Tensor(np.random.randn(60000, 28, 28))
+        test_set = dset.MNIST(root=root, train=False, transform=trans, download=True)
+        if p.dset == 'noise':
+            train_set.train_data = torch.Tensor(np.random.randn(60000, 8, 8))
+            train_set.train_labels = torch.Tensor(np.random.randint(0, 16, 60000)).long()
+            test_set.test_data = torch.Tensor(np.random.randn(1000, 8, 8))
+            test_set.test_labels = torch.Tensor(np.random.randint(0, 16, 60000)).long()            
+        elif p.dset == 'bars':
+            bars, labs = get_binary_bars(8 * 8, 10000, 0.3)
+            train_set.train_data = torch.Tensor(bars.reshape(-1, 8, 8)).long()
+            train_set.train_labels = torch.Tensor(labs).long()
+            bars_test, labs_test = get_binary_bars(8 * 8, 2000, 0.3)
+            test_set.test_data = torch.Tensor(bars_test.reshape(-1, 8, 8)).long()
+            test_set.test_labels = torch.Tensor(labs_test).long()
         if p.shuffle_labels:
             print('shuffling labels...')
             train_set.train_labels = torch.Tensor(np.random.randint(0, 10, 60000)).long()
-        test_set = dset.MNIST(root=root, train=False, transform=trans, download=True)
         train_loader = torch.utils.data.DataLoader(
                          dataset=train_set,
                          batch_size=batch_size,
@@ -132,7 +154,10 @@ def fit_vision(p):
                         dataset=test_set,
                         batch_size=batch_size,
                         shuffle=False)
-        model = models.MnistNet()        
+        if p.dset == 'mnist':
+            model = models.MnistNet()        
+        else:
+            model = models.MnistNet_small()
     elif p.dset == 'cifar10':
         trans = transforms.Compose(
             [transforms.ToTensor(),

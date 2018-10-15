@@ -17,15 +17,14 @@ class p:
     
     # random seed
     seed = 2
-    dset = 'mnist' # mnist or cifar10
-    input_noise = True
+    dset = 'bars' # mnist or cifar10 or noise, bars
     shuffle_labels = False
     
     calc_activations = 10000 # (0) calculate activations for diff number of data points and then do dim reduction...
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/noise' # test
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/test' # test
     
     # saving
-    if dset == 'mnist':
+    if dset in ['mnist', 'bars', 'noise']:
         saves_per_iter = 2 # really each iter is only iter / this
         saves_per_iter_end = 5 # stop saving densely after saves_per_iter * save_per_iter_end
         num_iters = saves_per_iter * saves_per_iter_end + 40 # note: tied to saves_per_iter

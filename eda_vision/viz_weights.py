@@ -115,6 +115,7 @@ def plot_losses(results):
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = OrderedDict(zip(labels, handles))
     plt.legend(by_label.values(), by_label.keys())
+    plt.savefig('figs/losses.png', bbox_inches='tight')    
     plt.show()
 
     
@@ -172,7 +173,7 @@ def plot_weight_norms_and_margin(results, xlim=None):
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = OrderedDict(zip(labels, handles))
     plt.legend(by_label.values(), by_label.keys())
-    
+    plt.savefig('figs/weight_norms_and_margin.png', bbox_inches='tight')    
     plt.show()
     
     
@@ -256,4 +257,5 @@ def plot_dims(results, xlim=None, percent_to_explain=0.85, dim_types=['explained
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = OrderedDict(zip(labels, handles))
     plt.legend(by_label.values(), by_label.keys())
+    plt.savefig('figs/dims.png', bbox_inches='tight')
     plt.show()

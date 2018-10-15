@@ -22,6 +22,7 @@ class MnistNet(nn.Module):
         self.fc1 = nn.Linear(28*28, 500)
         self.fc2 = nn.Linear(500, 256)
         self.fc3 = nn.Linear(256, 10)
+        
     def forward(self, x):
         x = x.view(-1, 28*28)
         x = F.relu(self.fc1(x))
@@ -40,7 +41,32 @@ class MnistNet(nn.Module):
 
     def name(self):
         return "mlp"
+
+class MnistNet_small(nn.Module):
+    def __init__(self):
+        super(MnistNet_small, self).__init__()
+        self.fc1 = nn.Linear(8*8, 500)
+        self.fc2 = nn.Linear(500, 256)
+        self.fc3 = nn.Linear(256, 16)
+        
+    def forward(self, x):
+        x = x.view(-1, 8*8)
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        return x
     
+    def forward_all(self, x):
+        x = x.view(-1, 8*8)
+        x1 = self.fc1(x)
+        x2 = F.relu(x1)
+        x3 = self.fc2(x2)
+        x4 = F.relu(x3)
+        x5 = self.fc3(x4)
+        return {'fc1': x1, 'relu1': x2, 'fc2': x3, 'relu2': x4, 'fc3': x5}
+
+    def name(self):
+        return "mlp_small"
     
 ## network
 class Cifar10Net(nn.Module):
