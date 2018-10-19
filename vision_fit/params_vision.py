@@ -17,14 +17,17 @@ class p:
     
     # random seed
     seed = 2
-    dset = 'mnist' # mnist or cifar10 or noise, bars
+    dset = 'cifar10' # mnist or cifar10 or noise, bars
     shuffle_labels = False
-    use_conv = True
+    use_conv = False
+    
+    # freezing
+    freeze_all_but_first = False
     
     calc_activations = 10000 # (0) calculate activations for diff number of data points and then do dim reduction...
     if use_conv:
         calc_activations = 1000
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/mnist_conv' # test
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/cifar10' # test
     
     # saving
     if dset in ['mnist', 'bars', 'noise']:

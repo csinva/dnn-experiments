@@ -31,9 +31,9 @@ def reduce_model(model, percent_to_explain=0.85):
             
             wshape = w.shape
             if len(w.shape) > 2: # conv layer
+                w = w.cpu().numpy()
                 w = w.reshape(w.shape[0] * w.shape[1], -1)
 
-            
             # get number of components
             pca = PCA(n_components=w.shape[1])
             pca.fit(w)
@@ -193,6 +193,12 @@ def fit_vision(p):
     scheduler = StepLR(optimizer, step_size=p.step_size_optimizer, gamma=p.gamma_optimizer)
     scheduler2 = StepLR(optimizer, step_size=p.step_size_optimizer_2, gamma=p.gamma_optimizer2)
 
+    # freeze things
+    if p.freeze_all_but_first:
+        print('freezing...')
+        for name, param in model.named_parameters():
+            if not 'fc1' in name:
+                param.requires_grad = False    
         
     # things to record
     weights, weights_first10, weight_norms = {}, {}, {}
@@ -220,12 +226,10 @@ def fit_vision(p):
     act_var_dicts_test.append(act_var_dicts['test']['pca'])
     act_var_dicts_train_rbf.append(act_var_dicts['train']['rbf'])
     act_var_dicts_test_rbf.append(act_var_dicts['test']['rbf'])
-    ave_loss_train, acc_train, mean_margin_train[0] = calc_loss_acc(train_loader, batch_size, use_cuda, model, criterion, calc_margin=True)
-    ave_loss_test, acc_test, mean_margin_test[0] = calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion, calc_margin=True)
+    ave_loss_train, accs_train[0], mean_margin_train[0] = calc_loss_acc(train_loader, batch_size, use_cuda, model, criterion, calc_margin=True)
+    ave_loss_test, accs_test[0], mean_margin_test[0] = calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion, calc_margin=True)
     losses_train[0] = ave_loss_train   
     losses_test[0] = ave_loss_test
-    accs_train[0] = acc_train
-    accs_test[0] = acc_test
 
         
     # run    
@@ -253,8 +257,8 @@ def fit_vision(p):
             
         # calc stats and record
         print('it', it)
-        ave_loss_train, ave_loss_test, mean_margin_train[it] = calc_loss_acc(train_loader, batch_size, use_cuda, model, criterion, calc_margin=True)
-        acc_train, acc_test, mean_margin_test[it] = calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion, calc_margin=True)        
+        ave_loss_train, acc_train, mean_margin_train[it] = calc_loss_acc(train_loader, batch_size, use_cuda, model, criterion, calc_margin=True)
+        ave_loss_test, acc_test, mean_margin_test[it] = calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion, calc_margin=True)        
         losses_train[it], losses_test[it] = ave_loss_train, ave_loss_test
         accs_train[it], accs_test[it] = acc_train, acc_test
         

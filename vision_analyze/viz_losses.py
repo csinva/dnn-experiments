@@ -159,7 +159,7 @@ def plot_weight_norms_and_margin(results, xlim=None):
 def plot_dims(results, xlim=None, percent_to_explain=0.85, dim_types=['explained_var_dicts_pca', 'explained_var_dicts_rbf', 'explained_var_dicts_lap', 'explained_var_dicts_cosine']):
     # params for plotting
     plt.figure(figsize=(10, 18), dpi=100)
-    skips = [('adam', 0.1)]
+    skips = [('adam', 0.1), ('adam', 0.01), ('adam', 0.001)]
 #     skips = []
     
     dim_dicts = {}
