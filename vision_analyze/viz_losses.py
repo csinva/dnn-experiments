@@ -30,7 +30,7 @@ def frac_dims_to_explain_X_percent(arr, percent_to_explain):
         dim += 1
     return dim / arr.size
 
-def plot_losses(results):
+def plot_losses(results, out_dir='figs', figname='explained'):
     # params for plotting
     plt.figure(figsize=(12, 8), dpi=100)
     percent_to_explain = 0.90
@@ -94,11 +94,11 @@ def plot_losses(results):
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = OrderedDict(zip(labels, handles))
     plt.legend(by_label.values(), by_label.keys())
-    plt.savefig('figs/losses.png', bbox_inches='tight')    
+    plt.savefig(oj(out_dir, 'losses_' + figname + '.png'), bbox_inches='tight')    
     plt.show()
 
     
-def plot_weight_norms_and_margin(results, xlim=None):
+def plot_weight_norms_and_margin(results, xlim=None, out_dir='figs'):
     # params for plotting
     skips = [('adam', 0.1)]
     dim_dicts = {}
@@ -152,11 +152,11 @@ def plot_weight_norms_and_margin(results, xlim=None):
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = OrderedDict(zip(labels, handles))
     plt.legend(by_label.values(), by_label.keys())
-    plt.savefig('figs/weight_norms_and_margin.png', bbox_inches='tight')    
+    plt.savefig(oj(out_dir, 'weight_norms_and_margin.png'), bbox_inches='tight')    
     plt.show()
     
     
-def plot_dims(results, xlim=None, percent_to_explain=0.85, dim_types=['explained_var_dicts_pca', 'explained_var_dicts_rbf', 'explained_var_dicts_lap', 'explained_var_dicts_cosine']):
+def plot_dims(results, out_dir='figs', xlim=None, percent_to_explain=0.85, dim_types=['explained_var_dicts_pca', 'explained_var_dicts_rbf', 'explained_var_dicts_lap', 'explained_var_dicts_cosine']):
     # params for plotting
     plt.figure(figsize=(10, 18), dpi=100)
     skips = [('adam', 0.1), ('adam', 0.01), ('adam', 0.001)]
@@ -236,7 +236,7 @@ def plot_dims(results, xlim=None, percent_to_explain=0.85, dim_types=['explained
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = OrderedDict(zip(labels, handles))
     plt.legend(by_label.values(), by_label.keys())
-    plt.savefig('figs/dims.png', bbox_inches='tight')
+    plt.savefig(oj(out_dir, 'dims.png'), bbox_inches='tight')
     plt.show()
     
     
