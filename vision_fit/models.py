@@ -57,7 +57,7 @@ class LinearNet(nn.Module):
         self.input_size = input_size
         self.output_size = output_size
         self.fc = nn.ModuleList([nn.Linear(input_size, layers_size)])
-        self.fc.extend([nn.Linear(layers_size, layers_size) for i in range(1, num_layers - 2)])
+        self.fc.extend([nn.Linear(layers_size, layers_size) for i in range(num_layers - 2)])
         self.fc.append(nn.Linear(layers_size, output_size))
 
     def forward(self, x):
@@ -71,7 +71,7 @@ class LinearNet(nn.Module):
         out = {}
         for i in range(len(self.fc) - 1):
             y = F.relu(self.fc[i](y))
-            out['fc' + str(i + 1)] = deepcopy(y)
+            out['fc.' + str(i)] = deepcopy(y)
         out['fc' + str(len(self.fc))] = deepcopy(self.fc[-1](y))
         return out
                 

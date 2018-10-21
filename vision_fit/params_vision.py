@@ -1,28 +1,14 @@
 import numpy as np
 from numpy.random import randint
 
-class p:
-    # optimizer params (sweep)
-    optimizer = 'sgd' # 'sgd' or 'adam'
-    lr = 0.01 # default 0.01
-    seed = 2    
-    
-    # steps
-    step_size_optimizer = 1
-    gamma_optimizer = 0.98 # remember to change (mnist run at .98 - might be too high)
-    
-    # adam-specific
-    beta1 = 0.9 # close to 0.9
-    beta2 = 0.999 # close to 0.999
-    eps = 1e-8 # close to 1e-8
-    
+class p:   
     # crucial params
     dset = 'mnist' # mnist or cifar10 or noise, bars
     shuffle_labels = False
-    use_conv = False
-    use_num_hidden = 6 # set to 0 or False to ignore
+    use_conv = True
+    use_num_hidden = 3 # set to 0 or False to ignore
     freeze_all_but_first = False
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/mnist_10lay' # test
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/mnist_conv' # test
     
     # saving
     if dset in ['mnist', 'bars', 'noise']:
@@ -45,6 +31,21 @@ class p:
         step_size_optimizer_2 = 1 # only does this for large steps        
         gamma_optimizer2 = 1        
         out_dir = out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/test' # test
+    
+    # optimizer params (sweep)
+    optimizer = 'sgd' # 'sgd' or 'adam'
+    lr = 0.01 # default 0.01
+    seed = 2    
+    
+    # steps
+    step_size_optimizer = 1
+    gamma_optimizer = 0.98 # remember to change (mnist run at .98 - might be too high)
+    
+    # adam-specific
+    beta1 = 0.9 # close to 0.9
+    beta2 = 0.999 # close to 0.999
+    eps = 1e-8 # close to 1e-8
+    
     
     # its
     calc_activations = 5000 # (0) calculate activations for diff number of data points and then do dim reduction...

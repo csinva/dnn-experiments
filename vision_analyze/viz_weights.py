@@ -47,7 +47,7 @@ def plot_weights(W, dset='mnist'): # W is num_filters x im_size
         plt.axis('off')
     plt.subplots_adjust(hspace=0, wspace=0)
     
-def save_final_weights(results_weights, out_dir='figs'):
+def save_final_weights(results_weights, results, out_dir='figs'):
     for optimizer in set(results_weights.optimizer): # 'sgd', 'adam'
         for lr in set(results_weights.lr): # lr 0.1, 0.01, 0.001
             try:
@@ -61,11 +61,15 @@ def save_final_weights(results_weights, out_dir='figs'):
                 #     plot_weights(w)
 
                 print('final', optimizer, 'lr=' + str(lr))
-                w = weight_dict[max_key]['fc1.weight']
+                if not 'weight_names' in list(results): # this is old, remove after some reruns
+                    weight_key = 'fc1.weight'
+                else:
+                    weight_key = results.weight_names.iloc[0][0]
+                w = weight_dict[max_key][weight_key]
                 plot_weights(w, run.dset)
                 plt.savefig(oj(out_dir, optimizer + '_' + 'lr=' + str(lr) + '.pdf'), 
                                dpi=300, bbox_inches='tight')
-            except Exception as e: print(e)
+            except Exception as e: print('err', e)
                 
 def save_weight_evol(results_weights, out_dir='figs'):
     print('save weight evol....')
@@ -91,7 +95,6 @@ def save_weight_evol(results_weights, out_dir='figs'):
                 plt.figure(figsize=(C, R))
                 for r in range(R):    
                     ws_t = ws[ts[r]]
-                    print('ws_t.shape', ws_t.shape)
                     for c in range(C):
                         plt.subplot(R, C, r * C + c + 1)
                         dim = int(np.sqrt(ws_t[c].size))

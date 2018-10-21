@@ -55,8 +55,14 @@ for folder in folders:
         # act_var_dicts_test_pca (might not have pca), act_var_dicts_test_rbf
         all_w = ['explained_var_dicts_pca', 'explained_var_dicts_rbf', 'explained_var_dicts_lap', 'explained_var_dicts_cosine']
         acts = ['act_var_dicts_train_pca', 'act_var_dicts_test_pca', 'act_var_dicts_train_rbf', 'act_var_dicts_test_rbf']
-        viz_losses.plot_dims(results, out_dir=save_dir, xlim=None, dim_types=acts, figname='explained')
-        viz_losses.plot_dims(results, out_dir=save_dir, xlim=None, dim_types=all_w, figname='acts')
+        try:
+            viz_losses.plot_dims(results, out_dir=save_dir, xlim=None, dim_types=all_w, figname='ws')
+        except:
+            print('explained failed', folder, sys.exc_info()[0])
+        try:
+            viz_losses.plot_dims(results, out_dir=save_dir, xlim=None, dim_types=acts, figname='acts')
+        except:
+            print('act failed', folder, sys.exc_info()[0])
 
 
         # note these norms were squared

@@ -116,11 +116,14 @@ def calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion, calc_marg
     else:
         return tot_loss_test / n_test, correct_cnt * 1.0 / n_test
 
-def fit_vision(p):
+def seed(p):
     # set random seed        
     np.random.seed(p.seed) 
     torch.manual_seed(p.seed)    
     random.seed(p.seed)
+    
+def fit_vision(p):
+    seed(p)
     use_cuda = torch.cuda.is_available()
     batch_size = 100
     if p.dset == 'cifar10':
@@ -148,9 +151,6 @@ def fit_vision(p):
             bars_test, labs_test = get_binary_bars(8 * 8, 2000, 0.3)
             test_set.test_data = torch.Tensor(bars_test.reshape(-1, 8, 8)).long()
             test_set.test_labels = torch.Tensor(labs_test).long()
-        if p.shuffle_labels:
-            print('shuffling labels...')
-            train_set.train_labels = torch.Tensor(np.random.randint(0, 10, 60000)).long()
         train_loader = torch.utils.data.DataLoader(
                          dataset=train_set,
                          batch_size=batch_size,
@@ -168,14 +168,16 @@ def fit_vision(p):
                 model = models.MnistNet()        
         else:
             model = models.MnistNet_small()
+            
+        if p.shuffle_labels:
+            train_set.train_labels = torch.Tensor(np.random.randint(0, 10, 60000)).long()
+
     elif p.dset == 'cifar10':
         trans = transforms.Compose(
             [transforms.ToTensor(),
              transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
         train_set = dset.CIFAR10(root=root, train=True, download=True, transform=trans)
-        if p.shuffle_labels:
-            print('shuffling labels...')
-            train_set.train_labels = [random.randint(0, 10) for _ in range(50000)]
+
         test_set = dset.CIFAR10(root=root, train=False, download=True, transform=trans)
         train_loader = torch.utils.data.DataLoader(train_set, 
                                                    batch_size=batch_size,
@@ -183,25 +185,31 @@ def fit_vision(p):
         test_loader = torch.utils.data.DataLoader(test_set, 
                                                   batch_size=batch_size,
                                                   shuffle=False)
-        model = models.Cifar10Net()              
+        model = models.Cifar10Net()        
+        
+        if p.shuffle_labels:
+            print('shuffling labels...')
+            train_set.train_labels = [random.randint(0, 10) for _ in range(50000)]
     
+    
+    # optimization
+    if p.freeze_all_but_first:
+        print('freezing...')
+        for name, param in model.named_parameters():
+#             print(name, param.requires_grad)
+            if not ('fc1' in name or 'fc.0' in name or 'conv1' in name):
+                param.requires_grad = False 
+            print(name, param.requires_grad)
     criterion = nn.CrossEntropyLoss()
     if use_cuda:
         model = model.cuda()
     if p.optimizer == 'sgd':    
-        optimizer = optim.SGD(model.parameters(), lr=p.lr)
+        optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=p.lr)
     elif p.optimizer == 'adam':
-        optimizer = optim.Adam(model.parameters(), lr=p.lr, betas=(p.beta1, p.beta2), eps=1e-8)
+        optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=p.lr, betas=(p.beta1, p.beta2), eps=1e-8)
     scheduler = StepLR(optimizer, step_size=p.step_size_optimizer, gamma=p.gamma_optimizer)
-    scheduler2 = StepLR(optimizer, step_size=p.step_size_optimizer_2, gamma=p.gamma_optimizer2)
+    scheduler2 = StepLR(optimizer, step_size=p.step_size_optimizer_2, gamma=p.gamma_optimizer2)   
 
-    # freeze things
-    if p.freeze_all_but_first:
-        print('freezing...')
-        for name, param in model.named_parameters():
-            if not 'fc1' in name:
-                param.requires_grad = False    
-        
     # things to record
     weights_first_str = models.get_weight_names(model)[0]
     weights, weights_first10, weight_norms = {}, {}, {}
@@ -229,10 +237,8 @@ def fit_vision(p):
     act_var_dicts_test.append(act_var_dicts['test']['pca'])
     act_var_dicts_train_rbf.append(act_var_dicts['train']['rbf'])
     act_var_dicts_test_rbf.append(act_var_dicts['test']['rbf'])
-    ave_loss_train, accs_train[0], mean_margin_train[0] = calc_loss_acc(train_loader, batch_size, use_cuda, model, criterion, calc_margin=True)
-    ave_loss_test, accs_test[0], mean_margin_test[0] = calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion, calc_margin=True)
-    losses_train[0] = ave_loss_train   
-    losses_test[0] = ave_loss_test
+    losses_train[0], accs_train[0], mean_margin_train[0] = calc_loss_acc(train_loader, batch_size, use_cuda, model, criterion, calc_margin=True)
+    losses_test[0], accs_test[0], mean_margin_test[0] = calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion, calc_margin=True)
 
         
     # run    
@@ -277,7 +283,7 @@ def fit_vision(p):
         if it % p.save_all_weights_freq == p.save_all_weights_mod or it == p.num_iters - 1:
             weights[p.its[it]] = weight_dict 
         weights_first10[p.its[it]] = deepcopy(model.state_dict()[weights_first_str][:20].cpu().numpy())            
-        weight_norms[p.its[it]] = layer_norms(model.state_dict())        
+        weight_norms[p.its[it]] = layer_norms(model.state_dict())    
         explained_var_dicts.append(get_explained_var_from_weight_dict(weight_dict))    
         explained_var_dicts_cosine.append(get_explained_var_kernels(weight_dict, 'cosine'))
         explained_var_dicts_rbf.append(get_explained_var_kernels(weight_dict, 'rbf'))
