@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')
 import os
 from os.path import join as oj
 import sys, time
@@ -49,7 +51,7 @@ def save_final_weights(results_weights, out_dir='figs'):
     for optimizer in set(results_weights.optimizer): # 'sgd', 'adam'
         for lr in set(results_weights.lr): # lr 0.1, 0.01, 0.001
             try:
-                runs = results_weights[results.lr==lr]
+                runs = results_weights[results_weights.lr==lr]
                 runs = runs[runs.optimizer==optimizer]
                 run = runs.iloc[0]
                 weight_dict = run.weights
@@ -66,40 +68,45 @@ def save_final_weights(results_weights, out_dir='figs'):
             except Exception as e: print(e)
                 
 def save_weight_evol(results_weights, out_dir='figs'):
+    print('save weight evol....')
     # track weight evolution
     results_weights.weights_first10
 
     # optimizer = 'adam'
     # lr = 0.1
-    for optimizer in ['sgd']: # 'sgd', 'adam'
-        for lr in [0.1]: # lr 0.1, 0.01, 0.001
-            runs = results_weights[results.lr==lr]
-            runs = runs[runs.optimizer==optimizer]
-            run = runs.iloc[0]
-            ws = run.weights_first10
-            ts = sorted(ws.keys())
+    for optimizer in set(results_weights.optimizer): # ['sgd']: # 'sgd', 'adam'
+        for lr in set(results_weights.lr): # [0.1]: # lr 0.1, 0.01, 0.001
+            try:
+                runs = results_weights[results_weights.lr==lr]
+                runs = runs[runs.optimizer==optimizer]
+                run = runs.iloc[0]
+                ws = run.weights_first10
+                ts = sorted(ws.keys())
 
-            # select which ts to plot
-            ts = ts[:10] + [10, 20, 30, 40]
-            print('ts:', ts)
+                # select which ts to plot
+                ts = ts[:10] + [10, 20, 30, 40]
+                print('ts:', ts)
 
-            R, C = len(ts), ws[ts[0]].shape[0]
-            plt.figure(figsize=(C, R))
-            for r in range(R):    
-                ws_t = ws[ts[r]]
-                for c in range(C):
-                    plt.subplot(R, C, r * C + c + 1)
-                    dim = int(np.sqrt(ws_t[c].size))
-                    im = ws_t[c].reshape(dim, dim)
-                    plt.imshow(im)
+                R, C = len(ts), ws[ts[0]].shape[0]
+                plt.figure(figsize=(C, R))
+                for r in range(R):    
+                    ws_t = ws[ts[r]]
+                    print('ws_t.shape', ws_t.shape)
+                    for c in range(C):
+                        plt.subplot(R, C, r * C + c + 1)
+                        dim = int(np.sqrt(ws_t[c].size))
+                        im = ws_t[c].reshape(dim, dim)
+                        plt.imshow(im)
 
-                    if c == 0:                
-                        plt.ylabel(ts[r])
-                        plt.yticks([])
-                        plt.xticks([])
-                    else:
-                        plt.axis('off')
-            plt.subplots_adjust(hspace=0, wspace=0)
-            plt.savefig(oj(out_dir, 'evol_' + optimizer + '_' + 'lr=' + str(lr) + '.pdf'), 
-                                   dpi=300, bbox_inches='tight')
-            plt.close()
+                        if c == 0:                
+                            plt.ylabel(ts[r])
+                            plt.yticks([])
+                            plt.xticks([])
+                        else:
+                            plt.axis('off')
+                plt.subplots_adjust(hspace=0, wspace=0)
+                plt.savefig(oj(out_dir, 'evol_' + optimizer + '_' + 'lr=' + str(lr) + '.pdf'), 
+                                       dpi=300, bbox_inches='tight')
+                plt.close()
+            except:
+                pass

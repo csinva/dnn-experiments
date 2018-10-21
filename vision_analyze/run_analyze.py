@@ -1,12 +1,11 @@
+import matplotlib
+matplotlib.use('Agg')
 import os
 from os.path import join as oj
 import sys, time
 sys.path.insert(1, oj(sys.path[0], '..'))  # insert parent path
 import seaborn as sns
 import numpy as np
-
-import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from copy import deepcopy
@@ -35,43 +34,46 @@ folders = 'bars'
 folders = os.listdir(out_dir_main)
 for folder in folders:
     print(folder)
-    save_dir = 'figs_' + folder
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
+    try:
+        save_dir = 'figs_' + folder
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
 
 
-    # depending on how much is saved, this may take a while
-    out_dir = oj(out_dir_main, folder)
-    fnames = sorted(os.listdir(out_dir))
-    results_list = [pd.Series(pkl.load(open(oj(out_dir, fname), "rb"))) for fname in fnames if not fname.startswith('weights')]
-    results = pd.concat(results_list, axis=1).T.infer_objects()
-    # results.describe()
-    # results.head()
-    # results.dtypes
+        # depending on how much is saved, this may take a while
+        out_dir = oj(out_dir_main, folder)
+        fnames = sorted(os.listdir(out_dir))
+        results_list = [pd.Series(pkl.load(open(oj(out_dir, fname), "rb"))) for fname in fnames if not fname.startswith('weights')]
+        results = pd.concat(results_list, axis=1).T.infer_objects()
+        # results.describe()
+        # results.head()
+        # results.dtypes
 
 
-    viz_losses.plot_losses(results, out_dir=save_dir)
-    # ['explained_var_dicts_pca', 'explained_var_dicts_rbf', 'explained_var_dicts_lap', 'explained_var_dicts_cosine']
-    # act_var_dicts_test_pca (might not have pca), act_var_dicts_test_rbf
-    all_w = ['explained_var_dicts_pca', 'explained_var_dicts_rbf', 'explained_var_dicts_lap', 'explained_var_dicts_cosine']
-    acts = ['act_var_dicts_train_pca', 'act_var_dicts_test_pca', 'act_var_dicts_train_rbf', 'act_var_dicts_test_rbf']
-    viz_losses.plot_dims(results, out_dir=save_dir, xlim=None, dim_types=acts, figname='explained')
-    viz_losses.plot_dims(results, out_dir=save_dir, xlim=None, dim_types=all_w, figname='acts')
+        viz_losses.plot_losses(results, out_dir=save_dir)
+        # ['explained_var_dicts_pca', 'explained_var_dicts_rbf', 'explained_var_dicts_lap', 'explained_var_dicts_cosine']
+        # act_var_dicts_test_pca (might not have pca), act_var_dicts_test_rbf
+        all_w = ['explained_var_dicts_pca', 'explained_var_dicts_rbf', 'explained_var_dicts_lap', 'explained_var_dicts_cosine']
+        acts = ['act_var_dicts_train_pca', 'act_var_dicts_test_pca', 'act_var_dicts_train_rbf', 'act_var_dicts_test_rbf']
+        viz_losses.plot_dims(results, out_dir=save_dir, xlim=None, dim_types=acts, figname='explained')
+        viz_losses.plot_dims(results, out_dir=save_dir, xlim=None, dim_types=all_w, figname='acts')
 
 
-    # note these norms were squared
-    # calculated via np.linalg.norm(weight_dict[lay_name])**2
-    viz_losses.plot_weight_norms_and_margin(results, out_dir=save_dir)    
+        # note these norms were squared
+        # calculated via np.linalg.norm(weight_dict[lay_name])**2
+        viz_losses.plot_weight_norms_and_margin(results, out_dir=save_dir)    
 
 
-    # depending on how much is saved, this may take a while
-    weights_list = [pd.Series(pkl.load(open(oj(out_dir, fname), "rb"))) for fname in fnames if fname.startswith('weights')]
-    results_weights = pd.concat(weights_list, axis=1).T.infer_objects()
-    # results.head()
+        # depending on how much is saved, this may take a while
+        weights_list = [pd.Series(pkl.load(open(oj(out_dir, fname), "rb"))) for fname in fnames if fname.startswith('weights')]
+        results_weights = pd.concat(weights_list, axis=1).T.infer_objects()
+        # results.head()
 
-    viz_weights.save_final_weights(results_weights, out_dir=save_dir)
+        viz_weights.save_final_weights(results_weights, out_dir=save_dir)
 
-    viz_weights.save_weight_evol(results_weights, out_dir=save_dir)
+        viz_weights.save_weight_evol(results_weights, out_dir=save_dir)
+    except:
+        print("Unexpected error:", folder, sys.exc_info()[0])
 
 
 

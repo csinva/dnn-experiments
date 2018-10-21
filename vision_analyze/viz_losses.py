@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')
 import os
 from os.path import join as oj
 import sys, time
@@ -30,7 +32,7 @@ def frac_dims_to_explain_X_percent(arr, percent_to_explain):
         dim += 1
     return dim / arr.size
 
-def plot_losses(results, out_dir='figs', figname='explained'):
+def plot_losses(results, out_dir='figs'):
     # params for plotting
     plt.figure(figsize=(12, 8), dpi=100)
     percent_to_explain = 0.90
@@ -94,7 +96,7 @@ def plot_losses(results, out_dir='figs', figname='explained'):
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = OrderedDict(zip(labels, handles))
     plt.legend(by_label.values(), by_label.keys())
-    plt.savefig(oj(out_dir, 'losses_' + figname + '.png'), bbox_inches='tight')    
+    plt.savefig(oj(out_dir, 'losses' + '.png'), bbox_inches='tight')    
     plt.show()
 
     
@@ -103,6 +105,7 @@ def plot_weight_norms_and_margin(results, xlim=None, out_dir='figs'):
     skips = [('adam', 0.1)]
     dim_dicts = {}
     R, C = 3, 3
+    plt.figure(figsize=(10, 18), dpi=100)
     for index, row in results.iterrows():
         # style for plotting
         color = 'orange' if row.optimizer == 'sgd' else 'deepskyblue'
@@ -127,6 +130,7 @@ def plot_weight_norms_and_margin(results, xlim=None, out_dir='figs'):
                     plt.subplot(R, C, 4 + j)
                     vals = [wnorms[key][lays[j]] for key in keys]                
                     plt.plot(keys, vals, style, color=color, alpha=alpha, label= row.optimizer + ' ' + str(row.lr))
+                    plt.title(lays[j] + ' mean l2 norm')                    
             
             plt.subplot(R, C, 7)
             plt.plot(row.its, row.mean_margin_train, style, color=color, alpha=alpha, label= row.optimizer + ' ' + str(row.lr))
@@ -134,7 +138,8 @@ def plot_weight_norms_and_margin(results, xlim=None, out_dir='figs'):
             
             plt.subplot(R, C, 8)
             plt.plot(row.its, row.mean_margin_test, style, color=color, alpha=alpha, label= row.optimizer + ' ' + str(row.lr))
-            plt.ylabel('mean test margin')            
+            plt.ylabel('mean test margin')   
+            
             
         if not xlim is None:
             for i in range(R * C):
@@ -156,7 +161,7 @@ def plot_weight_norms_and_margin(results, xlim=None, out_dir='figs'):
     plt.show()
     
     
-def plot_dims(results, out_dir='figs', xlim=None, percent_to_explain=0.85, dim_types=['explained_var_dicts_pca', 'explained_var_dicts_rbf', 'explained_var_dicts_lap', 'explained_var_dicts_cosine']):
+def plot_dims(results, out_dir='figs', xlim=None, percent_to_explain=0.85, figname='explained', dim_types=['explained_var_dicts_pca', 'explained_var_dicts_rbf', 'explained_var_dicts_lap', 'explained_var_dicts_cosine']):
     # params for plotting
     plt.figure(figsize=(10, 18), dpi=100)
     skips = [('adam', 0.1), ('adam', 0.01), ('adam', 0.001)]
@@ -236,7 +241,7 @@ def plot_dims(results, out_dir='figs', xlim=None, percent_to_explain=0.85, dim_t
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = OrderedDict(zip(labels, handles))
     plt.legend(by_label.values(), by_label.keys())
-    plt.savefig(oj(out_dir, 'dims.png'), bbox_inches='tight')
+    plt.savefig(oj(out_dir, 'dims_' + figname + '.png'), bbox_inches='tight')
     plt.show()
     
     

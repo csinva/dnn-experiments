@@ -3,7 +3,7 @@ from slurmpy import Slurm
 
 # note mnist 10 epochs sgd takes ~4 mins, adam takes ~15 mins
 params_to_vary = {
-    'seed': range(2),
+    'seed': range(3),
     'lr': [0.001, 0.01, 0.1],
     'optimizer': ['sgd', 'adam']
 }

@@ -162,6 +162,8 @@ def fit_vision(p):
         if p.dset == 'mnist':
             if p.use_conv:
                 model = models.LeNet()
+            elif p.use_num_hidden > 0:
+                model = models.LinearNet(28*28, p.use_num_hidden, 256, 10)
             else:
                 model = models.MnistNet()        
         else:
@@ -201,6 +203,7 @@ def fit_vision(p):
                 param.requires_grad = False    
         
     # things to record
+    weights_first_str = models.get_weight_names(model)[0]
     weights, weights_first10, weight_norms = {}, {}, {}
     losses_train, losses_test = np.zeros(p.num_iters), np.zeros(p.num_iters)
     accs_train, accs_test = np.zeros(p.num_iters), np.zeros(p.num_iters)
@@ -215,7 +218,7 @@ def fit_vision(p):
     weight_dict = deepcopy({x[0]:x[1].data.cpu().numpy() for x in model.named_parameters()})
     if p.save_all_weights_mod == 0:
         weights[0] = weight_dict
-        weights_first10[0] = deepcopy(model.state_dict()['fc1.weight'][:20].cpu().numpy())
+        weights_first10[0] = deepcopy(model.state_dict()[weights_first_str][:20].cpu().numpy())
     weight_norms[0] = layer_norms(model.state_dict()) 
     explained_var_dicts.append(get_explained_var_from_weight_dict(weight_dict))    
     explained_var_dicts_cosine.append(get_explained_var_kernels(weight_dict, 'cosine'))
@@ -273,7 +276,7 @@ def fit_vision(p):
         weight_dict = deepcopy({x[0]:x[1].data.cpu().numpy() for x in model.named_parameters()})
         if it % p.save_all_weights_freq == p.save_all_weights_mod or it == p.num_iters - 1:
             weights[p.its[it]] = weight_dict 
-        weights_first10[p.its[it]] = deepcopy(model.state_dict()['fc1.weight'][:20].cpu().numpy())            
+        weights_first10[p.its[it]] = deepcopy(model.state_dict()[weights_first_str][:20].cpu().numpy())            
         weight_norms[p.its[it]] = layer_norms(model.state_dict())        
         explained_var_dicts.append(get_explained_var_from_weight_dict(weight_dict))    
         explained_var_dicts_cosine.append(get_explained_var_kernels(weight_dict, 'cosine'))
@@ -296,7 +299,9 @@ def fit_vision(p):
                'accs_test': accs_test, 'accs_train': accs_train,
                'losses_train_r': losses_train_r, 'losses_test_r': losses_test_r, 
                'accs_test_r': accs_test_r, 'accs_train_r': accs_train_r,  
-               'weight_norms': weight_norms, 'mean_margin_train': mean_margin_train, 
+               'weight_norms': weight_norms, 
+               'weight_names': models.get_weight_names(model),
+               'mean_margin_train': mean_margin_train,
                'mean_margin_test': mean_margin_test,
                'explained_var_dicts_pca': explained_var_dicts, 
                'explained_var_dicts_cosine': explained_var_dicts_cosine, 
