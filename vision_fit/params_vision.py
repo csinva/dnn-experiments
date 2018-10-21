@@ -5,10 +5,10 @@ class p:
     # crucial params
     dset = 'mnist' # mnist or cifar10 or noise, bars
     shuffle_labels = False
-    use_conv = True
-    use_num_hidden = 3 # set to 0 or False to ignore
+    use_conv = False
+    use_num_hidden = 15 # set to 0 or False to ignore
     freeze_all_but_first = False
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/mnist_conv' # test
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/mnist_15' # test
     
     # saving
     if dset in ['mnist', 'bars', 'noise']:

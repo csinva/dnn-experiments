@@ -28,10 +28,9 @@ warnings.filterwarnings("ignore")
 # plot all the weights
 def plot_weights(W, dset='mnist'): # W is num_filters x im_size
     num_filters = W.shape[0]
-    if dset in ['mnist', np.nan]:
-        filts = W.reshape((num_filters, 28, 28))
-    elif dset in ['bars', 'noise']:
-        filts = W.reshape((num_filters, 8, 8))        
+    d = int(np.sqrt(W.size / num_filters))
+    if dset in ['mnist', np.nan, 'bars', 'noise']:
+        filts = W.reshape((num_filters, d, d))        
     elif dset =='cifar10':
         W = (W - np.min(W)) / (np.max(W) - np.min(W))
         filts = W.reshape((num_filters, 3, 32, 32))
@@ -60,7 +59,7 @@ def save_final_weights(results_weights, results, out_dir='figs'):
                 #     w = ws[min_key]['fc1.weight']
                 #     plot_weights(w)
 
-                print('final', optimizer, 'lr=' + str(lr))
+#                 print('final', optimizer, 'lr=' + str(lr))
                 if not 'weight_names' in list(results): # this is old, remove after some reruns
                     weight_key = 'fc1.weight'
                 else:
@@ -69,10 +68,10 @@ def save_final_weights(results_weights, results, out_dir='figs'):
                 plot_weights(w, run.dset)
                 plt.savefig(oj(out_dir, optimizer + '_' + 'lr=' + str(lr) + '.pdf'), 
                                dpi=300, bbox_inches='tight')
-            except Exception as e: print('err', e)
+            except Exception as e: print('err', optimizer, lr, e)
                 
 def save_weight_evol(results_weights, out_dir='figs'):
-    print('save weight evol....')
+#     print('save weight evol....')
     # track weight evolution
     results_weights.weights_first10
 
@@ -88,8 +87,8 @@ def save_weight_evol(results_weights, out_dir='figs'):
                 ts = sorted(ws.keys())
 
                 # select which ts to plot
-                ts = ts[:10] + [10, 20, 30, 40]
-                print('ts:', ts)
+                ts = ts[:10] + [3, 5, 7, 10, 20, 30, 40]
+#                 print('ts:', ts)
 
                 R, C = len(ts), ws[ts[0]].shape[0]
                 plt.figure(figsize=(C, R))

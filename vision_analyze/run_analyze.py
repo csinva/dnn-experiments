@@ -30,7 +30,7 @@ import viz_losses, viz_weights
 
 out_dir_main = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd'
 print(os.listdir(out_dir_main))
-folders = 'bars'
+# folders = 'bars'
 folders = os.listdir(out_dir_main)
 for folder in folders:
     print(folder)
@@ -60,6 +60,10 @@ for folder in folders:
         except:
             print('explained failed', folder, sys.exc_info()[0])
         try:
+            viz_losses.plot_dims_flexible(results, out_dir=save_dir, xlim=None, dim_types=all_w, figname='ws')
+        except:
+            print('explained flexible failed', folder, sys.exc_info()[0])
+        try:
             viz_losses.plot_dims(results, out_dir=save_dir, xlim=None, dim_types=acts, figname='acts')
         except:
             print('act failed', folder, sys.exc_info()[0])
@@ -67,17 +71,24 @@ for folder in folders:
 
         # note these norms were squared
         # calculated via np.linalg.norm(weight_dict[lay_name])**2
-        viz_losses.plot_weight_norms_and_margin(results, out_dir=save_dir)    
+        try:
+            viz_losses.plot_weight_norms_and_margin(results, out_dir=save_dir)    
+        except:
+            print('weight norms + margin failed', folder, sys.exc_info()[0])
 
 
         # depending on how much is saved, this may take a while
         weights_list = [pd.Series(pkl.load(open(oj(out_dir, fname), "rb"))) for fname in fnames if fname.startswith('weights')]
         results_weights = pd.concat(weights_list, axis=1).T.infer_objects()
         # results.head()
-
-        viz_weights.save_final_weights(results_weights, out_dir=save_dir)
+        '''
+        try:
+            viz_weights.save_final_weights(results_weights, results, out_dir=save_dir)
+        except:
+            print('save final weights failed', folder, sys.exc_info()[0])
 
         viz_weights.save_weight_evol(results_weights, out_dir=save_dir)
+        '''
     except:
         print("Unexpected error:", folder, sys.exc_info()[0])
 

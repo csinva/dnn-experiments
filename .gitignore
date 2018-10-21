@@ -4,3 +4,5 @@ scripts/logs
 scripts/slurm-scripts
 **.pdf
 **figs*
+**.zip
+**.png
