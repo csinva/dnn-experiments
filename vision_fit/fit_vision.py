@@ -141,9 +141,9 @@ def fit_vision(p):
         test_set = dset.MNIST(root=root, train=False, transform=trans, download=True)
         if p.dset == 'noise':
             train_set.train_data = torch.Tensor(np.random.randn(60000, 8, 8))
-            train_set.train_labels = torch.Tensor(np.random.randint(0, 16, 60000)).long()
+            train_set.train_labels = torch.Tensor(np.random.randint(0, 10, 60000)).long()
             test_set.test_data = torch.Tensor(np.random.randn(1000, 8, 8))
-            test_set.test_labels = torch.Tensor(np.random.randint(0, 16, 60000)).long()            
+            test_set.test_labels = torch.Tensor(np.random.randint(0, 10, 60000)).long()            
         elif p.dset == 'bars':
             bars, labs = get_binary_bars(8 * 8, 10000, 0.3)
             train_set.train_data = torch.Tensor(bars.reshape(-1, 8, 8)).long()
@@ -151,14 +151,6 @@ def fit_vision(p):
             bars_test, labs_test = get_binary_bars(8 * 8, 2000, 0.3)
             test_set.test_data = torch.Tensor(bars_test.reshape(-1, 8, 8)).long()
             test_set.test_labels = torch.Tensor(labs_test).long()
-        train_loader = torch.utils.data.DataLoader(
-                         dataset=train_set,
-                         batch_size=batch_size,
-                         shuffle=True)
-        test_loader = torch.utils.data.DataLoader(
-                        dataset=test_set,
-                        batch_size=batch_size,
-                        shuffle=False)
         if p.dset == 'mnist':
             if p.use_conv:
                 model = models.LeNet()
@@ -171,10 +163,21 @@ def fit_vision(p):
             
         if p.shuffle_labels:
             train_set.train_labels = torch.Tensor(np.random.randint(0, 10, 60000)).long()
+        train_loader = torch.utils.data.DataLoader(
+                 dataset=train_set,
+                 batch_size=batch_size,
+                 shuffle=True)
+        test_loader = torch.utils.data.DataLoader(
+                        dataset=test_set,
+                        batch_size=batch_size,
+                        shuffle=False)
 
     elif p.dset == 'cifar10':
         trans = transforms.Compose(
             [transforms.ToTensor(),
+             
+             
+             
              transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
         train_set = dset.CIFAR10(root=root, train=True, download=True, transform=trans)
 

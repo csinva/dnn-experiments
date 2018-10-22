@@ -49,7 +49,6 @@ for folder in folders:
         # results.head()
         # results.dtypes
 
-
         viz_losses.plot_losses(results, out_dir=save_dir)
         # ['explained_var_dicts_pca', 'explained_var_dicts_rbf', 'explained_var_dicts_lap', 'explained_var_dicts_cosine']
         # act_var_dicts_test_pca (might not have pca), act_var_dicts_test_rbf
@@ -81,16 +80,17 @@ for folder in folders:
         weights_list = [pd.Series(pkl.load(open(oj(out_dir, fname), "rb"))) for fname in fnames if fname.startswith('weights')]
         results_weights = pd.concat(weights_list, axis=1).T.infer_objects()
         # results.head()
-        '''
         try:
             viz_weights.save_final_weights(results_weights, results, out_dir=save_dir)
         except:
             print('save final weights failed', folder, sys.exc_info()[0])
 
         viz_weights.save_weight_evol(results_weights, out_dir=save_dir)
-        '''
     except:
         print("Unexpected error:", folder, sys.exc_info()[0])
+        
+from subprocess import call
+call('./zip.sh')
 
 
 

@@ -37,7 +37,8 @@ def plot_losses(results, out_dir='figs'):
     plt.figure(figsize=(12, 8), dpi=100)
     percent_to_explain = 0.90
     dim_types = ['pca', 'rbf', 'lap', 'cosine']
-    skips = [('adam', 0.1), ('sgd', 1.0)] #, ('sgd', 0.1)]
+#     skips = [('adam', 0.1), ('sgd', 1.0)] #, ('sgd', 0.1)]
+    skips = []
 
     dim_dicts = {}
     R, C = 2, 4
@@ -180,8 +181,8 @@ def plot_dims_flexible(results, out_dir='figs', xlim=None, percent_to_explain=0.
 def plot_dims(results, out_dir='figs', xlim=None, percent_to_explain=0.85, figname='explained', dim_types=['explained_var_dicts_pca', 'explained_var_dicts_rbf', 'explained_var_dicts_lap', 'explained_var_dicts_cosine']):
     # params for plotting
     plt.figure(figsize=(10, 18), dpi=100)
-    skips = [('adam', 0.1), ('adam', 0.01), ('adam', 0.001)]
-#     skips = []
+#     skips = [('adam', 0.1), ('adam', 0.01), ('adam', 0.001)]
+    skips = []
     
     dim_dicts = {}
     R, C = 5, 3
