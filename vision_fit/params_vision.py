@@ -4,11 +4,11 @@ from numpy.random import randint
 class p:   
     # crucial params
     dset = 'mnist' # mnist or cifar10 or noise, bars
-    shuffle_labels = True
+    shuffle_labels = False
     use_conv = False
-    use_num_hidden = 4 # set to 0 or False to ignore
+    use_num_hidden = 0 # set to 0 or False to ignore
     freeze_all_but_first = False
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/mnist_4_shuff_redo' # test
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/mnist_margin' # test
     
     # saving
     if dset in ['mnist', 'bars', 'noise']:
@@ -30,7 +30,7 @@ class p:
         saves_per_iter_end = 1
         step_size_optimizer_2 = 1 # only does this for large steps        
         gamma_optimizer2 = 1        
-        out_dir = out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/test' # test
+        out_dir = out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/mnist_margin' # test
     
     # optimizer params (sweep)
     optimizer = 'sgd' # 'sgd' or 'adam'

@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 from copy import deepcopy
 import pickle as pkl
-import pandas as pd
+import pandas   as pd
 import math
 plt.style.use('seaborn-notebook')
 from data_load_preprocess import data
@@ -275,9 +275,10 @@ def plot_dims(results, out_dir='figs', xlim=None, percent_to_explain=0.85, figna
 def plot_weight_norms_and_margin(results, xlim=None, out_dir='figs'):
     # params for plotting
     skips = [('adam', 0.1)]
+#     skips = []
     dim_dicts = {}
-    R, C = 3, 3
-    plt.figure(figsize=(10, 18), dpi=100)
+    R, C = 4, 4
+    plt.figure(figsize=(14, 14), dpi=100)
     for index, row in results.iterrows():
         # style for plotting
         color = 'orange' if row.optimizer == 'sgd' else 'deepskyblue'
@@ -298,23 +299,56 @@ def plot_weight_norms_and_margin(results, xlim=None, out_dir='figs'):
             if row.optimizer == 'sgd':
                 for j in range(min(3, len(lays))):
                     plt.subplot(R, C, 1 + j)
-                    vals = [wnorms[key][lays[j]] for key in keys]    
+                    vals = [wnorms[key][lays[j] + '_fro'] for key in keys]    
                     plt.plot(keys, vals, style, color=color, alpha=alpha, label= row.optimizer + ' ' + str(row.lr))
-                    plt.title(lays[j] + ' mean l2 norm')
+                    plt.title(lays[j] + ' frobenius norm')
             else:
                 for j in range(min(3, len(lays))):
-                    plt.subplot(R, C, 4 + j)
-                    vals = [wnorms[key][lays[j]] for key in keys]                
+                    plt.subplot(R, C, 1 + C + j)
+                    vals = [wnorms[key][lays[j] + '_fro'] for key in keys]                
                     plt.plot(keys, vals, style, color=color, alpha=alpha, label= row.optimizer + ' ' + str(row.lr))
-                    plt.title(lays[j] + ' mean l2 norm')                    
+                    plt.title(lays[j] + ' frobenius norm')                    
             
-            plt.subplot(R, C, 7)
+            plt.subplot(R, C, 1 + C * 2)
+#             norms_fro = [row.weight_norms[it][] in row.its
+#             print(row.weight_norms)
+            plt.plot(row.its, row.mean_margin_train_unnormalized, style, color=color, alpha=alpha, label= row.optimizer + ' ' + str(row.lr))
+            plt.title('train margin unnormalized')
+            
+            plt.subplot(R, C, 2 + C * 2)
+            plt.plot(row.its, row.mean_margin_test_unnormalized, style, color=color, alpha=alpha, label= row.optimizer + ' ' + str(row.lr))
+            plt.title('test margin unnormalized')   
+            
+            plt.subplot(R, C, 3 + C * 2)
+            
+            norm_prods_fro = [1] * len(keys)
+            for j in range(len(lays)):
+                norm_prods_fro = [norm_prods_fro[i] * wnorms[key][lays[j] + '_fro'] for i, key in enumerate(keys)]
+            plt.plot(row.its, row.mean_margin_train_unnormalized / norm_prods_fro, style, color=color, alpha=alpha, label= row.optimizer + ' ' + str(row.lr))
+            plt.title('train margin over frobenius norm')
+            
+            plt.subplot(R, C, 4 + C * 2)
+            plt.plot(row.its, row.mean_margin_test_unnormalized / norm_prods_fro, style, color=color, alpha=alpha, label= row.optimizer + ' ' + str(row.lr))
+            plt.title('test margin over frobenius norm')   
+            
+            plt.subplot(R, C, 1 + C * 3)
             plt.plot(row.its, row.mean_margin_train, style, color=color, alpha=alpha, label= row.optimizer + ' ' + str(row.lr))
-            plt.ylabel('mean train margin')
+            plt.title('train softmax margin')
             
-            plt.subplot(R, C, 8)
+            plt.subplot(R, C, 2 + C * 3)
             plt.plot(row.its, row.mean_margin_test, style, color=color, alpha=alpha, label= row.optimizer + ' ' + str(row.lr))
-            plt.ylabel('mean test margin')   
+            plt.title('test softmax margin')   
+            
+            norm_prods_spectral = [1] * len(keys)            
+            for j in range(len(lays)):
+                norm_prods_spectral = [norm_prods_spectral[i] * wnorms[key][lays[j] + '_spectral'] for i, key in enumerate(keys)]
+            plt.subplot(R, C, 3 + C * 3)                
+            plt.plot(row.its, row.mean_margin_train_unnormalized / norm_prods_spectral, style, color=color, alpha=alpha, label= row.optimizer + ' ' + str(row.lr))
+            plt.title('train margin over spectral norm')
+            
+            plt.subplot(R, C, 4 + C * 3)
+            plt.plot(row.its, row.mean_margin_test_unnormalized / norm_prods_spectral, style, color=color, alpha=alpha, label= row.optimizer + ' ' + str(row.lr))
+            plt.title('test margin over spectral norm') 
             
             
         if not xlim is None:

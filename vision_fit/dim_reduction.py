@@ -15,6 +15,38 @@ from torch.optim.lr_scheduler import StepLR
 from sklearn.decomposition import PCA
 from sklearn.metrics import pairwise
 
+# reduce model by projecting onto pcs that explain "percent_to_explain"
+def reduce_model(model, percent_to_explain=0.85):
+    model_r = deepcopy(model)
+    weight_dict = model_r.state_dict()
+    weight_dict_new = deepcopy(model_r.state_dict())
+    
+    for layer_name in weight_dict.keys():
+        if 'weight' in layer_name:
+            w = weight_dict[layer_name]
+            
+            wshape = w.shape
+            if len(w.shape) > 2: # conv layer]--
+                w = w.cpu().numpy()
+                w = w.reshape(w.shape[0] * w.shape[1], -1)
+
+            # get number of components
+            pca = PCA(n_components=w.shape[1])
+            pca.fit(w)
+            explained_vars = pca.explained_variance_ratio_
+            dim, perc_explained = 0, 0
+            while perc_explained <= percent_to_explain:
+                perc_explained += explained_vars[dim]
+                dim += 1
+            
+            # actually project
+            pca = PCA(n_components=dim)            
+            w2 = pca.inverse_transform(pca.fit_transform(w))
+            weight_dict_new[layer_name] = torch.Tensor(w2.reshape(wshape))
+            
+    model_r.load_state_dict(weight_dict_new)
+    return model_r
+
 def calc_activation_dims(use_cuda, model, dset_train, dset_test, calc_activations=0):
     if calc_activations > 0:
         dicts_dict = {}

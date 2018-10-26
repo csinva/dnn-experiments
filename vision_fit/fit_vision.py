@@ -19,38 +19,6 @@ import random
 import models
 from dim_reduction import *
 
-# reduce model by projecting onto pcs that explain "percent_to_explain"
-def reduce_model(model, percent_to_explain=0.85):
-    model_r = deepcopy(model)
-    weight_dict = model_r.state_dict()
-    weight_dict_new = deepcopy(model_r.state_dict())
-    
-    for layer_name in weight_dict.keys():
-        if 'weight' in layer_name:
-            w = weight_dict[layer_name]
-            
-            wshape = w.shape
-            if len(w.shape) > 2: # conv layer
-                w = w.cpu().numpy()
-                w = w.reshape(w.shape[0] * w.shape[1], -1)
-
-            # get number of components
-            pca = PCA(n_components=w.shape[1])
-            pca.fit(w)
-            explained_vars = pca.explained_variance_ratio_
-            dim, perc_explained = 0, 0
-            while perc_explained <= percent_to_explain:
-                perc_explained += explained_vars[dim]
-                dim += 1
-            
-            # actually project
-            pca = PCA(n_components=dim)            
-            w2 = pca.inverse_transform(pca.fit_transform(w))
-            weight_dict_new[layer_name] = torch.Tensor(w2.reshape(wshape))
-            
-    model_r.load_state_dict(weight_dict_new)
-    return model_r
-
 def get_binary_bars(numInputs, numDatapoints, probabilityOn):
     """
     Generate random dataset of images containing lines. Each image has a mean value of 0.
@@ -88,12 +56,14 @@ def get_binary_bars(numInputs, numDatapoints, probabilityOn):
     return outImages.T, labs
 
 def layer_norms(weight_dict):
-    return {lay_name: np.linalg.norm(weight_dict[lay_name])**2 for lay_name in weight_dict.keys() if 'weight' in lay_name}
+    dfro = {lay_name + '_fro': np.linalg.norm(weight_dict[lay_name], ord='fro') for lay_name in weight_dict.keys() if 'weight' in lay_name}
+    dspectral = {lay_name + '_spectral': np.linalg.norm(weight_dict[lay_name], ord=2) for lay_name in weight_dict.keys() if 'weight' in lay_name}
+    return {**dfro, **dspectral}
 
-def calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion, calc_margin=False):
+def calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion):
     correct_cnt, tot_loss_test = 0, 0
     n_test = len(test_loader) * batch_size
-    margin_sum = 0
+    margin_sum, margin_sum_unnormalized = 0, 0
     for batch_idx, (x, target) in enumerate(test_loader):
         if use_cuda:
             x, target = x.cuda(), target.cuda()
@@ -104,17 +74,14 @@ def calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion, calc_marg
         correct_cnt += (pred_label == target.data).sum()
         tot_loss_test += loss.data[0]
         
-        if calc_margin:
-            preds = F.softmax(out).data.cpu().numpy()
-            preds.sort(axis=1)
-            margin_sum += np.sum(preds[:, -1]) - np.sum(preds[:, -2])
-        
-        
+        preds_unnormalized = out.data.cpu().numpy()
+        preds = F.softmax(out).data.cpu().numpy()
+        preds_unnormalized.sort(axis=1)
+        preds.sort(axis=1)
+        margin_sum_unnormalized += np.sum(preds_unnormalized[:, -1]) - np.sum(preds_unnormalized[:, -2])
+        margin_sum += np.sum(preds[:, -1]) - np.sum(preds[:, -2])
     print('==>>> loss: {:.6f}, acc: {:.3f}'.format(tot_loss_test / n_test, correct_cnt * 1.0 / n_test))
-    if calc_margin:
-        return tot_loss_test / n_test, correct_cnt * 1.0 / n_test, margin_sum / n_test
-    else:
-        return tot_loss_test / n_test, correct_cnt * 1.0 / n_test
+    return tot_loss_test / n_test, correct_cnt * 1.0 / n_test, margin_sum_unnormalized / n_test, margin_sum / n_test
 
 def seed(p):
     # set random seed        
@@ -174,11 +141,7 @@ def fit_vision(p):
 
     elif p.dset == 'cifar10':
         trans = transforms.Compose(
-            [transforms.ToTensor(),
-             
-             
-             
-             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+            [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
         train_set = dset.CIFAR10(root=root, train=True, download=True, transform=trans)
 
         test_set = dset.CIFAR10(root=root, train=False, download=True, transform=trans)
@@ -192,7 +155,7 @@ def fit_vision(p):
         
         if p.shuffle_labels:
             print('shuffling labels...')
-            train_set.train_labels = [random.randint(0, 10) for _ in range(50000)]
+            train_set.train_labels = [random.randint(0, 9) for _ in range(50000)]
     
     
     # optimization
@@ -219,7 +182,8 @@ def fit_vision(p):
     losses_train, losses_test = np.zeros(p.num_iters), np.zeros(p.num_iters)
     accs_train, accs_test = np.zeros(p.num_iters), np.zeros(p.num_iters)
     losses_train_r, losses_test_r = np.zeros(p.num_iters), np.zeros(p.num_iters)
-    accs_train_r, accs_test_r = np.zeros(p.num_iters), np.zeros(p.num_iters)  
+    accs_train_r, accs_test_r = np.zeros(p.num_iters), np.zeros(p.num_iters)
+    mean_margin_train_unn, mean_margin_test_unn = np.zeros(p.num_iters), np.zeros(p.num_iters)    
     mean_margin_train, mean_margin_test = np.zeros(p.num_iters), np.zeros(p.num_iters)    
     explained_var_dicts, explained_var_dicts_cosine, explained_var_dicts_rbf, explained_var_dicts_lap = [], [], [], []
     act_var_dicts_train, act_var_dicts_test, act_var_dicts_train_rbf, act_var_dicts_test_rbf = [], [], [], []    
@@ -240,8 +204,8 @@ def fit_vision(p):
     act_var_dicts_test.append(act_var_dicts['test']['pca'])
     act_var_dicts_train_rbf.append(act_var_dicts['train']['rbf'])
     act_var_dicts_test_rbf.append(act_var_dicts['test']['rbf'])
-    losses_train[0], accs_train[0], mean_margin_train[0] = calc_loss_acc(train_loader, batch_size, use_cuda, model, criterion, calc_margin=True)
-    losses_test[0], accs_test[0], mean_margin_test[0] = calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion, calc_margin=True)
+    losses_train[0], accs_train[0], mean_margin_train_unn[0], mean_margin_train[0] = calc_loss_acc(train_loader, batch_size, use_cuda, model, criterion)
+    losses_test[0], accs_test[0], mean_margin_test_unn[0], mean_margin_test[0] = calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion)
 
         
     # run    
@@ -269,15 +233,15 @@ def fit_vision(p):
             
         # calc stats and record
         print('it', it)
-        ave_loss_train, acc_train, mean_margin_train[it] = calc_loss_acc(train_loader, batch_size, use_cuda, model, criterion, calc_margin=True)
-        ave_loss_test, acc_test, mean_margin_test[it] = calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion, calc_margin=True)        
+        ave_loss_train, acc_train, mean_margin_train_unn[it], mean_margin_train[it] = calc_loss_acc(train_loader, batch_size, use_cuda, model, criterion)
+        ave_loss_test, acc_test, mean_margin_test_unn[it], mean_margin_test[it] = calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion)        
         losses_train[it], losses_test[it] = ave_loss_train, ave_loss_test
         accs_train[it], accs_test[it] = acc_train, acc_test
         
         # calculated reduced stats
         model_r = reduce_model(model)
-        ave_loss_train_r, acc_train_r, _ = calc_loss_acc(train_loader, batch_size, use_cuda, model_r, criterion, calc_margin=True)
-        ave_loss_test_r, acc_test_r, _ = calc_loss_acc(test_loader, batch_size, use_cuda, model_r, criterion, calc_margin=True)
+        ave_loss_train_r, acc_train_r, _, _ = calc_loss_acc(train_loader, batch_size, use_cuda, model_r, criterion)
+        ave_loss_test_r, acc_test_r, _, _ = calc_loss_acc(test_loader, batch_size, use_cuda, model_r, criterion)
         losses_train_r[it], losses_test_r[it] = ave_loss_train_r, ave_loss_test_r
         accs_train_r[it], accs_test_r[it] = acc_train_r, acc_test_r
         
@@ -304,14 +268,20 @@ def fit_vision(p):
         os.makedirs(p.out_dir)
     params = p._dict(p)
     
-    results = {'losses_train': losses_train, 'losses_test': losses_test, 
-               'accs_test': accs_test, 'accs_train': accs_train,
-               'losses_train_r': losses_train_r, 'losses_test_r': losses_test_r, 
-               'accs_test_r': accs_test_r, 'accs_train_r': accs_train_r,  
+    results = {'losses_train': losses_train, # training loss curve (should be plotted against p.its)
+               'losses_test': losses_test, # testing loss curve (should be plotted against p.its)
+               'accs_train': accs_train, # training acc curve (should be plotted against p.its)               
+               'accs_test': accs_test, # testing acc curve (should be plotted against p.its)
+               'losses_train_r': losses_train_r, 
+               'losses_test_r': losses_test_r, 
+               'accs_test_r': accs_test_r, 
+               'accs_train_r': accs_train_r,  
                'weight_norms': weight_norms, 
                'weight_names': models.get_weight_names(model),
-               'mean_margin_train': mean_margin_train,
-               'mean_margin_test': mean_margin_test,
+               'mean_margin_train_unnormalized': mean_margin_train_unn, # mean train margin at each it (pre softmax)
+               'mean_margin_test_unnormalized': mean_margin_test_unn, # mean test margin at each it (pre softmax)       
+               'mean_margin_train': mean_margin_train, # mean train margin at each it (after softmax)
+               'mean_margin_test': mean_margin_test, # mean test margin at each it (after softmax)
                'explained_var_dicts_pca': explained_var_dicts, 
                'explained_var_dicts_cosine': explained_var_dicts_cosine, 
                'explained_var_dicts_rbf': explained_var_dicts_rbf, 
