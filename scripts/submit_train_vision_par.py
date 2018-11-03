@@ -11,7 +11,7 @@ params_to_vary = {
 
 
 # run
-s = Slurm("vision_nn_run", {"partition": "low"})
+s = Slurm("vision_nn_run", {"partition": "high"})
 ks = sorted(params_to_vary.keys())
 vals = [params_to_vary[k] for k in ks]
 param_combinations = list(itertools.product(*vals)) # list of tuples

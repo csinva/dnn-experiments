@@ -32,8 +32,8 @@ out_dir_main = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd'
 print(os.listdir(out_dir_main))
 # folders = 'bars'
 folders = os.listdir(out_dir_main)
+folders = [f for f in folders if 'margin' in f]
 for folder in folders:
-    print(folder)
     try:
         save_dir = 'figs_' + folder
         if not os.path.exists(save_dir):

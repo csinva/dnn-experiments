@@ -74,13 +74,23 @@ def calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion):
         correct_cnt += (pred_label == target.data).sum()
         tot_loss_test += loss.data[0]
         
-        preds_unnormalized = out.data.cpu().numpy()
+        preds_unn = out.data.cpu().numpy()
         preds = F.softmax(out).data.cpu().numpy()
-        preds_unnormalized.sort(axis=1)
-        preds.sort(axis=1)
-        margin_sum_unnormalized += np.sum(preds_unnormalized[:, -1]) - np.sum(preds_unnormalized[:, -2])
-        margin_sum += np.sum(preds[:, -1]) - np.sum(preds[:, -2])
-    print('==>>> loss: {:.6f}, acc: {:.3f}'.format(tot_loss_test / n_test, correct_cnt * 1.0 / n_test))
+        n = preds_unn.shape[0]
+        mask = np.ones(preds_unn.shape).astype(bool)
+        mask[np.arange(n), pred_label] = False
+        
+        preds_unn_class = preds_unn[np.arange(n), pred_label]
+        preds_unn = preds_unn[mask].reshape(n, -1)
+        preds_unn_class2 = np.max(preds_unn, axis=1)
+        margin_sum_unnormalized += np.sum(preds_unn_class) - np.sum(preds_unn_class2)
+        
+        preds_norm_class = preds[np.arange(n), pred_label]
+        preds_norm = preds[mask].reshape(n, -1)
+        preds_norm_class2 = np.max(preds_norm, axis=1)
+        margin_sum += np.sum(preds_norm_class) - np.sum(preds_norm_class2)
+        
+    print('==>>> loss: {:.6f}, acc: {:.3f}, margin: {:.3f}'.format(tot_loss_test / n_test, correct_cnt * 1.0 / n_test, margin_sum / n_test))
     return tot_loss_test / n_test, correct_cnt * 1.0 / n_test, margin_sum_unnormalized / n_test, margin_sum / n_test
 
 def seed(p):

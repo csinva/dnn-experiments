@@ -303,6 +303,7 @@ def plot_weight_norms_and_margin(results, xlim=None, out_dir='figs'):
                     plt.plot(keys, vals, style, color=color, alpha=alpha, label= row.optimizer + ' ' + str(row.lr))
                     plt.title(lays[j] + ' frobenius norm')
             else:
+                print('lays', lays, wnorms[0].keys(), keys)
                 for j in range(min(3, len(lays))):
                     plt.subplot(R, C, 1 + C + j)
                     vals = [wnorms[key][lays[j] + '_fro'] for key in keys]                
