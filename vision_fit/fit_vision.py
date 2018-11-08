@@ -60,11 +60,11 @@ def layer_norms(weight_dict):
     dspectral = {lay_name + '_spectral': np.linalg.norm(weight_dict[lay_name], ord=2) for lay_name in weight_dict.keys() if 'weight' in lay_name}
     return {**dfro, **dspectral}
 
-def calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion):
+def calc_loss_acc(loader, batch_size, use_cuda, model, criterion, print_loss=False):
     correct_cnt, tot_loss_test = 0, 0
-    n_test = len(test_loader) * batch_size
+    n_test = len(loader) * batch_size
     margin_sum, margin_sum_unnormalized = 0, 0
-    for batch_idx, (x, target) in enumerate(test_loader):
+    for batch_idx, (x, target) in enumerate(loader):
         if use_cuda:
             x, target = x.cuda(), target.cuda()
         x, target = Variable(x, volatile=True), Variable(target, volatile=True)
@@ -89,8 +89,8 @@ def calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion):
         preds_norm = preds[mask].reshape(n, -1)
         preds_norm_class2 = np.max(preds_norm, axis=1)
         margin_sum += np.sum(preds_norm_class) - np.sum(preds_norm_class2)
-        
-    print('==>>> loss: {:.6f}, acc: {:.3f}, margin: {:.3f}'.format(tot_loss_test / n_test, correct_cnt * 1.0 / n_test, margin_sum / n_test))
+    if print_loss:    
+        print('==>>> loss: {:.6f}, acc: {:.3f}, margin: {:.3f}'.format(tot_loss_test / n_test, correct_cnt * 1.0 / n_test, margin_sum / n_test))
     return tot_loss_test / n_test, correct_cnt * 1.0 / n_test, margin_sum_unnormalized / n_test, margin_sum / n_test
 
 def seed(p):
@@ -132,7 +132,7 @@ def fit_vision(p):
             if p.use_conv:
                 model = models.LeNet()
             elif p.use_num_hidden > 0:
-                model = models.LinearNet(28*28, p.use_num_hidden, 256, 10)
+                model = models.LinearNet(p.use_num_hidden, 28*28, 256, 10)
             else:
                 model = models.MnistNet()        
         else:
@@ -215,7 +215,7 @@ def fit_vision(p):
     act_var_dicts_train_rbf.append(act_var_dicts['train']['rbf'])
     act_var_dicts_test_rbf.append(act_var_dicts['test']['rbf'])
     losses_train[0], accs_train[0], mean_margin_train_unn[0], mean_margin_train[0] = calc_loss_acc(train_loader, batch_size, use_cuda, model, criterion)
-    losses_test[0], accs_test[0], mean_margin_test_unn[0], mean_margin_test[0] = calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion)
+    losses_test[0], accs_test[0], mean_margin_test_unn[0], mean_margin_test[0] = calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion, print_loss=True)
 
         
     # run    
@@ -244,7 +244,7 @@ def fit_vision(p):
         # calc stats and record
         print('it', it)
         ave_loss_train, acc_train, mean_margin_train_unn[it], mean_margin_train[it] = calc_loss_acc(train_loader, batch_size, use_cuda, model, criterion)
-        ave_loss_test, acc_test, mean_margin_test_unn[it], mean_margin_test[it] = calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion)        
+        ave_loss_test, acc_test, mean_margin_test_unn[it], mean_margin_test[it] = calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion, print_loss=True)        
         losses_train[it], losses_test[it] = ave_loss_train, ave_loss_test
         accs_train[it], accs_test[it] = acc_train, acc_test
         

@@ -32,7 +32,7 @@ out_dir_main = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd'
 print(os.listdir(out_dir_main))
 # folders = 'bars'
 folders = os.listdir(out_dir_main)
-folders = [f for f in folders if 'margin' in f]
+# folders = [f for f in folders if 'margin' in f]
 for folder in folders:
     try:
         save_dir = 'figs_' + folder
@@ -89,8 +89,8 @@ for folder in folders:
     except:
         print("Unexpected error:", folder, sys.exc_info()[0])
         
-from subprocess import call
-call('./zip.sh')
+# from subprocess import call
+# call('./zip.sh')
 
 
 

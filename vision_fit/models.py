@@ -50,6 +50,39 @@ class MnistNet(nn.Module):
         return "mlp"
     
 ## network
+
+
+## network
+class LinearNet(nn.Module):
+    def __init__(self, num_layers, input_size, hidden_size, output_size):
+        # num_layers is number of weight matrices
+        super(LinearNet, self).__init__()
+        self.input_size = input_size
+        self.output_size = output_size
+        
+        # for one layer nets
+        if num_layers == 1:
+            self.fc = nn.ModuleList([nn.Linear(input_size, output_size)])
+        else:
+            self.fc = nn.ModuleList([nn.Linear(input_size, hidden_size)])
+            self.fc.extend([nn.Linear(hidden_size, hidden_size) for i in range(num_layers - 2)])
+            self.fc.append(nn.Linear(hidden_size, output_size))
+
+    def forward(self, x):
+        y = x.view(-1, self.input_size)
+        for i in range(len(self.fc) - 1):
+            y = F.relu(self.fc[i](y))
+        return self.fc[-1](y)
+    
+    def forward_all(self, x):
+        y = x.view(-1, self.input_size)
+        out = {}
+        for i in range(len(self.fc) - 1):
+            y = F.relu(self.fc[i](y))
+            out['fc.' + str(i)] = deepcopy(y)
+        out['fc' + str(len(self.fc))] = deepcopy(self.fc[-1](y))
+        return out
+'''
 class LinearNet(nn.Module):
     def __init__(self, input_size, num_layers, layers_size, output_size):
         # minimum num_layers is 2 (num_layers is number of weight matrices)
@@ -74,7 +107,7 @@ class LinearNet(nn.Module):
             out['fc.' + str(i)] = deepcopy(y)
         out['fc' + str(len(self.fc))] = deepcopy(self.fc[-1](y))
         return out
-                
+'''                
 
 class LeNet(nn.Module):
     def __init__(self):

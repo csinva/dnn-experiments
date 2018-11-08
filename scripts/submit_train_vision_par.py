@@ -5,8 +5,15 @@ from slurmpy import Slurm
 params_to_vary = {
     'seed': range(2),
     'lr': [0.001, 0.01, 0.1],
-    'optimizer': ['sgd', 'adam']
+    'optimizer': ['sgd'],
+    'use_num_hidden': [1, 2, 3, 4, 10]
 }
+
+# params_to_vary = {
+#     'seed': range(2),
+#     'lr': [0.001, 0.01, 0.1],
+#     'optimizer': ['sgd', 'adam'],
+# }
 # params_to_delete = [(0.1, 'adam', 0), (1, 'adam', 0)]
 
 
