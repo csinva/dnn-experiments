@@ -10,7 +10,8 @@ class p:
     freeze_all_but_first = True
     freeze_all_but_last = False
     hidden_size = 1000
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/mnist_first_sweep_1000' # test
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/test' # test
+    save_acts_and_reduce = True
     
     # saving
     if dset in ['mnist', 'bars', 'noise']:
@@ -58,6 +59,8 @@ class p:
     num_iters_small = saves_per_iter * saves_per_iter_end
     its = np.hstack((1.0 * np.arange(num_iters_small) / saves_per_iter, saves_per_iter_end + np.arange(num_iters - num_iters_small)))
     
+    
+    # converting to string
     def _str(self):
         s = '___'.join("%s=%s" % (attr, val) for (attr, val) in vars(p).items()
                        if not attr.startswith('_') and not attr.startswith('out') and not attr.startswith('its'))

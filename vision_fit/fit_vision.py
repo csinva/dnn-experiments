@@ -218,11 +218,12 @@ def fit_vision(p):
     explained_var_dicts_cosine.append(get_explained_var_kernels(weight_dict, 'cosine'))
     explained_var_dicts_rbf.append(get_explained_var_kernels(weight_dict, 'rbf'))
     explained_var_dicts_lap.append(get_explained_var_kernels(weight_dict, 'laplacian'))
-    act_var_dicts = calc_activation_dims(use_cuda, model, train_set, test_set, calc_activations=p.calc_activations)
-    act_var_dicts_train.append(act_var_dicts['train']['pca'])
-    act_var_dicts_test.append(act_var_dicts['test']['pca'])
-    act_var_dicts_train_rbf.append(act_var_dicts['train']['rbf'])
-    act_var_dicts_test_rbf.append(act_var_dicts['test']['rbf'])
+    if p.save_acts_and_reduce:
+        act_var_dicts = calc_activation_dims(use_cuda, model, train_set, test_set, calc_activations=p.calc_activations)
+        act_var_dicts_train.append(act_var_dicts['train']['pca'])
+        act_var_dicts_test.append(act_var_dicts['test']['pca'])
+        act_var_dicts_train_rbf.append(act_var_dicts['train']['rbf'])
+        act_var_dicts_test_rbf.append(act_var_dicts['test']['rbf'])
     losses_train[0], accs_train[0], mean_margin_train_unn[0], mean_margin_train[0] = calc_loss_acc(train_loader, batch_size, use_cuda, model, criterion)
     losses_test[0], accs_test[0], mean_margin_test_unn[0], mean_margin_test[0] = calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion, print_loss=True)
 
@@ -258,11 +259,12 @@ def fit_vision(p):
         accs_train[it], accs_test[it] = acc_train, acc_test
         
         # calculated reduced stats
-        model_r = reduce_model(model)
-        ave_loss_train_r, acc_train_r, _, _ = calc_loss_acc(train_loader, batch_size, use_cuda, model_r, criterion)
-        ave_loss_test_r, acc_test_r, _, _ = calc_loss_acc(test_loader, batch_size, use_cuda, model_r, criterion)
-        losses_train_r[it], losses_test_r[it] = ave_loss_train_r, ave_loss_test_r
-        accs_train_r[it], accs_test_r[it] = acc_train_r, acc_test_r
+        if p.save_acts_and_reduce:
+            model_r = reduce_model(model)
+            ave_loss_train_r, acc_train_r, _, _ = calc_loss_acc(train_loader, batch_size, use_cuda, model_r, criterion)
+            ave_loss_test_r, acc_test_r, _, _ = calc_loss_acc(test_loader, batch_size, use_cuda, model_r, criterion)
+            losses_train_r[it], losses_test_r[it] = ave_loss_train_r, ave_loss_test_r
+            accs_train_r[it], accs_test_r[it] = acc_train_r, acc_test_r
         
         # record complicated things         
         weight_dict = deepcopy({x[0]:x[1].data.cpu().numpy() for x in model.named_parameters()})
@@ -274,11 +276,12 @@ def fit_vision(p):
         explained_var_dicts_cosine.append(get_explained_var_kernels(weight_dict, 'cosine'))
         explained_var_dicts_rbf.append(get_explained_var_kernels(weight_dict, 'rbf'))
         explained_var_dicts_lap.append(get_explained_var_kernels(weight_dict, 'laplacian'))
-        act_var_dicts = calc_activation_dims(use_cuda, model, train_set, test_set, calc_activations=p.calc_activations)
-        act_var_dicts_train.append(act_var_dicts['train']['pca'])
-        act_var_dicts_test.append(act_var_dicts['test']['pca'])
-        act_var_dicts_train_rbf.append(act_var_dicts['train']['rbf'])
-        act_var_dicts_test_rbf.append(act_var_dicts['test']['rbf'])
+        if p.save_acts_and_reduce:
+            act_var_dicts = calc_activation_dims(use_cuda, model, train_set, test_set, calc_activations=p.calc_activations)
+            act_var_dicts_train.append(act_var_dicts['train']['pca'])
+            act_var_dicts_test.append(act_var_dicts['test']['pca'])
+            act_var_dicts_train_rbf.append(act_var_dicts['train']['rbf'])
+            act_var_dicts_test_rbf.append(act_var_dicts['test']['rbf'])
         
         
         
