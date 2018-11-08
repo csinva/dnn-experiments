@@ -11,7 +11,7 @@ class p:
     freeze_all_but_last = False
     hidden_size = 1000
     out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/test' # test
-    save_acts_and_reduce = True
+    save_acts_and_reduce = False
     
     # saving
     if dset in ['mnist', 'bars', 'noise']:

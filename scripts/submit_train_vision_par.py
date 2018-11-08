@@ -3,10 +3,11 @@ from slurmpy import Slurm
 
 # note mnist 10 epochs sgd takes ~4 mins, adam takes ~15 mins
 params_to_vary = {
-    'seed': range(2),
-    'lr': [0.001, 0.01, 0.1],
+    'seed': range(8),
+    'lr': [0.01, 0.1],
     'optimizer': ['sgd'],
-    'use_num_hidden': [1, 2, 3, 4, 10]
+    'use_num_hidden': [1, 2, 3, 4, 10],
+    'hidden_size': [256, 1000]
 }
 
 # params_to_vary = {
