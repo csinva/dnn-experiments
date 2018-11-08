@@ -132,7 +132,7 @@ def fit_vision(p):
             if p.use_conv:
                 model = models.LeNet()
             elif p.use_num_hidden > 0:
-                model = models.LinearNet(p.use_num_hidden, 28*28, 256, 10)
+                model = models.LinearNet(p.use_num_hidden, 28*28, p.hidden_size, 10)
             else:
                 model = models.MnistNet()        
         else:
@@ -170,12 +170,21 @@ def fit_vision(p):
     
     # optimization
     if p.freeze_all_but_first:
-        print('freezing...')
+        print('freezing all but first...')
         for name, param in model.named_parameters():
 #             print(name, param.requires_grad)
             if not ('fc1' in name or 'fc.0' in name or 'conv1' in name):
                 param.requires_grad = False 
             print(name, param.requires_grad)
+    
+    if p.freeze_all_but_last:
+        print('freezing all but last...')
+        for name, param in model.named_parameters():
+#             print(name, param.requires_grad)
+            if not 'fc.' + str(p.use_num_hidden - 1) in name:
+                param.requires_grad = False 
+            print(name, param.requires_grad)    
+            
     criterion = nn.CrossEntropyLoss()
     if use_cuda:
         model = model.cuda()

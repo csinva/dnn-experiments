@@ -8,7 +8,9 @@ class p:
     use_conv = False
     use_num_hidden = 3 # set to 0 or False to ignore
     freeze_all_but_first = True
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/mnist_first_sweep' # test
+    freeze_all_but_last = False
+    hidden_size = 1000
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/mnist_first_sweep_1000' # test
     
     # saving
     if dset in ['mnist', 'bars', 'noise']:
