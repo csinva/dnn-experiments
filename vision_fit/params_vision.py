@@ -3,14 +3,15 @@ from numpy.random import randint
 
 class p:   
     # crucial params
-    dset = 'mnist' # mnist or cifar10 or noise, bars
+    dset = 'cifar10' # mnist, cifar10, noise, bars
     shuffle_labels = False
-    use_conv = False
+    use_conv = True
+    use_conv_special = False
     use_num_hidden = 3 # set to 0 or False to ignore
     freeze_all_but_first = True
     freeze_all_but_last = False
     hidden_size = 1000
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/adam_vs_sgd/test' # test
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/freeze_train/cifar10_conv' # test
     save_acts_and_reduce = False
     
     # saving
@@ -23,7 +24,7 @@ class p:
     elif dset == 'cifar10':
         saves_per_iter = 5 # really each iter is only iter / this
         saves_per_iter_end = 2 # stop saving densely after saves_per_iter * save_per_iter_end
-        num_iters = saves_per_iter * saves_per_iter_end + 40 # note: tied to saves_per_iter        
+        num_iters = saves_per_iter * saves_per_iter_end + 30 # note: tied to saves_per_iter        
         step_size_optimizer_2 = 5 # only does this for large steps
         gamma_optimizer2 = 0.5
     elif dset == 'test':
@@ -37,7 +38,7 @@ class p:
     
     # optimizer params (sweep)
     optimizer = 'sgd' # 'sgd' or 'adam'
-    lr = 0.01 # default 0.01
+    lr = 1.0 # default 0.01
     seed = 2    
     
     # steps

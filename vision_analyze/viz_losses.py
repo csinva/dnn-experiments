@@ -34,7 +34,7 @@ def frac_dims_to_explain_X_percent(arr, percent_to_explain):
 
 def plot_losses(results, out_dir='figs'):
     # params for plotting
-    plt.figure(figsize=(12, 8), dpi=100)
+    plt.figure(figsize=(12, 8), dpi=100, facecolor='w')
     percent_to_explain = 0.90
     dim_types = ['pca', 'rbf', 'lap', 'cosine']
 #     skips = [('adam', 0.1), ('sgd', 1.0)] #, ('sgd', 0.1)]

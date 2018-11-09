@@ -27,6 +27,8 @@ def initialize_bs_as_neg_x_times_w(X, model):
 
 
 def fit(p):
+    print(p._str(p))
+    
     # set random seed        
     np.random.seed(p.seed) 
     torch.manual_seed(p.seed)

@@ -21,8 +21,8 @@ from dim_reduction import *
 
 
 def layer_norms(weight_dict):
-    dfro = {lay_name + '_fro': np.linalg.norm(weight_dict[lay_name], ord='fro') for lay_name in weight_dict.keys() if 'weight' in lay_name}
-    dspectral = {lay_name + '_spectral': np.linalg.norm(weight_dict[lay_name], ord=2) for lay_name in weight_dict.keys() if 'weight' in lay_name}
+    dfro = {lay_name + '_fro': np.linalg.norm(weight_dict[lay_name], ord='fro') for lay_name in weight_dict.keys() if 'weight' in lay_name and not 'conv' in lay_name}
+    dspectral = {lay_name + '_spectral': np.linalg.norm(weight_dict[lay_name], ord=2) for lay_name in weight_dict.keys() if 'weight' in lay_name and not 'conv' in lay_name}
     return {**dfro, **dspectral}
 
 def calc_loss_acc(loader, batch_size, use_cuda, model, criterion, print_loss=False):

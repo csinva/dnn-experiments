@@ -20,6 +20,7 @@ import models
 from dim_reduction import *
 from stats import *
 from custom_data import get_binary_bars
+from tqdm import tqdm
 
 
 def seed(p):
@@ -58,14 +59,16 @@ def fit_vision(p):
             test_set.test_data = torch.Tensor(bars_test.reshape(-1, 8, 8)).long()
             test_set.test_labels = torch.Tensor(labs_test).long()
         if p.dset == 'mnist':
-            if p.use_conv:
+            if p.use_conv_special:
+                model = models.Linear_then_conv()
+            elif p.use_conv:
                 model = models.LeNet()
             elif p.use_num_hidden > 0:
                 model = models.LinearNet(p.use_num_hidden, 28*28, p.hidden_size, 10)
             else:
-                model = models.MnistNet()        
+                model = models.LinearNet(3, 28*28, 256, 10)
         else:
-            model = models.MnistNet_small()
+            model = models.LinearNet(p.use_num_hidden, 8*8, p.hidden_size, 16)
             
         if p.shuffle_labels:
             train_set.train_labels = torch.Tensor(np.random.randint(0, 10, 60000)).long()
@@ -90,7 +93,15 @@ def fit_vision(p):
         test_loader = torch.utils.data.DataLoader(test_set, 
                                                   batch_size=batch_size,
                                                   shuffle=False)
-        model = models.Cifar10Net()        
+        if p.use_conv_special:
+            model = models.LinearThenConvCifar()        
+        elif p.use_conv:
+            model = models.Cifar10Conv()        
+        else:
+            if p.use_num_hidden > 0:
+                model = models.LinearNet(p.use_num_hidden, 32*32*3, p.hidden_size, 10)
+            else:
+                model = models.LinearNet(3, 32*32*3, 256, 10)
         
         if p.shuffle_labels:
             print('shuffling labels...')
@@ -139,7 +150,7 @@ def fit_vision(p):
         
     # run    
     print('training...')
-    for it in range(0, p.num_iters):
+    for it in tqdm(range(0, p.num_iters)):
         
         # calc stats and record
         print('it', it)

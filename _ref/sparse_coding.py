@@ -25,7 +25,7 @@ np.random.seed(seed)
 torch.manual_seed(seed)    
 use_cuda = torch.cuda.is_available()
 
-batch_size = 100
+batch_size = 500
 root = oj('/scratch/users/vision/yu_dl/raaz.rsk/data', dset_name)
 if not os.path.exists(root):
     os.mkdir(root)
@@ -44,13 +44,14 @@ N = 60000
 data = train_set.train_data.numpy()[:N].reshape(N, -1)
 
 def fit_and_save(n_iter, alpha, data):
-    dico = MiniBatchDictionaryLearning(n_components=500, alpha=alpha, n_iter=n_iter) # 500 took 7.5 mins, 5000 should be an hour, 10000 took 10 mins
+    dico = MiniBatchDictionaryLearning(n_components=500, alpha=alpha, n_iter=n_iter,
+                                      n_jobs=4) # 500 took 7.5 mins, 5000 should be an hour, 10000 took 10 mins
     t = time.clock()
     print('fitting...', n_iter, alpha)
     V = dico.fit(data)
     print('took', time.clock() - t, 'sec')
     np.save('bases_iters=' + str(n_iter) + '_alpha=' + str(alpha) + '.npy', V.components_)
 
-for n_iter in [240000]:
-    for alpha in [1, 0.1, 10, 100]:
+for n_iter in [60000]:
+    for alpha in [0.1, 10, 100]: # 1
         fit_and_save(n_iter, alpha, data)
