@@ -112,26 +112,41 @@ def fit_vision(p):
         if p.freeze == 'first':
             print('freezing all but first...')
             for name, param in model.named_parameters():
-                if not ('fc1' in name or 'fc.0' in name or 'conv1' in name):
-                    param.requires_grad = False 
+                if ('fc1' in name or 'fc.0' in name or 'conv1' in name):
+                    param.requires_grad = True 
                 else:
-                    param.requires_grad = True
+                    param.requires_grad = False
                 print(name, param.requires_grad)
-
-        if p.freeze == 'last':
+        elif p.freeze == 'last':
             print('freezing all but last...')
             for name, param in model.named_parameters():
-                if not 'fc.' + str(p.use_num_hidden - 1) in name:
-                    param.requires_grad = False 
-                print(name, param.requires_grad)    
-            
+                if 'fc.' + str(p.use_num_hidden - 1) in name:
+                    param.requires_grad = True 
+                else:
+                    param.requires_grad = False
+                print(name, param.requires_grad)   
+        else:
+            print('it', it, p.num_iters_small, p.lr_step)
+            num = max(0, (it - p.num_iters_small) // p.lr_step) # number of ticks so far (at least 0)
+            num = min(num, p.use_num_hidden - 1) # (max is num layers - 1)
+            if p.freeze == 'progress_first':
+                s = 'fc.' + str(num) 
+            elif p.freeze == 'progress_last':
+                s = 'fc.' + str(p.use_num_hidden - num)
+
+            print('progress', 'num', num, 'training only', s)                
+            for name, param in model.named_parameters():
+                if s in name:
+                    param.requires_grad = True
+                else:
+                    param.requires_grad = False
             
         # needs to work on the newly frozen params
-        print('it', it, 'lr', p.lr * p.lr_ticks[it])
+        print('it', it, 'lr', p.lr * p.lr_ticks[max(0, it - p.num_iters_small)])
         if p.optimizer == 'sgd':    
-            optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=p.lr * p.lr_ticks[it])
+            optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=p.lr * p.lr_ticks[max(0, it - p.num_iters_small)])
         elif p.optimizer == 'adam':
-            optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=p.lr * p.lr_ticks[it])    
+            optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=p.lr * p.lr_ticks[max(0, it - p.num_iters_small)])    
         
         return model, optimizer
     
@@ -158,11 +173,12 @@ def fit_vision(p):
     for it in tqdm(range(0, p.num_iters)):
         
         # calc stats and record
-        print('it', it)
+#         print('it', it)
         losses_train[it], accs_train[it], mean_margin_train_unn[it], mean_margin_train[it] = calc_loss_acc(train_loader, batch_size, use_cuda, model, criterion)
         losses_test[it], accs_test[it], mean_margin_test_unn[it], mean_margin_test[it] = calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion, print_loss=True)
         
         # calculated reduced stats + act stats + explained var complicated
+
         if p.save_acts_and_reduce:
             model_r = reduce_model(model)
             losses_train_r[it], accs_train_r[it], _, _ = calc_loss_acc(train_loader, batch_size, use_cuda, model_r, criterion)
@@ -203,7 +219,7 @@ def fit_vision(p):
                 
         # set lr / freeze
         if it - p.num_iters_small in p.lr_ticks:
-            model, optimizer = freeze_and_set_lr(p, model, it=0)
+            model, optimizer = freeze_and_set_lr(p, model, it)
         
     # save final
     if not os.path.exists(p.out_dir):  # delete the features if they already exist
