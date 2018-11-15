@@ -52,6 +52,6 @@ def fit_and_save(n_iter, alpha, data):
     print('took', time.clock() - t, 'sec')
     np.save('bases_iters=' + str(n_iter) + '_alpha=' + str(alpha) + '.npy', V.components_)
 
-for n_iter in [60000]:
-    for alpha in [0.1, 10, 100]: # 1
+for n_iter in [200000]:
+    for alpha in [1]: # 1
         fit_and_save(n_iter, alpha, data)

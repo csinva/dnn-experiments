@@ -12,7 +12,7 @@ import sys
 import numpy as np
 from copy import deepcopy
 import pickle as pkl
-from torch.optim.lr_scheduler import StepLR
+# from torch.optim.lr_scheduler import StepLR, MultiStepLR
 from sklearn.decomposition import PCA
 from sklearn.metrics import pairwise
 import random
@@ -107,33 +107,39 @@ def fit_vision(p):
             print('shuffling labels...')
             train_set.train_labels = [random.randint(0, 9) for _ in range(50000)]
     
-    
-    # optimization
-    if p.freeze_all_but_first:
-        print('freezing all but first...')
-        for name, param in model.named_parameters():
-#             print(name, param.requires_grad)
-            if not ('fc1' in name or 'fc.0' in name or 'conv1' in name):
-                param.requires_grad = False 
-            print(name, param.requires_grad)
-    
-    if p.freeze_all_but_last:
-        print('freezing all but last...')
-        for name, param in model.named_parameters():
-#             print(name, param.requires_grad)
-            if not 'fc.' + str(p.use_num_hidden - 1) in name:
-                param.requires_grad = False 
-            print(name, param.requires_grad)    
+    def freeze_and_set_lr(p, model, it):
+        # optimization
+        if p.freeze == 'first':
+            print('freezing all but first...')
+            for name, param in model.named_parameters():
+                if not ('fc1' in name or 'fc.0' in name or 'conv1' in name):
+                    param.requires_grad = False 
+                else:
+                    param.requires_grad = True
+                print(name, param.requires_grad)
+
+        if p.freeze == 'last':
+            print('freezing all but last...')
+            for name, param in model.named_parameters():
+                if not 'fc.' + str(p.use_num_hidden - 1) in name:
+                    param.requires_grad = False 
+                print(name, param.requires_grad)    
             
+            
+        # needs to work on the newly frozen params
+        print('it', it, 'lr', p.lr * p.lr_ticks[it])
+        if p.optimizer == 'sgd':    
+            optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=p.lr * p.lr_ticks[it])
+        elif p.optimizer == 'adam':
+            optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=p.lr * p.lr_ticks[it])    
+        
+        return model, optimizer
+    
+    model, optimizer = freeze_and_set_lr(p, model, it=0)
     criterion = nn.CrossEntropyLoss()
     if use_cuda:
         model = model.cuda()
-    if p.optimizer == 'sgd':    
-        optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=p.lr)
-    elif p.optimizer == 'adam':
-        optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=p.lr, betas=(p.beta1, p.beta2), eps=1e-8)
-    scheduler = StepLR(optimizer, step_size=p.step_size_optimizer, gamma=p.gamma_optimizer)
-    scheduler2 = StepLR(optimizer, step_size=p.step_size_optimizer_2, gamma=p.gamma_optimizer2)   
+    
 
     # things to record
     weights_first_str = models.get_weight_names(model)[0]
@@ -146,7 +152,6 @@ def fit_vision(p):
     mean_margin_train, mean_margin_test = np.zeros(p.num_iters), np.zeros(p.num_iters)    
     explained_var_dicts, explained_var_dicts_cosine, explained_var_dicts_rbf, explained_var_dicts_lap = [], [], [], []
     act_var_dicts_train, act_var_dicts_test, act_var_dicts_train_rbf, act_var_dicts_test_rbf = [], [], [], []    
-
         
     # run    
     print('training...')
@@ -174,7 +179,7 @@ def fit_vision(p):
         
         # record weights
         weight_dict = deepcopy({x[0]:x[1].data.cpu().numpy() for x in model.named_parameters()})
-        if it % p.save_all_weights_freq == p.save_all_weights_mod or it == p.num_iters - 1 or it == 0:
+        if it % p.save_all_weights_freq == 0 or it == p.num_iters - 1 or it == 0:
             weights[p.its[it]] = weight_dict 
         weights_first10[p.its[it]] = deepcopy(model.state_dict()[weights_first_str][:20].cpu().numpy())            
         weight_norms[p.its[it]] = layer_norms(model.state_dict())    
@@ -195,12 +200,10 @@ def fit_vision(p):
             # don't go through whole dataset
             if batch_idx > len(train_loader) / p.saves_per_iter and it <= p.saves_per_iter * p.saves_per_iter_end + 1:
                 break
-                    
-        scheduler.step()
-        if it > p.num_iters_small:
-            scheduler2.step()
-            
-        
+                
+        # set lr / freeze
+        if it - p.num_iters_small in p.lr_ticks:
+            model, optimizer = freeze_and_set_lr(p, model, it=0)
         
     # save final
     if not os.path.exists(p.out_dir):  # delete the features if they already exist
