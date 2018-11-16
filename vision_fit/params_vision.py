@@ -7,19 +7,19 @@ class p:
     shuffle_labels = False
     use_conv = False
     use_conv_special = False
-    use_num_hidden = 3 # set to 0 or False to ignore
-    freeze = 'progress_first' # first, last, progress_first, progress_last
-    hidden_size = 1000
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/freeze_train/test' # test
+    use_num_hidden = 10 # set to 0 or False to ignore
+    freeze = 'progress_last' # first, last, progress_first, progress_last
+    hidden_size = 3
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/freeze_train/progress_sweep_full' # test
     save_acts_and_reduce = False
     
     # saving
     saves_per_iter = 5 # really each iter is only iter / this
     saves_per_iter_end = 2 # stop saving densely after saves_per_iter * save_per_iter_end
     num_iters_small = saves_per_iter * saves_per_iter_end
-    num_iters = num_iters_small + 60 # note: tied to saves_per_iter
+    num_iters = num_iters_small + 16 * 10 # note: tied to saves_per_iter
     lr_step = 16
-    lr_ticks = {0: 1, # initial lr should multpliy by 1
+    lr_ticks = {0: 1, # initial lr should multiply by 1
                 **{8 + x * 16: 0.5 for x in range(30)}, # tick down (starts after num_iters_small)
                 **{x * 16: 1.0 for x in range(1, 30)}} # tick up (starts after num_iters_small)
     

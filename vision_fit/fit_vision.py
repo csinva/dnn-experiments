@@ -104,13 +104,13 @@ def fit_vision(p):
                 model = models.LinearNet(3, 32*32*3, 256, 10)
         
         if p.shuffle_labels:
-            print('shuffling labels...')
+#             print('shuffling labels...')
             train_set.train_labels = [random.randint(0, 9) for _ in range(50000)]
     
     def freeze_and_set_lr(p, model, it):
         # optimization
         if p.freeze == 'first':
-            print('freezing all but first...')
+#             print('freezing all but first...')
             for name, param in model.named_parameters():
                 if ('fc1' in name or 'fc.0' in name or 'conv1' in name):
                     param.requires_grad = True 
@@ -118,7 +118,7 @@ def fit_vision(p):
                     param.requires_grad = False
                 print(name, param.requires_grad)
         elif p.freeze == 'last':
-            print('freezing all but last...')
+#             print('freezing all but last...')
             for name, param in model.named_parameters():
                 if 'fc.' + str(p.use_num_hidden - 1) in name:
                     param.requires_grad = True 
@@ -126,15 +126,15 @@ def fit_vision(p):
                     param.requires_grad = False
                 print(name, param.requires_grad)   
         else:
-            print('it', it, p.num_iters_small, p.lr_step)
+#             print('it', it, p.num_iters_small, p.lr_step)
             num = max(0, (it - p.num_iters_small) // p.lr_step) # number of ticks so far (at least 0)
             num = min(num, p.use_num_hidden - 1) # (max is num layers - 1)
             if p.freeze == 'progress_first':
                 s = 'fc.' + str(num) 
             elif p.freeze == 'progress_last':
-                s = 'fc.' + str(p.use_num_hidden - num)
+                s = 'fc.' + str(p.use_num_hidden - 1 - num)
 
-            print('progress', 'num', num, 'training only', s)                
+#             print('progress', 'num', num, 'training only', s)                
             for name, param in model.named_parameters():
                 if s in name:
                     param.requires_grad = True
@@ -142,7 +142,7 @@ def fit_vision(p):
                     param.requires_grad = False
             
         # needs to work on the newly frozen params
-        print('it', it, 'lr', p.lr * p.lr_ticks[max(0, it - p.num_iters_small)])
+#         print('it', it, 'lr', p.lr * p.lr_ticks[max(0, it - p.num_iters_small)])
         if p.optimizer == 'sgd':    
             optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=p.lr * p.lr_ticks[max(0, it - p.num_iters_small)])
         elif p.optimizer == 'adam':
@@ -195,7 +195,7 @@ def fit_vision(p):
         
         # record weights
         weight_dict = deepcopy({x[0]:x[1].data.cpu().numpy() for x in model.named_parameters()})
-        if it % p.save_all_weights_freq == 0 or it == p.num_iters - 1 or it == 0:
+        if it % p.save_all_weights_freq == 0 or it == p.num_iters - 1 or it == 0: # save first, last, jumps
             weights[p.its[it]] = weight_dict 
         weights_first10[p.its[it]] = deepcopy(model.state_dict()[weights_first_str][:20].cpu().numpy())            
         weight_norms[p.its[it]] = layer_norms(model.state_dict())    

@@ -3,11 +3,13 @@ from slurmpy import Slurm
 
 # note mnist 10 epochs sgd takes ~4 mins, adam takes ~15 mins
 params_to_vary = {
-    'seed': range(2),
+    'seed': range(3),
     'lr': [0.5, 1.0],
     'optimizer': ['sgd', 'adam'],
-#     'use_num_hidden': [1, 2, 3, 4, 10],
-#     'hidden_size': [256, 1000]
+    'use_num_hidden': [1, 2, 3, 4, 10],
+    'hidden_size': [256],
+    'dset': ['mnist', 'cifar10'], 
+    'freeze': ['progress_first', 'progress_last']
 }
 
 # params_to_vary = {
@@ -19,7 +21,7 @@ params_to_vary = {
 
 
 # run
-s = Slurm("vision_nn_run", {"partition": "high"})
+s = Slurm("vision_nn_run", {"partition": "low"})
 ks = sorted(params_to_vary.keys())
 vals = [params_to_vary[k] for k in ks]
 param_combinations = list(itertools.product(*vals)) # list of tuples

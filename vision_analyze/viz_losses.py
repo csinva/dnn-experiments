@@ -45,8 +45,8 @@ def plot_losses(results, out_dir='figs'):
     for index, row in results.iterrows():
 
         color = 'orange' if row.optimizer == 'sgd' else 'deepskyblue'
-        style = {1: '^', 0.1: '-', 0.01: '--', 0.001: '.'}[row.lr]
-        alpha = {1.0: 0.3, 0.1: 0.8, 0.01: 0.8, 0.001: .3}[row.lr]
+        style = {1: '^', 0.5: '-', 0.1: '-', 0.01: '--', 0.001: '.'}[row.lr]
+        alpha = {1.0: 0.3, 0.5: 0.5, 0.1: 0.8, 0.01: 0.8, 0.001: .3}[row.lr]
         xlim = None #20 # None
 
         if not (row.optimizer, row.lr) in skips:
