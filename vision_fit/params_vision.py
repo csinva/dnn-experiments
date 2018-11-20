@@ -7,29 +7,44 @@ class p:
     shuffle_labels = False
     use_conv = False
     use_conv_special = False
-    use_num_hidden = 10 # set to 0 or False to ignore
-    freeze = 'progress_last' # first, last, progress_first, progress_last
-    hidden_size = 3
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/freeze_train/progress_sweep_full' # test
-    save_acts_and_reduce = False
+    use_num_hidden = 4 # set to 0 or False to ignore
+    freeze = False # False, first, last, progress_first, progress_last
+    hidden_size = 512
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/track_acts/test' # test
+    save_acts_and_reduce = True
     
     # saving
     saves_per_iter = 5 # really each iter is only iter / this
     saves_per_iter_end = 2 # stop saving densely after saves_per_iter * save_per_iter_end
     num_iters_small = saves_per_iter * saves_per_iter_end
-    num_iters = num_iters_small + 16 * 10 # note: tied to saves_per_iter
-    lr_step = 16
+    num_iters = num_iters_small + 150 # note: tied to saves_per_iter
+
+    
+    
+    lr_ticks = {0: 1, # note these will all be subtracted by 10
+                20: 0.5,
+                40: 0.25,
+                60: 0.125,
+                80: 0.1,
+                100: 0.05,
+                120: 0.025,
+                140: 0.01
+               }
+    lr_step = 16 # used for progress
+    '''
     lr_ticks = {0: 1, # initial lr should multiply by 1
                 **{8 + x * 16: 0.5 for x in range(30)}, # tick down (starts after num_iters_small)
                 **{x * 16: 1.0 for x in range(1, 30)}} # tick up (starts after num_iters_small)
+    '''
     
     # optimizer params (sweep)
     optimizer = 'sgd' # 'sgd' or 'adam'
     lr = 1.0 # default 0.01
     seed = 2
+    batch_size = 100
     
     # its
-    calc_activations = 5000 # (0) calculate activations for diff number of data points and then do dim reduction...
+    calc_activations = 8000 # (0) calculate activations for diff number of data points and then do dim reduction...
     if use_conv:
         calc_activations = 1000
     save_all_weights_freq = 20 # how often to save all the weights (if high will never save)

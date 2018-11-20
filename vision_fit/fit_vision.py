@@ -32,7 +32,6 @@ def seed(p):
 def fit_vision(p):
     seed(p)
     use_cuda = torch.cuda.is_available()
-    batch_size = 100
     if p.dset == 'cifar10':
         root = oj('/scratch/users/vision/yu_dl/raaz.rsk/data/cifar10')
     else:
@@ -74,11 +73,11 @@ def fit_vision(p):
             train_set.train_labels = torch.Tensor(np.random.randint(0, 10, 60000)).long()
         train_loader = torch.utils.data.DataLoader(
                  dataset=train_set,
-                 batch_size=batch_size,
+                 batch_size=p.batch_size,
                  shuffle=True)
         test_loader = torch.utils.data.DataLoader(
                         dataset=test_set,
-                        batch_size=batch_size,
+                        batch_size=p.batch_size,
                         shuffle=False)
 
     elif p.dset == 'cifar10':
@@ -88,10 +87,10 @@ def fit_vision(p):
 
         test_set = dset.CIFAR10(root=root, train=False, download=True, transform=trans)
         train_loader = torch.utils.data.DataLoader(train_set, 
-                                                   batch_size=batch_size,
+                                                   batch_size=p.batch_size,
                                                    shuffle=True)
         test_loader = torch.utils.data.DataLoader(test_set, 
-                                                  batch_size=batch_size,
+                                                  batch_size=p.batch_size,
                                                   shuffle=False)
         if p.use_conv_special:
             model = models.LinearThenConvCifar()        
@@ -125,7 +124,7 @@ def fit_vision(p):
                 else:
                     param.requires_grad = False
                 print(name, param.requires_grad)   
-        else:
+        elif p.freeze == 'progress_first' or p.freeze == 'progress_last':
 #             print('it', it, p.num_iters_small, p.lr_step)
             num = max(0, (it - p.num_iters_small) // p.lr_step) # number of ticks so far (at least 0)
             num = min(num, p.use_num_hidden - 1) # (max is num layers - 1)
@@ -165,33 +164,16 @@ def fit_vision(p):
     accs_train_r, accs_test_r = np.zeros(p.num_iters), np.zeros(p.num_iters)
     mean_margin_train_unn, mean_margin_test_unn = np.zeros(p.num_iters), np.zeros(p.num_iters)    
     mean_margin_train, mean_margin_test = np.zeros(p.num_iters), np.zeros(p.num_iters)    
-    explained_var_dicts, explained_var_dicts_cosine, explained_var_dicts_rbf, explained_var_dicts_lap = [], [], [], []
-    act_var_dicts_train, act_var_dicts_test, act_var_dicts_train_rbf, act_var_dicts_test_rbf = [], [], [], []    
+    explained_var_dicts, singular_val_dicts_cosine, singular_val_dicts_rbf, singular_val_dicts_lap = [], [], [], []
+    act_singular_val_dicts_train, act_singular_val_dicts_test, act_singular_val_dicts_train_rbf, act_singular_val_dicts_test_rbf = [], [], [], []    
         
     # run    
     print('training...')
     for it in tqdm(range(0, p.num_iters)):
         
         # calc stats and record
-#         print('it', it)
-        losses_train[it], accs_train[it], mean_margin_train_unn[it], mean_margin_train[it] = calc_loss_acc(train_loader, batch_size, use_cuda, model, criterion)
-        losses_test[it], accs_test[it], mean_margin_test_unn[it], mean_margin_test[it] = calc_loss_acc(test_loader, batch_size, use_cuda, model, criterion, print_loss=True)
-        
-        # calculated reduced stats + act stats + explained var complicated
-
-        if p.save_acts_and_reduce:
-            model_r = reduce_model(model)
-            losses_train_r[it], accs_train_r[it], _, _ = calc_loss_acc(train_loader, batch_size, use_cuda, model_r, criterion)
-            losses_test_r[it], accs_test_r[it], _, _ = calc_loss_acc(test_loader, batch_size, use_cuda, model_r, criterion)
-            act_var_dicts = calc_activation_dims(use_cuda, model, train_set, test_set, calc_activations=p.calc_activations)
-            act_var_dicts_train.append(act_var_dicts['train']['pca'])
-            act_var_dicts_test.append(act_var_dicts['test']['pca'])
-            act_var_dicts_train_rbf.append(act_var_dicts['train']['rbf'])
-            act_var_dicts_test_rbf.append(act_var_dicts['test']['rbf'])
-            explained_var_dicts_cosine.append(get_explained_var_kernels(weight_dict, 'cosine'))
-            explained_var_dicts_rbf.append(get_explained_var_kernels(weight_dict, 'rbf'))
-            explained_var_dicts_lap.append(get_explained_var_kernels(weight_dict, 'laplacian'))
-        
+        losses_train[it], accs_train[it], mean_margin_train_unn[it], mean_margin_train[it] = calc_loss_acc(train_loader, 100, use_cuda, model, criterion)
+        losses_test[it], accs_test[it], mean_margin_test_unn[it], mean_margin_test[it] = calc_loss_acc(test_loader, 100, use_cuda, model, criterion, print_loss=True)
         
         # record weights
         weight_dict = deepcopy({x[0]:x[1].data.cpu().numpy() for x in model.named_parameters()})
@@ -199,7 +181,21 @@ def fit_vision(p):
             weights[p.its[it]] = weight_dict 
         weights_first10[p.its[it]] = deepcopy(model.state_dict()[weights_first_str][:20].cpu().numpy())            
         weight_norms[p.its[it]] = layer_norms(model.state_dict())    
-        explained_var_dicts.append(get_explained_var_from_weight_dict(weight_dict))   
+        explained_var_dicts.append(get_singular_vals_from_weight_dict(weight_dict))   
+        
+        # calculated reduced stats + act stats + explained var complicated
+        if p.save_acts_and_reduce:
+            model_r = reduce_model(model)
+            losses_train_r[it], accs_train_r[it], _, _ = calc_loss_acc(train_loader, 100, use_cuda, model_r, criterion)
+            losses_test_r[it], accs_test_r[it], _, _ = calc_loss_acc(test_loader, 100, use_cuda, model_r, criterion)
+            act_var_dicts = calc_activation_dims(use_cuda, model, train_set, test_set, calc_activations=p.calc_activations)
+            act_singular_val_dicts_train.append(act_var_dicts['train']['pca'])
+            act_singular_val_dicts_test.append(act_var_dicts['test']['pca'])
+            act_singular_val_dicts_train_rbf.append(act_var_dicts['train']['rbf'])
+            act_singular_val_dicts_test_rbf.append(act_var_dicts['test']['rbf'])
+            singular_val_dicts_cosine.append(get_singular_vals_kernels(weight_dict, 'cosine'))
+            singular_val_dicts_rbf.append(get_singular_vals_kernels(weight_dict, 'rbf'))
+            singular_val_dicts_lap.append(get_singular_vals_kernels(weight_dict, 'laplacian'))
         
 
         # training
@@ -240,14 +236,14 @@ def fit_vision(p):
                'mean_margin_test_unnormalized': mean_margin_test_unn, # mean test margin at each it (pre softmax)       
                'mean_margin_train': mean_margin_train, # mean train margin at each it (after softmax)
                'mean_margin_test': mean_margin_test, # mean test margin at each it (after softmax)
-               'explained_var_dicts_pca': explained_var_dicts, 
-               'explained_var_dicts_cosine': explained_var_dicts_cosine, 
-               'explained_var_dicts_rbf': explained_var_dicts_rbf, 
-               'explained_var_dicts_lap': explained_var_dicts_lap,
-               'act_var_dicts_train_pca': act_var_dicts_train, 
-               'act_var_dicts_test_pca': act_var_dicts_test, 
-               'act_var_dicts_train_rbf': act_var_dicts_train_rbf, 
-               'act_var_dicts_test_rbf': act_var_dicts_test_rbf}
+               'singular_val_dicts_pca': explained_var_dicts, 
+               'singular_val_dicts_cosine': singular_val_dicts_cosine, 
+               'singular_val_dicts_rbf': singular_val_dicts_rbf, 
+               'singular_val_dicts_lap': singular_val_dicts_lap,
+               'act_singular_val_dicts_train_pca': act_singular_val_dicts_train, 
+               'act_singular_val_dicts_test_pca': act_singular_val_dicts_test, 
+               'act_singular_val_dicts_train_rbf': act_singular_val_dicts_train_rbf, 
+               'act_singular_val_dicts_test_rbf': act_singular_val_dicts_test_rbf}
     weights_results = {'weights': weights, 'weights_first10': weights_first10}    
     results_combined = {**params, **results}    
     weights_results_combined = {**params, **weights_results}

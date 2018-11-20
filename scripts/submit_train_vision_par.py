@@ -2,22 +2,45 @@ import itertools
 from slurmpy import Slurm
 
 # note mnist 10 epochs sgd takes ~4 mins, adam takes ~15 mins
+
+
+# this is for parametric families
 params_to_vary = {
-    'seed': range(3),
+    'seed': range(0, 3),
+    'lr': [0.1, 1.0],
+    'optimizer': ['sgd', 'adam'],
+    'use_num_hidden': [2, 4, 7],
+    'dset': ['mnist', 'cifar10'], 
+    'batch_size': [10, 100, 1000],
+    'shuffle_labels': ['False', 'True'],
+    'hidden_size': [512],    
+    'freeze': ['False'],
+    'save_acts_and_reduce': ['True']
+}
+
+# this is for layer by layer
+'''
+params_to_vary = {
+    'seed': range(3, 9),
     'lr': [0.5, 1.0],
     'optimizer': ['sgd', 'adam'],
     'use_num_hidden': [1, 2, 3, 4, 10],
     'hidden_size': [256],
     'dset': ['mnist', 'cifar10'], 
     'freeze': ['progress_first', 'progress_last']
+    'save_acts_and_reduce': ['False']
 }
+'''
 
-# params_to_vary = {
-#     'seed': range(2),
-#     'lr': [0.001, 0.01, 0.1],
-#     'optimizer': ['sgd', 'adam'],
-# }
-# params_to_delete = [(0.1, 'adam', 0), (1, 'adam', 0)]
+# standard params
+'''
+params_to_vary = {
+    'seed': range(2),
+    'lr': [0.001, 0.01, 0.1],
+    'optimizer': ['sgd', 'adam'],
+}
+params_to_delete = [(0.1, 'adam', 0), (1, 'adam', 0)]
+'''
 
 
 # run

@@ -66,8 +66,8 @@ def calc_activation_dims(use_cuda, model, dset_train, dset_test, calc_activation
                 y = {key: y[key].data.cpu().numpy().T for key in y.keys()}
                 if batch_idx >= 0:
                     break
-            act_var_dict = get_explained_var_from_weight_dict(y, activation=True)
-            act_var_dict_rbf = get_explained_var_kernels(y, kernel='rbf', activation=True)       
+            act_var_dict = get_singular_vals_from_weight_dict(y, activation=True)
+            act_var_dict_rbf = get_singular_vals_kernels(y, kernel='rbf', activation=True)       
             if d == dset_train:
                 dicts_dict['train'] = {'pca': act_var_dict, 'rbf': act_var_dict_rbf}
             else:
@@ -75,7 +75,7 @@ def calc_activation_dims(use_cuda, model, dset_train, dset_test, calc_activation
         return dicts_dict
 
 # get explained_var
-def get_explained_var_from_weight_dict(weight_dict, activation=False):
+def get_singular_vals_from_weight_dict(weight_dict, activation=False):
     explained_var_dict = {}
     for layer_name in weight_dict.keys():
         if 'weight' in layer_name or activation:
@@ -84,11 +84,11 @@ def get_explained_var_from_weight_dict(weight_dict, activation=False):
                 w = w.reshape(w.shape[0] * w.shape[1], -1)
             pca = PCA(n_components=w.shape[1])
             pca.fit(w)
-            explained_var_dict[layer_name] = deepcopy(pca.explained_variance_ratio_)
+            explained_var_dict[layer_name] = deepcopy(pca.singular_values_)
     return explained_var_dict
 
 # get explained_var
-def get_explained_var_kernels(weight_dict, kernel='cosine', activation=False):
+def get_singular_vals_kernels(weight_dict, kernel='cosine', activation=False):
     explained_var_dict = {}
     for layer_name in weight_dict.keys():
         if 'weight' in layer_name or activation:
@@ -103,5 +103,5 @@ def get_explained_var_kernels(weight_dict, kernel='cosine', activation=False):
                 K = pairwise.laplacian_kernel(w)       
             pca = PCA()
             pca.fit(K)
-            explained_var_dict[layer_name] = deepcopy(pca.explained_variance_ratio_)
+            explained_var_dict[layer_name] = deepcopy(pca.singular_values_)
     return explained_var_dict
