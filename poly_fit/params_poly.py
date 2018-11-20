@@ -2,7 +2,7 @@ import numpy as np
 from numpy.random import randint
 
 class p:   
-    seed = 1
+    seed = 2
 
     
     # converting to string
