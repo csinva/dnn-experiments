@@ -7,15 +7,15 @@ from slurmpy import Slurm
 # this is for parametric families
 params_to_vary = {
     'seed': range(0, 3),
-    'lr': [1.0, 0.1, 0.01, 0.001],
+    'lr': [1.0, 0.1, 0.001, 0.01],
     'optimizer': ['sgd', 'adam'],
-    'use_num_hidden': [2, 4, 7],
+    'num_layers': [4, 2, 7], # add in 2, 7
     'dset': ['mnist', 'cifar10'], 
     'batch_size': [10, 100, 1000],
-    'shuffle_labels': ['False', 'True'],
+    'shuffle_labels': [False], # loop
     'hidden_size': [512],    
-    'freeze': ['False'],
-    'save_acts_and_reduce': ['True']
+    'freeze': [False],
+    'save_acts_and_reduce': [True]
 }
 
 # this is for layer by layer
@@ -28,7 +28,7 @@ params_to_vary = {
     'hidden_size': [256],
     'dset': ['mnist', 'cifar10'], 
     'freeze': ['progress_first', 'progress_last']
-    'save_acts_and_reduce': ['False']
+    'save_acts_and_reduce': [False]
 }
 '''
 
@@ -48,6 +48,7 @@ s = Slurm("vision_nn_run", {"partition": "low"})
 ks = sorted(params_to_vary.keys())
 vals = [params_to_vary[k] for k in ks]
 param_combinations = list(itertools.product(*vals)) # list of tuples
+print(param_combinations)
 # for param_delete in params_to_delete:
 #     param_combinations.remove(param_delete)
 

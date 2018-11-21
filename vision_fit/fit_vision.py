@@ -63,12 +63,12 @@ def fit_vision(p):
                 model = models.Linear_then_conv()
             elif p.use_conv:
                 model = models.LeNet()
-            elif p.use_num_hidden > 0:
-                model = models.LinearNet(p.use_num_hidden, 28*28, p.hidden_size, 10)
+            elif p.num_layers > 0:
+                model = models.LinearNet(p.num_layers, 28*28, p.hidden_size, 10)
             else:
                 model = models.LinearNet(3, 28*28, 256, 10)
         else:
-            model = models.LinearNet(p.use_num_hidden, 8*8, p.hidden_size, 16)
+            model = models.LinearNet(p.num_layers, 8*8, p.hidden_size, 16)
             
         if p.shuffle_labels:
             train_set.train_labels = torch.Tensor(np.random.randint(0, 10, 60000)).long()
@@ -98,8 +98,8 @@ def fit_vision(p):
         elif p.use_conv:
             model = models.Cifar10Conv()        
         else:
-            if p.use_num_hidden > 0:
-                model = models.LinearNet(p.use_num_hidden, 32*32*3, p.hidden_size, 10)
+            if p.num_layers > 0:
+                model = models.LinearNet(p.num_layers, 32*32*3, p.hidden_size, 10)
             else:
                 model = models.LinearNet(3, 32*32*3, 256, 10)
         
@@ -120,7 +120,7 @@ def fit_vision(p):
         elif p.freeze == 'last':
 #             print('freezing all but last...')
             for name, param in model.named_parameters():
-                if 'fc.' + str(p.use_num_hidden - 1) in name:
+                if 'fc.' + str(p.num_layers - 1) in name:
                     param.requires_grad = True 
                 else:
                     param.requires_grad = False
@@ -128,11 +128,11 @@ def fit_vision(p):
         elif p.freeze == 'progress_first' or p.freeze == 'progress_last':
 #             print('it', it, p.num_iters_small, p.lr_step)
             num = max(0, (it - p.num_iters_small) // p.lr_step) # number of ticks so far (at least 0)
-            num = min(num, p.use_num_hidden - 1) # (max is num layers - 1)
+            num = min(num, p.num_layers - 1) # (max is num layers - 1)
             if p.freeze == 'progress_first':
                 s = 'fc.' + str(num) 
             elif p.freeze == 'progress_last':
-                s = 'fc.' + str(p.use_num_hidden - 1 - num)
+                s = 'fc.' + str(p.num_layers - 1 - num)
 
 #             print('progress', 'num', num, 'training only', s)                
             for name, param in model.named_parameters():
@@ -255,13 +255,15 @@ if __name__ == '__main__':
     print('starting...')
     t = time.time()
     from params_vision import p
-    
     print(p._str(p))
+    print('\n\nrunning with', vars(p))
+    
     # set params
     for i in range(1, len(sys.argv), 2):
         t = type(getattr(p, sys.argv[i]))
         setattr(p, sys.argv[i], t(sys.argv[i+1]))
-        
+    
+
     fit_vision(p)
     
     print('success! saved to ', p.out_dir, 'in ', time.time() - t, 'sec')
