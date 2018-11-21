@@ -256,6 +256,7 @@ if __name__ == '__main__':
     t = time.time()
     from params_vision import p
     
+    print(p._str(p))
     # set params
     for i in range(1, len(sys.argv), 2):
         t = type(getattr(p, sys.argv[i]))

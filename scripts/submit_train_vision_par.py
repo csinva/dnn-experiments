@@ -7,7 +7,7 @@ from slurmpy import Slurm
 # this is for parametric families
 params_to_vary = {
     'seed': range(0, 3),
-    'lr': [0.1, 1.0],
+    'lr': [1.0, 0.1, 0.01, 0.001],
     'optimizer': ['sgd', 'adam'],
     'use_num_hidden': [2, 4, 7],
     'dset': ['mnist', 'cifar10'], 
