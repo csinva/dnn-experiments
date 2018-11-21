@@ -20,7 +20,6 @@ class p:
     num_iters = num_iters_small + 150 # note: tied to saves_per_iter
 
     
-    
     lr_ticks = {0: 1, # note these will all be subtracted by 10
                 20: 0.5,
                 40: 0.25,

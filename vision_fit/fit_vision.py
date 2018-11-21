@@ -21,6 +21,7 @@ from dim_reduction import *
 from stats import *
 from custom_data import get_binary_bars
 from tqdm import tqdm
+import time
 
 
 def seed(p):
@@ -252,6 +253,7 @@ def fit_vision(p):
     
 if __name__ == '__main__':
     print('starting...')
+    t = time.time()
     from params_vision import p
     
     # set params
@@ -261,4 +263,4 @@ if __name__ == '__main__':
         
     fit_vision(p)
     
-    print('success! saved to ', p.out_dir)
+    print('success! saved to ', p.out_dir, 'in ', time.time() - t, 'sec')
