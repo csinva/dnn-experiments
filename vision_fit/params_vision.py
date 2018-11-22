@@ -10,7 +10,7 @@ class p:
     num_layers = 4 # set to 0 or False to ignore
     freeze = False # False, first, last, progress_first, progress_last
     hidden_size = 512
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/track_acts/test' # test
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/track_acts/sweep_full' # test
     save_acts_and_reduce = True
     
     # saving

@@ -253,17 +253,21 @@ def fit_vision(p):
     
 if __name__ == '__main__':
     print('starting...')
-    t = time.time()
+    t0 = time.time()
     from params_vision import p
-    print(p._str(p))
-    print('\n\nrunning with', vars(p))
     
     # set params
     for i in range(1, len(sys.argv), 2):
         t = type(getattr(p, sys.argv[i]))
-        setattr(p, sys.argv[i], t(sys.argv[i+1]))
+        if sys.argv[i+1] == 'True':
+            setattr(p, sys.argv[i], t(True))            
+        elif sys.argv[i+1] == 'False':
+            setattr(p, sys.argv[i], t(False))
+        else:
+            setattr(p, sys.argv[i], t(sys.argv[i+1]))
     
-
-    fit_vision(p)
+    print(p._str(p))
+    print('\n\nrunning with', vars(p))
+    # fit_vision(p)
     
-    print('success! saved to ', p.out_dir, 'in ', time.time() - t, 'sec')
+    print('success! saved to ', p.out_dir, 'in ', time.time() - t0, 'sec')

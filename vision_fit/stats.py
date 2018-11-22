@@ -56,4 +56,6 @@ def calc_loss_acc(loader, batch_size, use_cuda, model, criterion, print_loss=Fal
         margin_sum += np.sum(preds_norm_class) - np.sum(preds_norm_class2)
     if print_loss:    
         print('==>>> loss: {:.6f}, acc: {:.3f}, margin: {:.3f}'.format(tot_loss_test / n_test, correct_cnt * 1.0 / n_test, margin_sum / n_test))
+    
+    # returns loss, acc, margin_unnormalized, margin_normalized
     return tot_loss_test / n_test, correct_cnt * 1.0 / n_test, margin_sum_unnormalized / n_test, margin_sum / n_test

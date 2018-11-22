@@ -12,7 +12,7 @@ params_to_vary = {
     'num_layers': [4, 2, 7], # add in 2, 7
     'dset': ['mnist', 'cifar10'], 
     'batch_size': [10, 100, 1000],
-    'shuffle_labels': [False], # loop
+    'shuffle_labels': [False, True], # loop
     'hidden_size': [512],    
     'freeze': [False],
     'save_acts_and_reduce': [True]

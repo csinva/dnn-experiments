@@ -13,13 +13,11 @@ import pickle as pkl
 import pandas as pd
 import math
 plt.style.use('seaborn-notebook')
-from data_load_preprocess import data
 from collections import OrderedDict
 from sklearn import preprocessing
 
 import torch
 from torch.autograd import Variable
-from viz import viz
 from sklearn.decomposition import PCA
 
 import warnings
