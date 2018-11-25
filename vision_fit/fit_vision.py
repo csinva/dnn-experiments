@@ -173,8 +173,8 @@ def fit_vision(p):
     for it in tqdm(range(0, p.num_iters)):
         
         # calc stats and record
-        losses_train[it], accs_train[it], mean_margin_train_unn[it], mean_margin_train[it] = calc_loss_acc(train_loader, 100, use_cuda, model, criterion)
-        losses_test[it], accs_test[it], mean_margin_test_unn[it], mean_margin_test[it] = calc_loss_acc(test_loader, 100, use_cuda, model, criterion, print_loss=True)
+        losses_train[it], accs_train[it], mean_margin_train_unn[it], mean_margin_train[it] = calc_loss_acc(train_loader, p.batch_size, use_cuda, model, criterion)
+        losses_test[it], accs_test[it], mean_margin_test_unn[it], mean_margin_test[it] = calc_loss_acc(test_loader, p.batch_size, use_cuda, model, criterion, print_loss=True)
         
         # record weights
         weight_dict = deepcopy({x[0]:x[1].data.cpu().numpy() for x in model.named_parameters()})
@@ -187,8 +187,8 @@ def fit_vision(p):
         # calculated reduced stats + act stats + explained var complicated
         if p.save_acts_and_reduce:
             model_r = reduce_model(model)
-            losses_train_r[it], accs_train_r[it], _, _ = calc_loss_acc(train_loader, 100, use_cuda, model_r, criterion)
-            losses_test_r[it], accs_test_r[it], _, _ = calc_loss_acc(test_loader, 100, use_cuda, model_r, criterion)
+            losses_train_r[it], accs_train_r[it], _, _ = calc_loss_acc(train_loader, p.batch_size, use_cuda, model_r, criterion)
+            losses_test_r[it], accs_test_r[it], _, _ = calc_loss_acc(test_loader, p.batch_size, use_cuda, model_r, criterion)
             act_var_dicts = calc_activation_dims(use_cuda, model, train_set, test_set, calc_activations=p.calc_activations)
             act_singular_val_dicts_train.append(act_var_dicts['train']['pca'])
             act_singular_val_dicts_test.append(act_var_dicts['test']['pca'])
@@ -268,6 +268,6 @@ if __name__ == '__main__':
     
     print(p._str(p))
     print('\n\nrunning with', vars(p))
-    # fit_vision(p)
+    fit_vision(p)
     
     print('success! saved to ', p.out_dir, 'in ', time.time() - t0, 'sec')

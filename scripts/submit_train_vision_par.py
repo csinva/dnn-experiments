@@ -6,7 +6,7 @@ from slurmpy import Slurm
 
 # this is for parametric families
 params_to_vary = {
-    'seed': range(0, 3),
+    'seed': range(3, 6),
     'lr': [1.0, 0.1, 0.001, 0.01],
     'optimizer': ['sgd', 'adam'],
     'num_layers': [4, 2, 7], # add in 2, 7
