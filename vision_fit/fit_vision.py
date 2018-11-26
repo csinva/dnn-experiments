@@ -63,12 +63,12 @@ def fit_vision(p):
                 model = models.Linear_then_conv()
             elif p.use_conv:
                 model = models.LeNet()
-            elif p.use_num_hidden > 0:
-                model = models.LinearNet(p.use_num_hidden, 28*28, p.hidden_size, 10)
+            elif p.num_layers > 0:
+                model = models.LinearNet(p.num_layers, 28*28, p.hidden_size, 10)
             else:
                 model = models.LinearNet(3, 28*28, 256, 10)
         else:
-            model = models.LinearNet(p.use_num_hidden, 8*8, p.hidden_size, 16)
+            model = models.LinearNet(p.num_layers, 8*8, p.hidden_size, 16)
             
         if p.shuffle_labels:
             train_set.train_labels = torch.Tensor(np.random.randint(0, 10, 60000)).long()
@@ -98,8 +98,8 @@ def fit_vision(p):
         elif p.use_conv:
             model = models.Cifar10Conv()        
         else:
-            if p.use_num_hidden > 0:
-                model = models.LinearNet(p.use_num_hidden, 32*32*3, p.hidden_size, 10)
+            if p.num_layers > 0:
+                model = models.LinearNet(p.num_layers, 32*32*3, p.hidden_size, 10)
             else:
                 model = models.LinearNet(3, 32*32*3, 256, 10)
         
@@ -120,7 +120,7 @@ def fit_vision(p):
         elif p.freeze == 'last':
 #             print('freezing all but last...')
             for name, param in model.named_parameters():
-                if 'fc.' + str(p.use_num_hidden - 1) in name:
+                if 'fc.' + str(p.num_layers - 1) in name:
                     param.requires_grad = True 
                 else:
                     param.requires_grad = False
@@ -128,11 +128,11 @@ def fit_vision(p):
         elif p.freeze == 'progress_first' or p.freeze == 'progress_last':
 #             print('it', it, p.num_iters_small, p.lr_step)
             num = max(0, (it - p.num_iters_small) // p.lr_step) # number of ticks so far (at least 0)
-            num = min(num, p.use_num_hidden - 1) # (max is num layers - 1)
+            num = min(num, p.num_layers - 1) # (max is num layers - 1)
             if p.freeze == 'progress_first':
                 s = 'fc.' + str(num) 
             elif p.freeze == 'progress_last':
-                s = 'fc.' + str(p.use_num_hidden - 1 - num)
+                s = 'fc.' + str(p.num_layers - 1 - num)
 
 #             print('progress', 'num', num, 'training only', s)                
             for name, param in model.named_parameters():
@@ -173,8 +173,8 @@ def fit_vision(p):
     for it in tqdm(range(0, p.num_iters)):
         
         # calc stats and record
-        losses_train[it], accs_train[it], mean_margin_train_unn[it], mean_margin_train[it] = calc_loss_acc(train_loader, 100, use_cuda, model, criterion)
-        losses_test[it], accs_test[it], mean_margin_test_unn[it], mean_margin_test[it] = calc_loss_acc(test_loader, 100, use_cuda, model, criterion, print_loss=True)
+        losses_train[it], accs_train[it], mean_margin_train_unn[it], mean_margin_train[it] = calc_loss_acc(train_loader, p.batch_size, use_cuda, model, criterion)
+        losses_test[it], accs_test[it], mean_margin_test_unn[it], mean_margin_test[it] = calc_loss_acc(test_loader, p.batch_size, use_cuda, model, criterion, print_loss=True)
         
         # record weights
         weight_dict = deepcopy({x[0]:x[1].data.cpu().numpy() for x in model.named_parameters()})
@@ -187,8 +187,8 @@ def fit_vision(p):
         # calculated reduced stats + act stats + explained var complicated
         if p.save_acts_and_reduce:
             model_r = reduce_model(model)
-            losses_train_r[it], accs_train_r[it], _, _ = calc_loss_acc(train_loader, 100, use_cuda, model_r, criterion)
-            losses_test_r[it], accs_test_r[it], _, _ = calc_loss_acc(test_loader, 100, use_cuda, model_r, criterion)
+            losses_train_r[it], accs_train_r[it], _, _ = calc_loss_acc(train_loader, p.batch_size, use_cuda, model_r, criterion)
+            losses_test_r[it], accs_test_r[it], _, _ = calc_loss_acc(test_loader, p.batch_size, use_cuda, model_r, criterion)
             act_var_dicts = calc_activation_dims(use_cuda, model, train_set, test_set, calc_activations=p.calc_activations)
             act_singular_val_dicts_train.append(act_var_dicts['train']['pca'])
             act_singular_val_dicts_test.append(act_var_dicts['test']['pca'])
@@ -253,15 +253,21 @@ def fit_vision(p):
     
 if __name__ == '__main__':
     print('starting...')
-    t = time.time()
+    t0 = time.time()
     from params_vision import p
     
-    print(p._str(p))
     # set params
     for i in range(1, len(sys.argv), 2):
         t = type(getattr(p, sys.argv[i]))
-        setattr(p, sys.argv[i], t(sys.argv[i+1]))
-        
+        if sys.argv[i+1] == 'True':
+            setattr(p, sys.argv[i], t(True))            
+        elif sys.argv[i+1] == 'False':
+            setattr(p, sys.argv[i], t(False))
+        else:
+            setattr(p, sys.argv[i], t(sys.argv[i+1]))
+    
+    print(p._str(p))
+    print('\n\nrunning with', vars(p))
     fit_vision(p)
     
-    print('success! saved to ', p.out_dir, 'in ', time.time() - t, 'sec')
+    print('success! saved to ', p.out_dir, 'in ', time.time() - t0, 'sec')
