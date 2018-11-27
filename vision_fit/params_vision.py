@@ -4,13 +4,13 @@ from numpy.random import randint
 class p:   
     # crucial params
     dset = 'mnist' # mnist, cifar10, noise, bars
-    shuffle_labels = False
+    shuffle_labels = True
     use_conv = False
     use_conv_special = False
     num_layers = 4 # set to 0 or False to ignore
     freeze = False # False, first, last, progress_first, progress_last
     hidden_size = 512
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/track_acts/sweep_full_high_seeds' # test
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/track_acts/test' # test
     save_acts_and_reduce = True
     
     # saving
