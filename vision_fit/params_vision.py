@@ -4,13 +4,13 @@ from numpy.random import randint
 class p:   
     # crucial params
     dset = 'mnist' # mnist, cifar10, noise, bars
-    shuffle_labels = True
+    shuffle_labels = False
     use_conv = False
     use_conv_special = False
     num_layers = 4 # set to 0 or False to ignore
     freeze = False # False, first, last, progress_first, progress_last
     hidden_size = 512
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/track_acts/hidden_128' # test
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/track_acts/test' # test
     save_acts_and_reduce = True
     
     # saving

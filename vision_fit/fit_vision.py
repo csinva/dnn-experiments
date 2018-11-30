@@ -19,10 +19,10 @@ import random
 import models
 from dim_reduction import *
 from stats import *
-from custom_data import get_binary_bars
+import data
 from tqdm import tqdm
 import time
-
+import optimization
 
 def seed(p):
     # set random seed        
@@ -33,124 +33,12 @@ def seed(p):
 def fit_vision(p):
     seed(p)
     use_cuda = torch.cuda.is_available()
-    if p.dset == 'cifar10':
-        root = oj('/scratch/users/vision/yu_dl/raaz.rsk/data/cifar10')
-    else:
-        root = oj('/scratch/users/vision/yu_dl/raaz.rsk/data/mnist')
-    if not os.path.exists(root):
-        os.mkdir(root)
     
-        
-    ## load mnist dataset     
-    if p.dset in ['mnist', 'bars', 'noise']:
-        trans = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (1.0,))])
-        train_set = dset.MNIST(root=root, train=True, transform=trans, download=True)
-        test_set = dset.MNIST(root=root, train=False, transform=trans, download=True)
-        if p.dset == 'noise':
-            train_set.train_data = torch.Tensor(np.random.randn(60000, 8, 8))
-            train_set.train_labels = torch.Tensor(np.random.randint(0, 10, 60000)).long()
-            test_set.test_data = torch.Tensor(np.random.randn(1000, 8, 8))
-            test_set.test_labels = torch.Tensor(np.random.randint(0, 10, 60000)).long()            
-        elif p.dset == 'bars':
-            bars, labs = get_binary_bars(8 * 8, 10000, 0.3)
-            train_set.train_data = torch.Tensor(bars.reshape(-1, 8, 8)).long()
-            train_set.train_labels = torch.Tensor(labs).long()
-            bars_test, labs_test = get_binary_bars(8 * 8, 2000, 0.3)
-            test_set.test_data = torch.Tensor(bars_test.reshape(-1, 8, 8)).long()
-            test_set.test_labels = torch.Tensor(labs_test).long()
-        if p.dset == 'mnist':
-            if p.use_conv_special:
-                model = models.Linear_then_conv()
-            elif p.use_conv:
-                model = models.LeNet()
-            elif p.num_layers > 0:
-                model = models.LinearNet(p.num_layers, 28*28, p.hidden_size, 10)
-            else:
-                model = models.LinearNet(3, 28*28, 256, 10)
-        else:
-            model = models.LinearNet(p.num_layers, 8*8, p.hidden_size, 16)
-            
-        if p.shuffle_labels:
-            train_set.train_labels = torch.Tensor(np.random.randint(0, 10, 60000)).long()
-        train_loader = torch.utils.data.DataLoader(
-                 dataset=train_set,
-                 batch_size=p.batch_size,
-                 shuffle=True)
-        test_loader = torch.utils.data.DataLoader(
-                        dataset=test_set,
-                        batch_size=p.batch_size,
-                        shuffle=False)
+    # pick dataset and model
+    train_loader, test_loader, model = data.get_data_and_model(p)
 
-    elif p.dset == 'cifar10':
-        trans = transforms.Compose(
-            [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-        train_set = dset.CIFAR10(root=root, train=True, download=True, transform=trans)
-
-        test_set = dset.CIFAR10(root=root, train=False, download=True, transform=trans)
-        train_loader = torch.utils.data.DataLoader(train_set, 
-                                                   batch_size=p.batch_size,
-                                                   shuffle=True)
-        test_loader = torch.utils.data.DataLoader(test_set, 
-                                                  batch_size=p.batch_size,
-                                                  shuffle=False)
-        if p.use_conv_special:
-            model = models.LinearThenConvCifar()        
-        elif p.use_conv:
-            model = models.Cifar10Conv()        
-        else:
-            if p.num_layers > 0:
-                model = models.LinearNet(p.num_layers, 32*32*3, p.hidden_size, 10)
-            else:
-                model = models.LinearNet(3, 32*32*3, 256, 10)
-        
-        if p.shuffle_labels:
-#             print('shuffling labels...')
-            train_set.train_labels = [random.randint(0, 9) for _ in range(50000)]
-    
-    def freeze_and_set_lr(p, model, it):
-        # optimization
-        if p.freeze == 'first':
-#             print('freezing all but first...')
-            for name, param in model.named_parameters():
-                if ('fc1' in name or 'fc.0' in name or 'conv1' in name):
-                    param.requires_grad = True 
-                else:
-                    param.requires_grad = False
-                print(name, param.requires_grad)
-        elif p.freeze == 'last':
-#             print('freezing all but last...')
-            for name, param in model.named_parameters():
-                if 'fc.' + str(p.num_layers - 1) in name:
-                    param.requires_grad = True 
-                else:
-                    param.requires_grad = False
-                print(name, param.requires_grad)   
-        elif p.freeze == 'progress_first' or p.freeze == 'progress_last':
-#             print('it', it, p.num_iters_small, p.lr_step)
-            num = max(0, (it - p.num_iters_small) // p.lr_step) # number of ticks so far (at least 0)
-            num = min(num, p.num_layers - 1) # (max is num layers - 1)
-            if p.freeze == 'progress_first':
-                s = 'fc.' + str(num) 
-            elif p.freeze == 'progress_last':
-                s = 'fc.' + str(p.num_layers - 1 - num)
-
-#             print('progress', 'num', num, 'training only', s)                
-            for name, param in model.named_parameters():
-                if s in name:
-                    param.requires_grad = True
-                else:
-                    param.requires_grad = False
-            
-        # needs to work on the newly frozen params
-#         print('it', it, 'lr', p.lr * p.lr_ticks[max(0, it - p.num_iters_small)])
-        if p.optimizer == 'sgd':    
-            optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=p.lr * p.lr_ticks[max(0, it - p.num_iters_small)])
-        elif p.optimizer == 'adam':
-            optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=p.lr * p.lr_ticks[max(0, it - p.num_iters_small)])    
-        
-        return model, optimizer
-    
-    model, optimizer = freeze_and_set_lr(p, model, it=0)
+    # set up optimizer and freeze appropriate layers
+    model, optimizer = optimization.freeze_and_set_lr(p, model, it=0)
     criterion = nn.CrossEntropyLoss()
     if use_cuda:
         model = model.cuda()
@@ -189,7 +77,7 @@ def fit_vision(p):
             model_r = reduce_model(model)
             losses_train_r[it], accs_train_r[it], _, _ = calc_loss_acc(train_loader, p.batch_size, use_cuda, model_r, criterion)
             losses_test_r[it], accs_test_r[it], _, _ = calc_loss_acc(test_loader, p.batch_size, use_cuda, model_r, criterion)
-            act_var_dicts = calc_activation_dims(use_cuda, model, train_set, test_set, calc_activations=p.calc_activations)
+            act_var_dicts = calc_activation_dims(use_cuda, model, train_loader.dataset, test_loader.dataset, calc_activations=p.calc_activations)
             act_singular_val_dicts_train.append(act_var_dicts['train']['pca'])
             act_singular_val_dicts_test.append(act_var_dicts['test']['pca'])
             act_singular_val_dicts_train_rbf.append(act_var_dicts['train']['rbf'])
@@ -216,7 +104,7 @@ def fit_vision(p):
                 
         # set lr / freeze
         if it - p.num_iters_small in p.lr_ticks:
-            model, optimizer = freeze_and_set_lr(p, model, it)
+            model, optimizer = optimization.freeze_and_set_lr(p, model, it)
         
     # save final
     if not os.path.exists(p.out_dir):  # delete the features if they already exist
