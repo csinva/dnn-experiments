@@ -71,7 +71,7 @@ def save_final_weights(results_weights, results, out_dir='figs'):
 def save_weight_evol(results_weights, out_dir='figs'):
 #     print('save weight evol....')
     # track weight evolution
-    results_weights.weights_first10
+#     results_weights.weights_first10
 
     # optimizer = 'adam'
     # lr = 0.1
