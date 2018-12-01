@@ -31,11 +31,12 @@ def seed(p):
     random.seed(p.seed)
     
 def fit_vision(p):
+    out_name = p._str(p) # generate random fname str before saving
     seed(p)
     use_cuda = torch.cuda.is_available()
     
     # pick dataset and model
-    train_loader, test_loader, model = data.get_data_and_model(p)
+    train_loader, test_loader, model, _ = data.get_data_and_model(p)
 
     # set up optimizer and freeze appropriate layers
     model, optimizer = optimization.freeze_and_set_lr(p, model, it=0)
@@ -136,8 +137,8 @@ def fit_vision(p):
     weights_results = {'weights': weights, 'weights_first10': weights_first10}    
     results_combined = {**params, **results}    
     weights_results_combined = {**params, **weights_results}
-    pkl.dump(results_combined, open(oj(p.out_dir, p._str(p) + '.pkl'), 'wb'))
-    pkl.dump(weights_results_combined, open(oj(p.out_dir, 'weights_' + p._str(p) + '.pkl'), 'wb'))    
+    pkl.dump(results_combined, open(oj(p.out_dir, out_name + '.pkl'), 'wb'))
+    pkl.dump(weights_results_combined, open(oj(p.out_dir, 'weights_' + out_name + '.pkl'), 'wb'))    
     
 if __name__ == '__main__':
     print('starting...')

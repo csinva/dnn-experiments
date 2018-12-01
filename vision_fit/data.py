@@ -124,4 +124,4 @@ def get_data_and_model(p):
         if p.shuffle_labels:
 #             print('shuffling labels...')
             train_set.train_labels = [random.randint(0, 9) for _ in range(50000)]
-    return train_loader, test_loader, model
+    return train_loader, test_loader, model, trans
