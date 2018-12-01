@@ -46,7 +46,7 @@ class p:
     calc_activations = 8000 # (0) calculate activations for diff number of data points and then do dim reduction...
     if use_conv:
         calc_activations = 1000
-    save_all_weights_freq = 20 # how often to save all the weights (if high will never save)
+    save_all_weights_freq = 10 # how often to save all the weights (if high will never save)
     its = np.hstack((1.0 * np.arange(num_iters_small) / saves_per_iter, saves_per_iter_end + np.arange(num_iters - num_iters_small)))
 
     

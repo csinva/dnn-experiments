@@ -49,8 +49,32 @@ def get_binary_bars(numInputs, numDatapoints, probabilityOn):
         labs[batchIdx] = int(np.sum(row_sel) + np.sum(col_sel))
     return outImages.T, labs
 
+# get model (based on dset, etc.)
+def get_model(p):
+    if p.dset == 'mnist':
+        if p.use_conv_special:
+            model = models.Linear_then_conv()
+        elif p.use_conv:
+            model = models.LeNet()
+        elif p.num_layers > 0:
+            model = models.LinearNet(p.num_layers, 28*28, p.hidden_size, 10)
+        else:
+            model = models.LinearNet(3, 28*28, 256, 10)
+    elif p.dset == 'cifar10':
+        if p.use_conv_special:
+            model = models.LinearThenConvCifar()        
+        elif p.use_conv:
+            model = models.Cifar10Conv()        
+        elif p.num_layers > 0:
+            model = models.LinearNet(p.num_layers, 32*32*3, p.hidden_size, 10)
+        else:
+            model = models.LinearNet(3, 32*32*3, 256, 10)
+    elif p.dset in ['bars', 'noise']:
+        model = models.LinearNet(p.num_layers, 8*8, p.hidden_size, 16)    
+    return model
+
 # get data and model from params p
-def get_data_and_model(p):
+def get_data_loaders(p):
     if p.dset == 'cifar10':
         root = oj('/scratch/users/vision/yu_dl/raaz.rsk/data/cifar10')
     else:
@@ -59,7 +83,7 @@ def get_data_and_model(p):
         os.mkdir(root)
             
         
-    ## load dataset (train_loader, test_loader, model)
+    ## load dataset (train_loader, test_loader)
     if p.dset in ['mnist', 'bars', 'noise']:
         trans = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (1.0,))])
         train_set = dset.MNIST(root=root, train=True, transform=trans, download=True)
@@ -76,17 +100,6 @@ def get_data_and_model(p):
             bars_test, labs_test = get_binary_bars(8 * 8, 2000, 0.3)
             test_set.test_data = torch.Tensor(bars_test.reshape(-1, 8, 8)).long()
             test_set.test_labels = torch.Tensor(labs_test).long()
-        if p.dset == 'mnist':
-            if p.use_conv_special:
-                model = models.Linear_then_conv()
-            elif p.use_conv:
-                model = models.LeNet()
-            elif p.num_layers > 0:
-                model = models.LinearNet(p.num_layers, 28*28, p.hidden_size, 10)
-            else:
-                model = models.LinearNet(3, 28*28, 256, 10)
-        else:
-            model = models.LinearNet(p.num_layers, 8*8, p.hidden_size, 16)
 
         if p.shuffle_labels:
             train_set.train_labels = torch.Tensor(np.random.randint(0, 10, 60000)).long()
@@ -111,17 +124,7 @@ def get_data_and_model(p):
         test_loader = torch.utils.data.DataLoader(test_set, 
                                                   batch_size=p.batch_size,
                                                   shuffle=False)
-        if p.use_conv_special:
-            model = models.LinearThenConvCifar()        
-        elif p.use_conv:
-            model = models.Cifar10Conv()        
-        else:
-            if p.num_layers > 0:
-                model = models.LinearNet(p.num_layers, 32*32*3, p.hidden_size, 10)
-            else:
-                model = models.LinearNet(3, 32*32*3, 256, 10)
 
         if p.shuffle_labels:
-#             print('shuffling labels...')
             train_set.train_labels = [random.randint(0, 9) for _ in range(50000)]
-    return train_loader, test_loader, model, trans
+    return train_loader, test_loader

@@ -36,7 +36,8 @@ def fit_vision(p):
     use_cuda = torch.cuda.is_available()
     
     # pick dataset and model
-    train_loader, test_loader, model, _ = data.get_data_and_model(p)
+    train_loader, test_loader = data.get_data_loaders(p)
+    model = data.get_model(p)
 
     # set up optimizer and freeze appropriate layers
     model, optimizer = optimization.freeze_and_set_lr(p, model, it=0)
@@ -67,7 +68,7 @@ def fit_vision(p):
         
         # record weights
         weight_dict = deepcopy({x[0]:x[1].data.cpu().numpy() for x in model.named_parameters()})
-        if it % p.save_all_weights_freq == 0 or it == p.num_iters - 1 or it == 0: # save first, last, jumps
+        if it % p.save_all_weights_freq == 0 or it == p.num_iters - 1 or it == 0 or (it < p.num_iters_small and it % 2 == 0): # save first, last, jumps
             weights[p.its[it]] = weight_dict 
         weights_first10[p.its[it]] = deepcopy(model.state_dict()[weights_first_str][:20].cpu().numpy())            
         weight_norms[p.its[it]] = layer_norms(model.state_dict())    

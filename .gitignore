@@ -7,3 +7,4 @@ scripts/slurm-scripts
 **.zip
 **.png
 **.npy
+**.pkl
