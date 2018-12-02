@@ -32,28 +32,6 @@ import viz_weights
 import style
 style.set_style()
 
-# depending on how much is saved, this may take a while
-out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/track_acts/sweep_full_real'
-fnames = sorted([fname for fname in os.listdir(out_dir)
-                 if not 'mnist' in fname]) # and 
-#                  'numlays=4' in fname and 
-#                  'batchsize=100' in fname and 
-#                  not 'batchsize=1000' in fname])
-weights_list = [pd.Series(pkl.load(open(oj(out_dir, fname), "rb"))) for fname in tqdm(fnames) 
-                if fname.startswith('weights')]
-results_weights = pd.concat(weights_list, axis=1).T.infer_objects()
-
-# results_list = [pd.Series(pkl.load(open(oj(out_dir, fname), "rb"))) for fname in tqdm(fnames) 
-#                 if not fname.startswith('weights')]
-# results = pd.concat(results_list, axis=1).T.infer_objects()
-
-save_dir = 'results_weights'
-if not os.path.exists(save_dir):
-    os.makedirs(save_dir)
-    
-print('loaded', results_weights.shape[0], 'runs')
-
-
 
 # preprocess data
 def process_loaders(train_loader, test_loader):
@@ -86,7 +64,7 @@ def calc_max_corr(X, W):
     return max_corr
 
 # calc corr score from run
-def calc_max_corr_input(run, X_train, Y_train):
+def calc_max_corr_input(run, X_train, Y_train, X_test, Y_test):
     weights_dict_dict = run['weights'] # keys are epochs, vals are dicts of all weights
     weights_dict = weights_dict_dict[epoch] # keys are layers, vals are weight values
     
@@ -100,6 +78,9 @@ def calc_max_corr_input(run, X_train, Y_train):
     
     preds = model(Variable(X_train)).data.cpu().numpy().argmax(axis=1)
     accs = preds==Y_train
+    
+    preds_test = model(Variable(X_test)).data.cpu().numpy().argmax(axis=1)
+    accs_test = preds_test==Y_test
     
 
     X = X_train.cpu().numpy().reshape(X_train.shape[0], -1)
@@ -122,28 +103,47 @@ def calc_max_corr_input(run, X_train, Y_train):
     max_corr_4 = calc_max_corr(ZZ, W4)
     
     
-    return np.mean(max_corr_1), np.mean(max_corr_2), np.mean(max_corr_3), np.mean(max_corr_4), np.mean(accs)
+    return np.mean(max_corr_1), np.mean(max_corr_2), np.mean(max_corr_3), np.mean(max_corr_4), np.mean(accs), np.mean(accs_test)
 
-results_weights_filt = results_weights[results_weights['shuffle_labels'] == False]
-results_weights_filt = results_weights_filt[results_weights_filt['seed'] == 0]
-results_weights_filt = results_weights_filt[results_weights_filt['num_layers'] >= 4]
+if __name__ == '__main__':
+    # depending on how much is saved, this may take a while
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/track_acts/sweep_full_real'
+    fnames = sorted([fname for fname in os.listdir(out_dir) if not 'mnist' in fname and 'numlays=4' in fname])
+    #                  'batchsize=100' in fname and 
+    #                  not 'batchsize=1000' in fname])
+    weights_list = [pd.Series(pkl.load(open(oj(out_dir, fname), "rb"))) for fname in tqdm(fnames) 
+                    if fname.startswith('weights')]
+    results_weights = pd.concat(weights_list, axis=1).T.infer_objects()
+
+    # results_list = [pd.Series(pkl.load(open(oj(out_dir, fname), "rb"))) for fname in tqdm(fnames) 
+    #                 if not fname.startswith('weights')]
+    # results = pd.concat(results_list, axis=1).T.infer_objects()
+
+    save_dir = 'results_weights'
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+
+    print('loaded', results_weights.shape[0], 'runs')
+    results_weights_filt = results_weights[results_weights['shuffle_labels'] == False]
+    results_weights_filt = results_weights_filt[results_weights_filt['seed'] == 0]
+    results_weights_filt = results_weights_filt[results_weights_filt['num_layers'] >= 4]
 
 
-N = results_weights_filt.shape[0]
-epoch = 151
-mean_max_corrs1, mean_max_corrs2, mean_max_corrs3, mean_max_corrs4, train_accs = np.zeros(N), np.zeros(N), np.zeros(N), np.zeros(N), np.zeros(N)
-train_loader, test_loader = data.get_data_loaders(results_weights_filt.iloc[0])
-X_train, Y_train, X_test, Y_test = process_loaders(train_loader, test_loader)
-for i in tqdm(range(N)):
-    run = results_weights_filt.iloc[i]
-    run['num_layer'] = int(run['num_layers'])
-    run['hidden_size'] = int(run['hidden_size'])
-    mean_max_corrs1[i], mean_max_corrs2[i], mean_max_corrs3[i], mean_max_corrs4[i], train_accs[i] = calc_max_corr_input(run, X_train, Y_train)
-    
-pd_max = pd.DataFrame({'max_corr1': mean_max_corrs1, 'max_corr2': mean_max_corrs2, 'max_corr3': mean_max_corrs3, 
-                       'max_corr4': mean_max_corrs4, 'train_acc_final': train_accs, 
-                       'num_layers': results_weights_filt['num_layers'], 'optimizer': results_weights_filt['optimizer'],
-                       'batch_size': results_weights_filt['batch_size'], 'lr': results_weights_filt['lr']})
-pd_max.to_pickle('max_corr_cifar_4+7lay.pkl')
-# pkl.dump(pd_max, 'max_corr_small.pkl')
+    N = results_weights_filt.shape[0]
+    epoch = 151
+    mean_max_corrs1, mean_max_corrs2, mean_max_corrs3, mean_max_corrs4, train_accs, test_accs = np.zeros(N), np.zeros(N), np.zeros(N), np.zeros(N), np.zeros(N), np.zeros(N)
+    train_loader, test_loader = data.get_data_loaders(results_weights_filt.iloc[0])
+    X_train, Y_train, X_test, Y_test = process_loaders(train_loader, test_loader)
+    for i in tqdm(range(N)):
+        run = results_weights_filt.iloc[i]
+        run['num_layer'] = int(run['num_layers'])
+        run['hidden_size'] = int(run['hidden_size'])
+        mean_max_corrs1[i], mean_max_corrs2[i], mean_max_corrs3[i], mean_max_corrs4[i], train_accs[i], test_accs[i] = calc_max_corr_input(run, X_train, Y_train, X_test, Y_test)
+
+    pd_max = pd.DataFrame({'max_corr1': mean_max_corrs1, 'max_corr2': mean_max_corrs2, 'max_corr3': mean_max_corrs3, 
+                           'max_corr4': mean_max_corrs4, 'train_acc_final': train_accs, 
+                           'num_layers': results_weights_filt['num_layers'], 'optimizer': results_weights_filt['optimizer'],
+                           'batch_size': results_weights_filt['batch_size'], 'lr': results_weights_filt['lr'], 'test_acc_final': test_accs})
+    pd_max.to_pickle('max_corr_cifar_4+7lay_full.pkl')
+    # pkl.dump(pd_max, 'max_corr_small.pkl')
 

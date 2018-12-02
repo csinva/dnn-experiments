@@ -6,14 +6,15 @@ from slurmpy import Slurm
 
 # this is for parametric families
 params_to_vary = {
-    'seed': range(4, 6),
+    'seed': range(0, 3),
     'lr': [1.0, 0.1, 0.001, 0.01],
     'optimizer': ['sgd', 'adam'],
     'num_layers': [4, 2, 7], # add in 2, 7
     'dset': ['mnist', 'cifar10'], 
-    'batch_size': [10, 100, 1000],
-    'shuffle_labels': [False, True], # loop
-    'hidden_size': [128], # 128, 512
+    'batch_size': [100], # 10, 100, 1000
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/track_acts/resweep_512'],
+    'shuffle_labels': [False], # loop
+    'hidden_size': [512], # 128, 512
     'freeze': [False],
     'save_acts_and_reduce': [True]
 }
