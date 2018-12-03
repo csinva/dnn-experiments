@@ -1,7 +1,8 @@
 import itertools
 from slurmpy import Slurm
 
-# sweep small
+# sweep mnist single
+'''
 params_to_vary = {
     'seed': range(0, 2),
     'lr': [1.0, 0.1, 0.001],
@@ -16,7 +17,9 @@ params_to_vary = {
     'save_acts_and_reduce': [True],
     'num_iters': [50]
 }
+'''
 
+'''
 # sweep small
 params_to_vary = {
     'seed': range(0, 3),
@@ -32,9 +35,26 @@ params_to_vary = {
     'save_acts_and_reduce': [True],
     'num_iters': [100]
 }
-
-# sweep big
 '''
+
+# sweep big compromise
+params_to_vary = {
+    'seed': range(0, 4),
+    'lr': [1.0, 0.05, 0.001],
+    'optimizer': ['sgd', 'adam'],
+    'num_layers': [2, 4, 7], # add in 2, 7
+    'dset': ['mnist', 'cifar10'], 
+    'batch_size': [10, 100, 1000], # 10, 100, 1000
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/track_acts/resweep_full_new'],
+    'shuffle_labels': [False, True], # loop
+    'hidden_size': [128, 512], # 128, 512
+    'freeze': [False],
+    'save_acts_and_reduce': [True],
+    'num_iters': [120]
+}
+
+'''
+# sweep big
 params_to_vary = {
     'seed': range(0, 3),
     'lr': [1.0, 0.1, 0.001, 0.01],
@@ -47,7 +67,7 @@ params_to_vary = {
     'hidden_size': [128, 512], # 128, 512
     'freeze': [False],
     'save_acts_and_reduce': [True],
-    'num_iters': 140
+    'num_iters': [120]
 }
 '''
 
@@ -77,7 +97,7 @@ params_to_delete = [(0.1, 'adam', 0), (1, 'adam', 0)]
 
 
 # run
-s = Slurm("mnist_single", {"partition": "high"})
+s = Slurm("sweep_full", {"partition": "low", "time": "4-0"})
 ks = sorted(params_to_vary.keys())
 vals = [params_to_vary[k] for k in ks]
 param_combinations = list(itertools.product(*vals)) # list of tuples

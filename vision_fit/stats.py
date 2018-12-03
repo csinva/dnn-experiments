@@ -85,10 +85,12 @@ def process_loaders(train_loader, test_loader):
 def calc_max_corr(X, W):
 #     print(X.shape, W.shape)
     X = X / (np.sum(np.abs(X)**2, axis=1)**(1./2))[:, np.newaxis]
+    W_norms = np.sum(np.abs(W)**2, axis=1)**(1./2)
     W = W / (np.sum(np.abs(W)**2, axis=1)**(1./2))[:, np.newaxis]
     Z = np.abs(W @ X.T)
     max_corr = np.max(Z, axis=1)
-    return np.mean(max_corr)
+#     print(max_corr.shape, W_norms.shape)
+    return {'max_corrs': max_corr, 'W_norms': W_norms}
 
 # calc corr score from run
 def calc_max_corr_input(X, model):

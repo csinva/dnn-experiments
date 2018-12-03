@@ -145,8 +145,12 @@ def fit_vision(p):
     weights_results = {'weights': weights, 'weights_first10': weights_first10}    
     results_combined = {**params, **results}    
     weights_results_combined = {**params, **weights_results}
+    
+    # dump
     pkl.dump(results_combined, open(oj(p.out_dir, out_name + '.pkl'), 'wb'))
-    pkl.dump(weights_results_combined, open(oj(p.out_dir, 'weights_' + out_name + '.pkl'), 'wb'))    
+    pkl.dump(weights_results_combined, open(oj(p.out_dir, 'weights_' + out_name + '.pkl'), 'wb'))   
+    pkl.dump(params, open(oj(p.out_dir, 'idx_' + out_name + '.pkl'), 'wb'))    
+
     
 if __name__ == '__main__':
     print('starting...')
