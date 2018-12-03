@@ -33,23 +33,6 @@ import style
 style.set_style()
 
 
-# preprocess data
-def process_loaders(train_loader, test_loader):
-    # need to load like this to ensure transformation applied
-    data_list_train = [batch for batch in train_loader]
-    train_data_list = [batch[0] for batch in data_list_train]
-    train_data = np.vstack(train_data_list)
-    X_train = torch.Tensor(train_data).float().cuda()
-    Y_train = np.hstack([batch[1] for batch in data_list_train])
-
-    data_list_test = [batch for batch in test_loader]
-    test_data_list = [batch[0] for batch in data_list_test]
-    test_data = np.vstack(test_data_list)
-    X_test = torch.Tensor(test_data).float().cuda()
-    Y_test = np.hstack([batch[1] for batch in test_data_list])
-    
-    return X_train, Y_train, X_test, Y_test
-
 # gives max corr between nearest neighbor and any point
 # works clearly for 1st layer, for 2nd layers have to generate a "filter" by doing max activation
 # X is N x num_pixels
@@ -107,8 +90,8 @@ def calc_max_corr_input(run, X_train, Y_train, X_test, Y_test):
 
 if __name__ == '__main__':
     # depending on how much is saved, this may take a while
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/track_acts/sweep_full_real'
-    fnames = sorted([fname for fname in os.listdir(out_dir) if not 'mnist' in fname and 'numlays=4' in fname])
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/track_acts/sweep_full_real' # '/scratch/users/vision/yu_dl/raaz.rsk/track_acts/resweep_512'
+    fnames = sorted([fname for fname in os.listdir(out_dir) if 'numlays=4' in fname and not 'mnist' in fname])
     #                  'batchsize=100' in fname and 
     #                  not 'batchsize=1000' in fname])
     weights_list = [pd.Series(pkl.load(open(oj(out_dir, fname), "rb"))) for fname in tqdm(fnames) 
@@ -124,9 +107,9 @@ if __name__ == '__main__':
         os.makedirs(save_dir)
 
     print('loaded', results_weights.shape[0], 'runs')
-    results_weights_filt = results_weights[results_weights['shuffle_labels'] == False]
-    results_weights_filt = results_weights_filt[results_weights_filt['seed'] == 0]
-    results_weights_filt = results_weights_filt[results_weights_filt['num_layers'] >= 4]
+#     results_weights_filt = results_weights[results_weights['shuffle_labels'] == False]
+    results_weights_filt = results_weights[results_weights['seed'] == 0]
+#     results_weights_filt = results_weights_filt[results_weights_filt['num_layers'] >= 4]
 
 
     N = results_weights_filt.shape[0]
@@ -144,6 +127,6 @@ if __name__ == '__main__':
                            'max_corr4': mean_max_corrs4, 'train_acc_final': train_accs, 
                            'num_layers': results_weights_filt['num_layers'], 'optimizer': results_weights_filt['optimizer'],
                            'batch_size': results_weights_filt['batch_size'], 'lr': results_weights_filt['lr'], 'test_acc_final': test_accs})
-    pd_max.to_pickle('max_corr_cifar_4+7lay_full.pkl')
+    pd_max.to_pickle('max_corr_cifar_4+7lay_full_new.pkl')
     # pkl.dump(pd_max, 'max_corr_small.pkl')
 

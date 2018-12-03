@@ -19,6 +19,7 @@ import random
 import models
 from dim_reduction import *
 from stats import *
+import stats
 import data
 from tqdm import tqdm
 import time
@@ -36,7 +37,9 @@ def fit_vision(p):
     use_cuda = torch.cuda.is_available()
     
     # pick dataset and model
+    print('loading dset...')
     train_loader, test_loader = data.get_data_loaders(p)
+    X_train = data.get_X(train_loader)
     model = data.get_model(p)
 
     # set up optimizer and freeze appropriate layers
@@ -49,12 +52,13 @@ def fit_vision(p):
     # things to record
     weights_first_str = models.get_weight_names(model)[0]
     weights, weights_first10, weight_norms = {}, {}, {}
+    mean_max_corrs = {}
     losses_train, losses_test = np.zeros(p.num_iters), np.zeros(p.num_iters)
     accs_train, accs_test = np.zeros(p.num_iters), np.zeros(p.num_iters)
     losses_train_r, losses_test_r = np.zeros(p.num_iters), np.zeros(p.num_iters)
     accs_train_r, accs_test_r = np.zeros(p.num_iters), np.zeros(p.num_iters)
     mean_margin_train_unn, mean_margin_test_unn = np.zeros(p.num_iters), np.zeros(p.num_iters)    
-    mean_margin_train, mean_margin_test = np.zeros(p.num_iters), np.zeros(p.num_iters)    
+    mean_margin_train, mean_margin_test = np.zeros(p.num_iters), np.zeros(p.num_iters) 
     explained_var_dicts, singular_val_dicts_cosine, singular_val_dicts_rbf, singular_val_dicts_lap = [], [], [], []
     act_singular_val_dicts_train, act_singular_val_dicts_test, act_singular_val_dicts_train_rbf, act_singular_val_dicts_test_rbf = [], [], [], []    
         
@@ -70,6 +74,7 @@ def fit_vision(p):
         weight_dict = deepcopy({x[0]:x[1].data.cpu().numpy() for x in model.named_parameters()})
         if it % p.save_all_weights_freq == 0 or it == p.num_iters - 1 or it == 0 or (it < p.num_iters_small and it % 2 == 0): # save first, last, jumps
             weights[p.its[it]] = weight_dict 
+            mean_max_corrs[p.its[it]] = stats.calc_max_corr_input(X_train, model)
         weights_first10[p.its[it]] = deepcopy(model.state_dict()[weights_first_str][:20].cpu().numpy())            
         weight_norms[p.its[it]] = layer_norms(model.state_dict())    
         explained_var_dicts.append(get_singular_vals_from_weight_dict(weight_dict))   
@@ -87,6 +92,7 @@ def fit_vision(p):
             singular_val_dicts_cosine.append(get_singular_vals_kernels(weight_dict, 'cosine'))
             singular_val_dicts_rbf.append(get_singular_vals_kernels(weight_dict, 'rbf'))
             singular_val_dicts_lap.append(get_singular_vals_kernels(weight_dict, 'laplacian'))
+            
         
 
         # training
@@ -123,6 +129,7 @@ def fit_vision(p):
                'accs_train_r': accs_train_r,  
                'weight_norms': weight_norms, 
                'weight_names': models.get_weight_names(model),
+               'mean_max_corrs': mean_max_corrs,
                'mean_margin_train_unnormalized': mean_margin_train_unn, # mean train margin at each it (pre softmax)
                'mean_margin_test_unnormalized': mean_margin_test_unn, # mean test margin at each it (pre softmax)       
                'mean_margin_train': mean_margin_train, # mean train margin at each it (after softmax)

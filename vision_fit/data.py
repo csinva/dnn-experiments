@@ -51,7 +51,7 @@ def get_binary_bars(numInputs, numDatapoints, probabilityOn):
 
 # get model (based on dset, etc.)
 def get_model(p):
-    if p.dset == 'mnist':
+    if 'mnist' in p.dset:
         if p.use_conv_special:
             model = models.Linear_then_conv()
         elif p.use_conv:
@@ -84,7 +84,7 @@ def get_data_loaders(p):
             
         
     ## load dataset (train_loader, test_loader)
-    if p.dset in ['mnist', 'bars', 'noise']:
+    if 'mnist' in p.dset or p.dset in ['bars', 'noise']:
         trans = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (1.0,))])
         train_set = dset.MNIST(root=root, train=True, transform=trans, download=True)
         test_set = dset.MNIST(root=root, train=False, transform=trans, download=True)
@@ -100,6 +100,17 @@ def get_data_loaders(p):
             bars_test, labs_test = get_binary_bars(8 * 8, 2000, 0.3)
             test_set.test_data = torch.Tensor(bars_test.reshape(-1, 8, 8)).long()
             test_set.test_labels = torch.Tensor(labs_test).long()
+        elif p.dset == 'mnist_single': # batch size is 10 max
+            ex_nums = {}
+            i = 0
+            while(len(ex_nums) < 10):
+                ex_nums[train_set.train_labels[i]] = i
+                i += 1
+            exs = np.zeros((10, 28, 28))
+            for i in range(10):
+                exs[i] = train_set.train_data[i]
+            train_set.train_data = torch.Tensor(exs)
+            train_set.train_labels = torch.Tensor(np.arange(0, 10)).long()
 
         if p.shuffle_labels:
             train_set.train_labels = torch.Tensor(np.random.randint(0, 10, 60000)).long()
@@ -112,7 +123,7 @@ def get_data_loaders(p):
                         batch_size=p.batch_size,
                         shuffle=False)
 
-    elif p.dset == 'cifar10':
+    elif 'cifar10' in p.dset: # note this will match to cifar100!!
         trans = transforms.Compose(
             [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
         train_set = dset.CIFAR10(root=root, train=True, download=True, transform=trans)
@@ -128,3 +139,28 @@ def get_data_loaders(p):
         if p.shuffle_labels:
             train_set.train_labels = [random.randint(0, 9) for _ in range(50000)]
     return train_loader, test_loader
+
+# preprocess data
+def process_loaders(train_loader, test_loader):
+    # need to load like this to ensure transformation applied
+    data_list_train = [batch for batch in train_loader]
+    train_data_list = [batch[0] for batch in data_list_train]
+    train_data = np.vstack(train_data_list)
+    X_train = torch.Tensor(train_data).float().cuda()
+    Y_train = np.hstack([batch[1] for batch in data_list_train])
+
+    data_list_test = [batch for batch in test_loader]
+    test_data_list = [batch[0] for batch in data_list_test]
+    test_data = np.vstack(test_data_list)
+    X_test = torch.Tensor(test_data).float().cuda()
+    Y_test = np.hstack([batch[1] for batch in test_data_list])
+    
+    return X_train, Y_train, X_test, Y_test
+
+def get_X(train_loader):
+    # need to load like this to ensure transformation applied
+    train_data = [batch[0] for batch in train_loader]
+    train_data = np.vstack(train_data)
+    X_train = torch.Tensor(train_data).float().cpu()
+    X_train = X_train.numpy().reshape(X_train.shape[0], -1)
+    return X_train

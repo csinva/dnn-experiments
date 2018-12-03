@@ -1,23 +1,55 @@
 import itertools
 from slurmpy import Slurm
 
-# note mnist 10 epochs sgd takes ~4 mins, adam takes ~15 mins
+# sweep small
+params_to_vary = {
+    'seed': range(0, 2),
+    'lr': [1.0, 0.1, 0.001],
+    'optimizer': ['sgd', 'adam'],
+    'num_layers': [2, 4], # add in 2, 7
+    'dset': ['mnist_single'], # mnist, cifar10
+    'batch_size': [100], # 10, 100, 1000
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/track_acts/mnist_single'],
+    'shuffle_labels': [False], # loop
+    'hidden_size': [128], # 128, 512
+    'freeze': [False],
+    'save_acts_and_reduce': [True],
+    'num_iters': [50]
+}
 
+# sweep small
+params_to_vary = {
+    'seed': range(0, 3),
+    'lr': [1.0, 0.1, 0.001],
+    'optimizer': ['sgd', 'adam'],
+    'num_layers': [4], # add in 2, 7
+    'dset': ['mnist', 'cifar10'], # mnist, cifar10
+    'batch_size': [100], # 10, 100, 1000
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/track_acts/sweep_128_new'],
+    'shuffle_labels': [False], # loop
+    'hidden_size': [128], # 128, 512
+    'freeze': [False],
+    'save_acts_and_reduce': [True],
+    'num_iters': [100]
+}
 
-# this is for parametric families
+# sweep big
+'''
 params_to_vary = {
     'seed': range(0, 3),
     'lr': [1.0, 0.1, 0.001, 0.01],
     'optimizer': ['sgd', 'adam'],
     'num_layers': [4, 2, 7], # add in 2, 7
     'dset': ['mnist', 'cifar10'], 
-    'batch_size': [100], # 10, 100, 1000
-    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/track_acts/resweep_512'],
-    'shuffle_labels': [False], # loop
-    'hidden_size': [512], # 128, 512
+    'batch_size': [10, 100, 1000], # 10, 100, 1000
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/track_acts/resweep_full_new'],
+    'shuffle_labels': [False, True], # loop
+    'hidden_size': [128, 512], # 128, 512
     'freeze': [False],
-    'save_acts_and_reduce': [True]
+    'save_acts_and_reduce': [True],
+    'num_iters': 140
 }
+'''
 
 # this is for layer by layer
 '''
@@ -33,7 +65,7 @@ params_to_vary = {
 }
 '''
 
-# standard params
+# standard single run params
 '''
 params_to_vary = {
     'seed': range(2),
@@ -45,7 +77,7 @@ params_to_delete = [(0.1, 'adam', 0), (1, 'adam', 0)]
 
 
 # run
-s = Slurm("vision_nn_run", {"partition": "low"})
+s = Slurm("mnist_single", {"partition": "high"})
 ks = sorted(params_to_vary.keys())
 vals = [params_to_vary[k] for k in ks]
 param_combinations = list(itertools.product(*vals)) # list of tuples

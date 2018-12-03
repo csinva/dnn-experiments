@@ -3,7 +3,7 @@ from numpy.random import randint
 
 class p:   
     # crucial params
-    dset = 'mnist' # mnist, cifar10, noise, bars
+    dset = 'mnist_single' # mnist, cifar10, noise, bars, mnist_single
     shuffle_labels = False
     use_conv = False
     use_conv_special = False
@@ -17,7 +17,7 @@ class p:
     saves_per_iter = 5 # really each iter is only iter / this
     saves_per_iter_end = 2 # stop saving densely after saves_per_iter * save_per_iter_end
     num_iters_small = saves_per_iter * saves_per_iter_end
-    num_iters = num_iters_small + 150 # note: tied to saves_per_iter
+    num_iters = 160 # note: tied to saves_per_iter
 
     
     lr_ticks = {0: 1, # note these will all be subtracted by 10
@@ -48,12 +48,14 @@ class p:
         calc_activations = 1000
     save_all_weights_freq = 10 # how often to save all the weights (if high will never save)
     its = np.hstack((1.0 * np.arange(num_iters_small) / saves_per_iter, saves_per_iter_end + np.arange(num_iters - num_iters_small)))
+    
+    pid = ''.join(["%s" % randint(0, 9) for num in range(0, 20)])
 
     
     # converting to string
     def _str(self):
         vals = vars(p)
-        return ''.join(["%s" % randint(0, 9) for num in range(0, 20)]) + 'lr=' + str(vals['lr']) + '_opt=' + vals['optimizer'] + '_dset=' + vals['dset'] + '_numlays=' + str(vals['num_layers']) + '_batchsize=' + str(vals['batch_size'])
+        return 'pid=' + vals['pid'] + '_lr=' + str(vals['lr']) + '_opt=' + vals['optimizer'] + '_dset=' + vals['dset'] + '_numlays=' + str(vals['num_layers']) + '_batchsize=' + str(vals['batch_size'])
     
 #         s = '___'.join("%s=%s" % (attr, val) for (attr, val) in vars(p).items()
 #                        if not attr.startswith('_') and not attr.startswith('out') and not attr.startswith('its') and not attr.startswith('lr_ticks'))

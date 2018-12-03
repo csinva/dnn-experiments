@@ -76,8 +76,9 @@ class LinearNet(nn.Module):
         y = x.view(-1, self.input_size)
         out = {}
         for i in range(len(self.fc) - 1):
-            y = F.relu(self.fc[i](y))
+            y = self.fc[i](y)
             out['fc.' + str(i)] = deepcopy(y)
+            y = F.relu(y)
         out['fc' + str(len(self.fc))] = deepcopy(self.fc[-1](y))
         return out            
 
