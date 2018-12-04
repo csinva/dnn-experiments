@@ -81,24 +81,27 @@ def process_loaders(train_loader, test_loader):
 # works clearly for 1st layer, for 2nd layers have to generate a "filter" by doing max activation
 # X is N x num_pixels
 # W is num_filters x num_pixels
+# Z is num_filters x N
+# Y_onehot is N x num_classes
 # returns max_corr for each filter
-def calc_max_corr(X, W):
+def calc_max_corr(X, Y_onehot, W):
 #     print(X.shape, W.shape)
     X = X / (np.sum(np.abs(X)**2, axis=1)**(1./2))[:, np.newaxis]
     W_norms = np.sum(np.abs(W)**2, axis=1)**(1./2)
     W = W / (np.sum(np.abs(W)**2, axis=1)**(1./2))[:, np.newaxis]
-    Z = np.abs(W @ X.T)
-    max_corr = np.max(Z, axis=1)
+    Z = W @ X.T
+    mean_class_act = np.sum(Z @ Y_onehot) / np.sum(Y_onehot, axis=0)
+    max_corr = np.max(np.abs(Z), axis=1)
 #     print(max_corr.shape, W_norms.shape)
-    return {'max_corrs': max_corr, 'W_norms': W_norms}
+    return {'max_corrs': max_corr, 'W_norms': W_norms, 'mean_class_act': mean_class_act}
 
 # calc corr score from run
-def calc_max_corr_input(X, model):
+def calc_max_corr_input(X, Y_onehot, model):
     keys = [key for key in model.state_dict().keys() if 'weight' in key]
     max_corrs = {}
     for key in keys:
         W = model.state_dict()[key].cpu().numpy()
-        max_corrs[key] = calc_max_corr(X, W)
+        max_corrs[key] = calc_max_corr(X, Y_onehot, W)
         X = X @ W.T
         X = X * (X >= 0) # simulate relu
         

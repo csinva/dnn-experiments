@@ -3,7 +3,7 @@ from numpy.random import randint
 
 class p:   
     # crucial params
-    dset = 'mnist_single' # mnist, cifar10, noise, bars, mnist_single
+    dset = 'mnist' # mnist, cifar10, noise, bars, mnist_single
     shuffle_labels = False
     use_conv = False
     use_conv_special = False

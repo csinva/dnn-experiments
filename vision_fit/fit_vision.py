@@ -39,7 +39,7 @@ def fit_vision(p):
     # pick dataset and model
     print('loading dset...')
     train_loader, test_loader = data.get_data_loaders(p)
-    X_train = data.get_X(train_loader)
+    X_train, Y_train_onehot = data.get_XY(train_loader)
     model = data.get_model(p)
 
     # set up optimizer and freeze appropriate layers
@@ -74,7 +74,7 @@ def fit_vision(p):
         weight_dict = deepcopy({x[0]:x[1].data.cpu().numpy() for x in model.named_parameters()})
         if it % p.save_all_weights_freq == 0 or it == p.num_iters - 1 or it == 0 or (it < p.num_iters_small and it % 2 == 0): # save first, last, jumps
             weights[p.its[it]] = weight_dict 
-            mean_max_corrs[p.its[it]] = stats.calc_max_corr_input(X_train, model)
+            mean_max_corrs[p.its[it]] = stats.calc_max_corr_input(X_train, Y_train_onehot, model)
         weights_first10[p.its[it]] = deepcopy(model.state_dict()[weights_first_str][:20].cpu().numpy())            
         weight_norms[p.its[it]] = layer_norms(model.state_dict())    
         explained_var_dicts.append(get_singular_vals_from_weight_dict(weight_dict))   

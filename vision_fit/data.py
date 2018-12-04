@@ -157,10 +157,14 @@ def process_loaders(train_loader, test_loader):
     
     return X_train, Y_train, X_test, Y_test
 
-def get_X(train_loader):
+def get_XY(train_loader):
     # need to load like this to ensure transformation applied
     train_data = [batch[0] for batch in train_loader]
     train_data = np.vstack(train_data)
     X_train = torch.Tensor(train_data).float().cpu()
     X_train = X_train.numpy().reshape(X_train.shape[0], -1)
-    return X_train
+    Y_train = np.hstack([batch[1] for batch in train_loader])
+    Y_train_onehot = np.zeros((Y_train.size, 10))
+    for i in range(10):
+        Y_train_onehot[:, i] = np.array(Y_train==i)
+    return X_train, Y_train_onehot
