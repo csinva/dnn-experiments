@@ -9,7 +9,7 @@ class p:
     use_conv_special = False
     num_layers = 2 # set to 0 or False to ignore
     freeze = False # False, first, last, progress_first, progress_last
-    hidden_size = 10
+    hidden_size = 512
     out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/track_acts/test' # test
     save_acts_and_reduce = True
     
@@ -56,11 +56,6 @@ class p:
     def _str(self):
         vals = vars(p)
         return 'pid=' + vals['pid'] + '_lr=' + str(vals['lr']) + '_opt=' + vals['optimizer'] + '_dset=' + vals['dset'] + '_numlays=' + str(vals['num_layers']) + '_batchsize=' + str(vals['batch_size'])
-    
-#         s = '___'.join("%s=%s" % (attr, val) for (attr, val) in vars(p).items()
-#                        if not attr.startswith('_') and not attr.startswith('out') and not attr.startswith('its') and not attr.startswith('lr_ticks'))
-#         return ''.join(["%s" % randint(0, 9) for num in range(0, 20)]) + '_' + s.replace('/', '')[:50]
- # filenames must fit in byte 
     
     def _dict(self):
         return {attr: val for (attr, val) in vars(p).items()

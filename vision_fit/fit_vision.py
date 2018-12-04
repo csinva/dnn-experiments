@@ -59,8 +59,8 @@ def fit_vision(p):
     for it in tqdm(range(0, p.num_iters)):
         
         # calc stats and record
-        s.losses_train[it], s.accs_train[it], s.mean_margin_train_unn[it], s.mean_margin_train[it] = calc_loss_acc(train_loader, p.batch_size, use_cuda, model, criterion)
-        s.losses_test[it], s.accs_test[it], s.mean_margin_test_unn[it], s.mean_margin_test[it] = calc_loss_acc(test_loader, p.batch_size, use_cuda, model, criterion, print_loss=True)
+        s.losses_train[it], s.accs_train[it], s.mean_margin_train_unn[it], s.mean_margin_train[it] = stats.calc_loss_acc(train_loader, p.batch_size, use_cuda, model, criterion)
+        s.losses_test[it], s.accs_test[it], s.mean_margin_test_unn[it], s.mean_margin_test[it] = stats.calc_loss_acc(test_loader, p.batch_size, use_cuda, model, criterion, print_loss=True)
         
         # record weights
         weight_dict = deepcopy({x[0]:x[1].data.cpu().numpy() for x in model.named_parameters()})
@@ -68,15 +68,15 @@ def fit_vision(p):
             s.weights[p.its[it]] = weight_dict 
             s.mean_max_corrs[p.its[it]] = stats.calc_max_corr_input(X_train, Y_train_onehot, model)
         s.weights_first10[p.its[it]] = deepcopy(model.state_dict()[s.weight_names[0]][:20].cpu().numpy())            
-        s.weight_norms[p.its[it]] = layer_norms(model.state_dict())    
+        s.weight_norms[p.its[it]] = stats.layer_norms(model.state_dict())    
         s.singular_val_dicts.append(get_singular_vals_from_weight_dict(weight_dict))   
         
         # calculated reduced stats + act stats + explained var complicated
         if p.save_acts_and_reduce:
             # reduced moel
             model_r = reduce_model(model)
-            s.losses_train_r[it], s.accs_train_r[it], _, _ = calc_loss_acc(train_loader, p.batch_size, use_cuda, model_r, criterion)
-            s.losses_test_r[it], s.accs_test_r[it], _, _ = calc_loss_acc(test_loader, p.batch_size, use_cuda, model_r, criterion)
+            s.losses_train_r[it], s.accs_train_r[it], _, _ = stats.calc_loss_acc(train_loader, p.batch_size, use_cuda, model_r, criterion)
+            s.losses_test_r[it], s.accs_test_r[it], _, _ = stats.calc_loss_acc(test_loader, p.batch_size, use_cuda, model_r, criterion)
             
             # activations
             act_var_dicts = calc_activation_dims(use_cuda, model, train_loader.dataset, test_loader.dataset, calc_activations=p.calc_activations)
@@ -89,7 +89,6 @@ def fit_vision(p):
             s.singular_val_dicts_cosine.append(get_singular_vals_kernels(weight_dict, 'cosine'))
             s.singular_val_dicts_rbf.append(get_singular_vals_kernels(weight_dict, 'rbf'))
             s.singular_val_dicts_lap.append(get_singular_vals_kernels(weight_dict, 'laplacian'))
-            
         
 
         # training
@@ -118,11 +117,11 @@ def fit_vision(p):
     results_combined = {**params_dict, **s._dict_vals()}    
     weights_results_combined = {**params_dict, **s._dict_weights()}
     
+    
     # dump
     pkl.dump(params_dict, open(oj(p.out_dir, 'idx_' + out_name + '.pkl'), 'wb'))
     pkl.dump(results_combined, open(oj(p.out_dir, out_name + '.pkl'), 'wb'))
-    pkl.dump(weights_results_combined, open(oj(p.out_dir, 'weights_' + out_name + '.pkl'), 'wb'))   
-
+    pkl.dump(weights_results_combined, open(oj(p.out_dir, 'weights_' + out_name + '.pkl'), 'wb')) 
 
     
 if __name__ == '__main__':
@@ -140,8 +139,8 @@ if __name__ == '__main__':
         else:
             setattr(p, sys.argv[i], t(sys.argv[i+1]))
     
-    print(p._str(p))
-    print('\n\nrunning with', p._dict(p))
+    print('fname ', p._str(p))
+    print('params ', p._dict(p))
     fit_vision(p)
     
     print('success! saved to ', p.out_dir, 'in ', time.time() - t0, 'sec')

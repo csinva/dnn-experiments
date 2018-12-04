@@ -140,7 +140,8 @@ def get_data_loaders(p):
             train_set.train_labels = [random.randint(0, 9) for _ in range(50000)]
     return train_loader, test_loader
 
-# preprocess data
+# extract data from loaders
+'''
 def process_loaders(train_loader, test_loader):
     # need to load like this to ensure transformation applied
     data_list_train = [batch for batch in train_loader]
@@ -156,6 +157,7 @@ def process_loaders(train_loader, test_loader):
     Y_test = np.hstack([batch[1] for batch in test_data_list])
     
     return X_train, Y_train, X_test, Y_test
+'''
 
 def get_XY(train_loader):
     # need to load like this to ensure transformation applied

@@ -40,7 +40,7 @@ def calc_loss_acc(loader, batch_size, use_cuda, model, criterion, print_loss=Fal
         tot_loss_test += loss.data[0]
         
         preds_unn = out.data.cpu().numpy()
-        preds = F.softmax(out).data.cpu().numpy()
+        preds = F.softmax(out, dim=1).data.cpu().numpy()
         n = preds_unn.shape[0]
         mask = np.ones(preds_unn.shape).astype(bool)
         mask[np.arange(n), pred_label] = False
@@ -60,23 +60,6 @@ def calc_loss_acc(loader, batch_size, use_cuda, model, criterion, print_loss=Fal
     # returns loss, acc, margin_unnormalized, margin_normalized
     return tot_loss_test / n_test, correct_cnt * 1.0 / n_test, margin_sum_unnormalized / n_test, margin_sum / n_test
 
-# preprocess data
-def process_loaders(train_loader, test_loader):
-    # need to load like this to ensure transformation applied
-    data_list_train = [batch for batch in train_loader]
-    train_data_list = [batch[0] for batch in data_list_train]
-    train_data = np.vstack(train_data_list)
-    X_train = torch.Tensor(train_data).float().cuda()
-    Y_train = np.hstack([batch[1] for batch in data_list_train])
-
-    data_list_test = [batch for batch in test_loader]
-    test_data_list = [batch[0] for batch in data_list_test]
-    test_data = np.vstack(test_data_list)
-    X_test = torch.Tensor(test_data).float().cuda()
-    Y_test = np.hstack([batch[1] for batch in test_data_list])
-    
-    return X_train, Y_train, X_test, Y_test
-
 # gives max corr between nearest neighbor and any point
 # works clearly for 1st layer, for 2nd layers have to generate a "filter" by doing max activation
 # X is N x num_pixels
@@ -92,7 +75,6 @@ def calc_max_corr(X, Y_onehot, W):
     Z = W @ X.T
     mean_class_act = np.sum(Z @ Y_onehot) / np.sum(Y_onehot, axis=0)
     max_corr = np.max(np.abs(Z), axis=1)
-#     print(max_corr.shape, W_norms.shape)
     return {'max_corrs': max_corr, 'W_norms': W_norms, 'mean_class_act': mean_class_act}
 
 # calc corr score from run
