@@ -27,12 +27,12 @@ warnings.filterwarnings("ignore")
 def plot_weights(W, dset='mnist'): # W is num_filters x im_size
     num_filters = W.shape[0]
     d = int(np.sqrt(W.size / num_filters))
-    if dset in ['mnist', np.nan, 'bars', 'noise']:
-        filts = W.reshape((num_filters, d, d))        
-    elif dset =='cifar10':
+    if 'cifar10' in dset:
         W = (W - np.min(W)) / (np.max(W) - np.min(W))
         filts = W.reshape((num_filters, 3, 32, 32))
         filts = filts.transpose((0, 2, 3, 1))
+    else:
+        filts = W.reshape((num_filters, d, d))        
 
     R = math.floor(np.sqrt(num_filters))
     C = math.ceil(num_filters / R)
