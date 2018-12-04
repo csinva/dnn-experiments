@@ -24,6 +24,7 @@ import data
 from tqdm import tqdm
 import time
 import optimization
+from params_save import S
 
 def seed(p):
     # set random seed        
@@ -50,48 +51,44 @@ def fit_vision(p):
     
 
     # things to record
-    weights_first_str = models.get_weight_names(model)[0]
-    weights, weights_first10, weight_norms = {}, {}, {}
-    mean_max_corrs = {}
-    losses_train, losses_test = np.zeros(p.num_iters), np.zeros(p.num_iters)
-    accs_train, accs_test = np.zeros(p.num_iters), np.zeros(p.num_iters)
-    losses_train_r, losses_test_r = np.zeros(p.num_iters), np.zeros(p.num_iters)
-    accs_train_r, accs_test_r = np.zeros(p.num_iters), np.zeros(p.num_iters)
-    mean_margin_train_unn, mean_margin_test_unn = np.zeros(p.num_iters), np.zeros(p.num_iters)    
-    mean_margin_train, mean_margin_test = np.zeros(p.num_iters), np.zeros(p.num_iters) 
-    explained_var_dicts, singular_val_dicts_cosine, singular_val_dicts_rbf, singular_val_dicts_lap = [], [], [], []
-    act_singular_val_dicts_train, act_singular_val_dicts_test, act_singular_val_dicts_train_rbf, act_singular_val_dicts_test_rbf = [], [], [], []    
+    s = S(p)
+    s.weight_names = models.get_weight_names(model)
         
-    # run    
+    # run
     print('training...')
     for it in tqdm(range(0, p.num_iters)):
         
         # calc stats and record
-        losses_train[it], accs_train[it], mean_margin_train_unn[it], mean_margin_train[it] = calc_loss_acc(train_loader, p.batch_size, use_cuda, model, criterion)
-        losses_test[it], accs_test[it], mean_margin_test_unn[it], mean_margin_test[it] = calc_loss_acc(test_loader, p.batch_size, use_cuda, model, criterion, print_loss=True)
+        s.losses_train[it], s.accs_train[it], s.mean_margin_train_unn[it], s.mean_margin_train[it] = calc_loss_acc(train_loader, p.batch_size, use_cuda, model, criterion)
+        s.losses_test[it], s.accs_test[it], s.mean_margin_test_unn[it], s.mean_margin_test[it] = calc_loss_acc(test_loader, p.batch_size, use_cuda, model, criterion, print_loss=True)
         
         # record weights
         weight_dict = deepcopy({x[0]:x[1].data.cpu().numpy() for x in model.named_parameters()})
         if it % p.save_all_weights_freq == 0 or it == p.num_iters - 1 or it == 0 or (it < p.num_iters_small and it % 2 == 0): # save first, last, jumps
-            weights[p.its[it]] = weight_dict 
-            mean_max_corrs[p.its[it]] = stats.calc_max_corr_input(X_train, Y_train_onehot, model)
-        weights_first10[p.its[it]] = deepcopy(model.state_dict()[weights_first_str][:20].cpu().numpy())            
-        weight_norms[p.its[it]] = layer_norms(model.state_dict())    
-        explained_var_dicts.append(get_singular_vals_from_weight_dict(weight_dict))   
+            s.weights[p.its[it]] = weight_dict 
+            s.mean_max_corrs[p.its[it]] = stats.calc_max_corr_input(X_train, Y_train_onehot, model)
+        s.weights_first10[p.its[it]] = deepcopy(model.state_dict()[s.weight_names[0]][:20].cpu().numpy())            
+        s.weight_norms[p.its[it]] = layer_norms(model.state_dict())    
+        s.singular_val_dicts.append(get_singular_vals_from_weight_dict(weight_dict))   
         
         # calculated reduced stats + act stats + explained var complicated
         if p.save_acts_and_reduce:
+            # reduced moel
             model_r = reduce_model(model)
-            losses_train_r[it], accs_train_r[it], _, _ = calc_loss_acc(train_loader, p.batch_size, use_cuda, model_r, criterion)
-            losses_test_r[it], accs_test_r[it], _, _ = calc_loss_acc(test_loader, p.batch_size, use_cuda, model_r, criterion)
+            s.losses_train_r[it], s.accs_train_r[it], _, _ = calc_loss_acc(train_loader, p.batch_size, use_cuda, model_r, criterion)
+            s.losses_test_r[it], s.accs_test_r[it], _, _ = calc_loss_acc(test_loader, p.batch_size, use_cuda, model_r, criterion)
+            
+            # activations
             act_var_dicts = calc_activation_dims(use_cuda, model, train_loader.dataset, test_loader.dataset, calc_activations=p.calc_activations)
-            act_singular_val_dicts_train.append(act_var_dicts['train']['pca'])
-            act_singular_val_dicts_test.append(act_var_dicts['test']['pca'])
-            act_singular_val_dicts_train_rbf.append(act_var_dicts['train']['rbf'])
-            act_singular_val_dicts_test_rbf.append(act_var_dicts['test']['rbf'])
-            singular_val_dicts_cosine.append(get_singular_vals_kernels(weight_dict, 'cosine'))
-            singular_val_dicts_rbf.append(get_singular_vals_kernels(weight_dict, 'rbf'))
-            singular_val_dicts_lap.append(get_singular_vals_kernels(weight_dict, 'laplacian'))
+            s.act_singular_val_dicts_train.append(act_var_dicts['train']['pca'])
+            s.act_singular_val_dicts_test.append(act_var_dicts['test']['pca'])
+            s.act_singular_val_dicts_train_rbf.append(act_var_dicts['train']['rbf'])
+            s.act_singular_val_dicts_test_rbf.append(act_var_dicts['test']['rbf'])
+            
+            # weight kernels
+            s.singular_val_dicts_cosine.append(get_singular_vals_kernels(weight_dict, 'cosine'))
+            s.singular_val_dicts_rbf.append(get_singular_vals_kernels(weight_dict, 'rbf'))
+            s.singular_val_dicts_lap.append(get_singular_vals_kernels(weight_dict, 'laplacian'))
             
         
 
@@ -117,39 +114,15 @@ def fit_vision(p):
     # save final
     if not os.path.exists(p.out_dir):  # delete the features if they already exist
         os.makedirs(p.out_dir)
-    params = p._dict(p)
-    
-    results = {'losses_train': losses_train, # training loss curve (should be plotted against p.its)
-               'losses_test': losses_test, # testing loss curve (should be plotted against p.its)
-               'accs_train': accs_train, # training acc curve (should be plotted against p.its)               
-               'accs_test': accs_test, # testing acc curve (should be plotted against p.its)
-               'losses_train_r': losses_train_r, 
-               'losses_test_r': losses_test_r, 
-               'accs_test_r': accs_test_r, 
-               'accs_train_r': accs_train_r,  
-               'weight_norms': weight_norms, 
-               'weight_names': models.get_weight_names(model),
-               'mean_max_corrs': mean_max_corrs,
-               'mean_margin_train_unnormalized': mean_margin_train_unn, # mean train margin at each it (pre softmax)
-               'mean_margin_test_unnormalized': mean_margin_test_unn, # mean test margin at each it (pre softmax)       
-               'mean_margin_train': mean_margin_train, # mean train margin at each it (after softmax)
-               'mean_margin_test': mean_margin_test, # mean test margin at each it (after softmax)
-               'singular_val_dicts_pca': explained_var_dicts, 
-               'singular_val_dicts_cosine': singular_val_dicts_cosine, 
-               'singular_val_dicts_rbf': singular_val_dicts_rbf, 
-               'singular_val_dicts_lap': singular_val_dicts_lap,
-               'act_singular_val_dicts_train_pca': act_singular_val_dicts_train, 
-               'act_singular_val_dicts_test_pca': act_singular_val_dicts_test, 
-               'act_singular_val_dicts_train_rbf': act_singular_val_dicts_train_rbf, 
-               'act_singular_val_dicts_test_rbf': act_singular_val_dicts_test_rbf}
-    weights_results = {'weights': weights, 'weights_first10': weights_first10}    
-    results_combined = {**params, **results}    
-    weights_results_combined = {**params, **weights_results}
+    params_dict = p._dict(p)
+    results_combined = {**params_dict, **s._dict_vals()}    
+    weights_results_combined = {**params_dict, **s._dict_weights()}
     
     # dump
+    pkl.dump(params_dict, open(oj(p.out_dir, 'idx_' + out_name + '.pkl'), 'wb'))
     pkl.dump(results_combined, open(oj(p.out_dir, out_name + '.pkl'), 'wb'))
     pkl.dump(weights_results_combined, open(oj(p.out_dir, 'weights_' + out_name + '.pkl'), 'wb'))   
-    pkl.dump(params, open(oj(p.out_dir, 'idx_' + out_name + '.pkl'), 'wb'))    
+
 
     
 if __name__ == '__main__':
@@ -168,7 +141,7 @@ if __name__ == '__main__':
             setattr(p, sys.argv[i], t(sys.argv[i+1]))
     
     print(p._str(p))
-    print('\n\nrunning with', vars(p))
+    print('\n\nrunning with', p._dict(p))
     fit_vision(p)
     
     print('success! saved to ', p.out_dir, 'in ', time.time() - t0, 'sec')

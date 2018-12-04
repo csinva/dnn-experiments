@@ -7,9 +7,9 @@ class p:
     shuffle_labels = False
     use_conv = False
     use_conv_special = False
-    num_layers = 4 # set to 0 or False to ignore
+    num_layers = 2 # set to 0 or False to ignore
     freeze = False # False, first, last, progress_first, progress_last
-    hidden_size = 512
+    hidden_size = 10
     out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/track_acts/test' # test
     save_acts_and_reduce = True
     
@@ -17,7 +17,7 @@ class p:
     saves_per_iter = 5 # really each iter is only iter / this
     saves_per_iter_end = 2 # stop saving densely after saves_per_iter * save_per_iter_end
     num_iters_small = saves_per_iter * saves_per_iter_end
-    num_iters = 160 # note: tied to saves_per_iter
+    num_iters = 1 # note: tied to saves_per_iter
 
     
     lr_ticks = {0: 1, # note these will all be subtracted by 10
