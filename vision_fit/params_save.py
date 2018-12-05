@@ -3,8 +3,9 @@ from numpy.random import randint
 
 class S:   
     def __init__(self, p):
-        # dict containing max_corrs, W_norms, mean_class_act
-        self.mean_max_corrs = {}
+        
+        self.mean_max_corrs = {} # dict containing max_corrs, W_norms, mean_class_act
+        # {mean_max_corrs: {it: {'fc.0.weight': val}}}
         
         # accs / losses
         self.losses_train = np.zeros(p.num_iters) # training loss curve (should be plotted against p.its)
@@ -23,7 +24,7 @@ class S:
         self.mean_margin_test = np.zeros(p.num_iters)      # mean test margin at each it (after softmax)
         
         # singular vals
-        self.singular_val_dicts = []
+        self.singular_val_dicts = [] # should also be plotted against p.its
         self.singular_val_dicts_cosine = []
         self.singular_val_dicts_rbf = [] 
         self.singular_val_dicts_lap = [] 
@@ -34,7 +35,7 @@ class S:
         
         # weights metadata
         self.weight_names = []
-        self.weight_norms = {}
+        self.weight_norms = {} # keys are it in p.its
     
         # weights things
         self.weights = {}         # records some weights at certain epochs

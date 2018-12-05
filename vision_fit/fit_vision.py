@@ -138,6 +138,7 @@ if __name__ == '__main__':
             setattr(p, sys.argv[i], t(False))
         else:
             setattr(p, sys.argv[i], t(sys.argv[i+1]))
+    p.its = np.hstack((1.0 * np.arange(p.num_iters_small) / p.saves_per_iter, p.saves_per_iter_end + np.arange(p.num_iters - p.num_iters_small)))
     
     print('fname ', p._str(p))
     print('params ', p._dict(p))

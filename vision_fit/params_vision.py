@@ -17,7 +17,7 @@ class p:
     saves_per_iter = 5 # really each iter is only iter / this
     saves_per_iter_end = 2 # stop saving densely after saves_per_iter * save_per_iter_end
     num_iters_small = saves_per_iter * saves_per_iter_end
-    num_iters = 1 # note: tied to saves_per_iter
+    num_iters = 1 # note: this is total
 
     
     lr_ticks = {0: 1, # note these will all be subtracted by 10
@@ -37,7 +37,7 @@ class p:
     '''
     
     # optimizer params (sweep)
-    optimizer = 'sgd' # 'sgd' or 'adam', sgd_mult_first
+    optimizer = 'sgd_mult_first' # 'sgd' or 'adam', sgd_mult_first
     lr = 1.0 # default 0.01
     seed = 2
     batch_size = 100
@@ -48,11 +48,9 @@ class p:
     if use_conv:
         calc_activations = 1000
     save_all_weights_freq = 10 # how often to save all the weights (if high will never save)
-    its = np.hstack((1.0 * np.arange(num_iters_small) / saves_per_iter, saves_per_iter_end + np.arange(num_iters - num_iters_small)))
     
     pid = ''.join(["%s" % randint(0, 9) for num in range(0, 20)])
 
-    
     # converting to string
     def _str(self):
         vals = vars(p)

@@ -1,6 +1,8 @@
 import itertools
 from slurmpy import Slurm
 
+partition = 'high'
+
 # sweep mnist single
 '''
 params_to_vary = {
@@ -60,27 +62,9 @@ params_to_vary = {
 '''
 params_to_vary = {
     'seed': range(0, 4),
-    'lr': [1.0, 0.05, 0.001],
+    'lr': [1.0, 0.05, 0.001], # [1.0, 0.1, 0.001, 0.01]
     'optimizer': ['sgd', 'adam'],
     'num_layers': [2, 4, 7], # add in 2, 7
-    'dset': ['mnist', 'cifar10'], 
-    'batch_size': [10, 100, 1000], # 10, 100, 1000
-    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/track_acts/resweep_full_new'],
-    'shuffle_labels': [False, True], # loop
-    'hidden_size': [128, 512], # 128, 512
-    'freeze': [False],
-    'save_acts_and_reduce': [True],
-    'num_iters': [120]
-}
-'''
-
-'''
-# sweep big
-params_to_vary = {
-    'seed': range(0, 3),
-    'lr': [1.0, 0.1, 0.001, 0.01],
-    'optimizer': ['sgd', 'adam'],
-    'num_layers': [4, 2, 7], # add in 2, 7
     'dset': ['mnist', 'cifar10'], 
     'batch_size': [10, 100, 1000], # 10, 100, 1000
     'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/track_acts/resweep_full_new'],
@@ -118,7 +102,7 @@ params_to_delete = [(0.1, 'adam', 0), (1, 'adam', 0)]
 
 
 # run
-s = Slurm("sweep_full", {"partition": "low", "time": "4-0"})
+s = Slurm("sweep_full", {"partition": partition, "time": "4-0"})
 ks = sorted(params_to_vary.keys())
 vals = [params_to_vary[k] for k in ks]
 param_combinations = list(itertools.product(*vals)) # list of tuples

@@ -12,6 +12,7 @@ from os.path import join as oj
 import sys
 import numpy as np
 import models
+import random
 
 def get_binary_bars(numInputs, numDatapoints, probabilityOn):
     """
