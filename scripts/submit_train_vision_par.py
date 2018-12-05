@@ -19,6 +19,25 @@ params_to_vary = {
 }
 '''
 
+# sweep mnist 1st lay big lr (small sweep)
+
+params_to_vary = {
+    'seed': range(0, 1),
+    'lr': [1.0, 0.1, 0.001],
+    'optimizer': ['sgd_mult_first'],
+    'num_layers': [4], # add in 2, 7
+    'dset': ['mnist', 'cifar10'], # mnist, cifar10
+    'batch_size': [100], # 10, 100, 1000
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/track_acts/lay1_big_lrs'],
+    'shuffle_labels': [False], # loop
+    'hidden_size': [512], # 128, 512
+    'freeze': [False],
+    'save_acts_and_reduce': [True],
+    'num_iters': [100], 
+    'first_layer_lr_mult': [1, 2, 5, 10, 20]
+}
+
+
 '''
 # sweep small
 params_to_vary = {
@@ -38,6 +57,7 @@ params_to_vary = {
 '''
 
 # sweep big compromise
+'''
 params_to_vary = {
     'seed': range(0, 4),
     'lr': [1.0, 0.05, 0.001],
@@ -52,6 +72,7 @@ params_to_vary = {
     'save_acts_and_reduce': [True],
     'num_iters': [120]
 }
+'''
 
 '''
 # sweep big

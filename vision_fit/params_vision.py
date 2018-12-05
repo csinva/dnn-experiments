@@ -37,10 +37,11 @@ class p:
     '''
     
     # optimizer params (sweep)
-    optimizer = 'sgd' # 'sgd' or 'adam'
+    optimizer = 'sgd' # 'sgd' or 'adam', sgd_mult_first
     lr = 1.0 # default 0.01
     seed = 2
     batch_size = 100
+    first_layer_lr_mult = 10
     
     # its
     calc_activations = 8000 # (0) calculate activations for diff number of data points and then do dim reduction...
