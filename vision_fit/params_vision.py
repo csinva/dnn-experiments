@@ -48,6 +48,7 @@ class p:
     if use_conv:
         calc_activations = 1000
     save_all_weights_freq = 10 # how often to save all the weights (if high will never save)
+    save_all_freq = 40
     
     pid = ''.join(["%s" % randint(0, 9) for num in range(0, 20)])
 

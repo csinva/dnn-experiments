@@ -32,6 +32,20 @@ def seed(p):
     torch.manual_seed(p.seed)    
     random.seed(p.seed)
     
+def save(out_name, p, s):
+    # save final
+    if not os.path.exists(p.out_dir):  
+        os.makedirs(p.out_dir)
+    params_dict = p._dict(p)
+    results_combined = {**params_dict, **s._dict_vals()}    
+    weights_results_combined = {**params_dict, **s._dict_weights()}
+
+
+    # dump
+    pkl.dump(params_dict, open(oj(p.out_dir, 'idx_' + out_name + '.pkl'), 'wb'))
+    pkl.dump(results_combined, open(oj(p.out_dir, out_name + '.pkl'), 'wb'))
+    pkl.dump(weights_results_combined, open(oj(p.out_dir, 'weights_' + out_name + '.pkl'), 'wb'))     
+    
 def fit_vision(p):
     out_name = p._str(p) # generate random fname str before saving
     seed(p)
@@ -109,19 +123,14 @@ def fit_vision(p):
         # set lr / freeze
         if it - p.num_iters_small in p.lr_ticks:
             model, optimizer = optimization.freeze_and_set_lr(p, model, it)
+            
+        if it % p.save_all_freq == 0:
+            save(out_name, p, s)
+            
+
+    save(out_name, p, s)
         
-    # save final
-    if not os.path.exists(p.out_dir):  # delete the features if they already exist
-        os.makedirs(p.out_dir)
-    params_dict = p._dict(p)
-    results_combined = {**params_dict, **s._dict_vals()}    
-    weights_results_combined = {**params_dict, **s._dict_weights()}
-    
-    
-    # dump
-    pkl.dump(params_dict, open(oj(p.out_dir, 'idx_' + out_name + '.pkl'), 'wb'))
-    pkl.dump(results_combined, open(oj(p.out_dir, out_name + '.pkl'), 'wb'))
-    pkl.dump(weights_results_combined, open(oj(p.out_dir, 'weights_' + out_name + '.pkl'), 'wb')) 
+
 
     
 if __name__ == '__main__':

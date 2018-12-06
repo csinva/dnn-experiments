@@ -1,0 +1,4 @@
+- **overview**: analyzes stability for metrics + plots all of them over time
+- sweep_biglay1: analyzes sweeps that varied learning rate of only layer 1
+- sweep_clean: raaz's original nb which plots individual vars while varying one things (with error bars)
+- sweep_weights: how to load weights

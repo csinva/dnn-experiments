@@ -74,7 +74,6 @@ def calc_activation_dims(use_cuda, model, dset_train, dset_test, calc_activation
                 dicts_dict['test'] = {'pca': act_var_dict, 'rbf': act_var_dict_rbf}                
         return dicts_dict
 
-# get explained_var
 def get_singular_vals_from_weight_dict(weight_dict, activation=False):
     explained_var_dict = {}
     for layer_name in weight_dict.keys():
@@ -87,7 +86,6 @@ def get_singular_vals_from_weight_dict(weight_dict, activation=False):
             explained_var_dict[layer_name] = deepcopy(pca.singular_values_)
     return explained_var_dict
 
-# get explained_var
 def get_singular_vals_kernels(weight_dict, kernel='cosine', activation=False):
     explained_var_dict = {}
     for layer_name in weight_dict.keys():

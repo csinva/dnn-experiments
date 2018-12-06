@@ -38,7 +38,7 @@ class S:
         self.weight_norms = {} # keys are it in p.its
     
         # weights things
-        self.weights = {}         # records some weights at certain epochs
+        self.weights = {}         # records some weights at certain epochs {it: {'fc.0.weight_spectral': val1, 'fc.0.weight_fro': val2}}
         self.weights_first10 = {} # records 10 weights in first layer at every iteration
     
     # dictionary of everything but weights

@@ -79,7 +79,7 @@ class LinearNet(nn.Module):
             y = self.fc[i](y)
             out['fc.' + str(i)] = deepcopy(y)
             y = F.relu(y)
-        out['fc' + str(len(self.fc))] = deepcopy(self.fc[-1](y))
+        out['fc.' + str(len(self.fc) - 1)] = deepcopy(self.fc[-1](y))
         return out            
 
 class LeNet(nn.Module):
