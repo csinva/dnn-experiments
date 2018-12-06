@@ -13,7 +13,7 @@ def set_style():
     mpl.rcParams['axes.labelsize'] = label_size
     mpl.rcParams['axes.titlesize'] = label_size
     mpl.rcParams['figure.titlesize'] = label_size
-    mpl.rcParams['lines.markersize'] = 20
+    mpl.rcParams['lines.markersize'] = 10
     mpl.rcParams['lines.linewidth'] = 3.
     mpl.rcParams['grid.linewidth'] = 1.
     mpl.rcParams['legend.fontsize'] = label_size

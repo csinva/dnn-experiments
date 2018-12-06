@@ -61,7 +61,7 @@ def get_model(p):
             model = models.LinearNet(p.num_layers, 28*28, p.hidden_size, 10)
         else:
             model = models.LinearNet(3, 28*28, 256, 10)
-    elif p.dset == 'cifar10':
+    elif 'cifar10' in p.dset:
         if p.use_conv_special:
             model = models.LinearThenConvCifar()        
         elif p.use_conv:
@@ -112,9 +112,12 @@ def get_data_loaders(p):
                 exs[i] = train_set.train_data[i]
             train_set.train_data = torch.Tensor(exs)
             train_set.train_labels = torch.Tensor(np.arange(0, 10)).long()
-
+        elif p.dset == 'mnist_small':
+            train_set.train_data = train_set.train_data[:p.num_points]
+            train_set.train_labels = train_set.train_labels[:p.num_points]
         if p.shuffle_labels:
-            train_set.train_labels = torch.Tensor(np.random.randint(0, 10, 60000)).long()
+            num_labs = train_set.train_labels.size()[0]
+            train_set.train_labels = torch.Tensor(np.random.randint(0, 10, num_labs)).long()
         train_loader = torch.utils.data.DataLoader(
                  dataset=train_set,
                  batch_size=p.batch_size,
@@ -136,6 +139,9 @@ def get_data_loaders(p):
         test_loader = torch.utils.data.DataLoader(test_set, 
                                                   batch_size=p.batch_size,
                                                   shuffle=False)
+        if p.dset == 'cifar10_small':
+            train_set.train_data = train_set.train_data[:p.num_points]
+            train_set.train_labels = train_set.train_labels[:p.num_points]            
 
         if p.shuffle_labels:
             train_set.train_labels = [random.randint(0, 9) for _ in range(50000)]
