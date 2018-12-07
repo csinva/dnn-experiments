@@ -2,6 +2,7 @@
 Implementation of Iterative Soft Thresholding
 """
 import torch
+from torch.autograd import Variable
 
 def run(images, dictionary, sparsity_weight, max_num_iters,
         convergence_epsilon=1e-3, nonnegative_only=False):
@@ -51,7 +52,8 @@ def run(images, dictionary, sparsity_weight, max_num_iters,
       torch.mm(dictionary, dictionary.t()))[0][-1]
   stepsize = 1. / lipschitz_constant
 
-  codes = images.new_zeros(dictionary.size(1), images.size(1))
+  # codes = images.new_zeros(dictionary.size(1), images.size(1))
+  codes = Variable(torch.zeros((dictionary.size(1), images.size(1)))).cuda()
   old_codes = codes.clone()
   avg_per_component_change = torch.mean(torch.abs(codes - old_codes))
 

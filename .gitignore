@@ -1,7 +1,5 @@
 **.ipynb_checkpoints
 **cache*
-scripts/logs
-scripts/slurm-scripts
 **.pdf
 **figs*
 **.zip
@@ -11,3 +9,5 @@ scripts/slurm-scripts
 **.txt
 **.jpg
 **.tif
+**slurm*
+**logs*

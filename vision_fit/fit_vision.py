@@ -100,7 +100,7 @@ def fit_vision(p):
             s.act_singular_val_dicts_test_rbf.append(act_var_dicts['test']['rbf'])
             
             # weight kernels
-            s.singular_val_dicts_cosine.append(get_ singular_vals_kernels(weight_dict, 'cosine'))
+            s.singular_val_dicts_cosine.append(get_singular_vals_kernels(weight_dict, 'cosine'))
             s.singular_val_dicts_rbf.append(get_singular_vals_kernels(weight_dict, 'rbf'))
             s.singular_val_dicts_lap.append(get_singular_vals_kernels(weight_dict, 'laplacian'))
         

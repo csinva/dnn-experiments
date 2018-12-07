@@ -20,6 +20,8 @@ import time
 from sklearn.decomposition import MiniBatchDictionaryLearning
 
 seed = 11
+
+
 dset_name = 'mnist'
 np.random.seed(seed) 
 torch.manual_seed(seed)    
@@ -49,7 +51,7 @@ def fit_and_save(n_iter, alpha, data):
     print('fitting...', n_iter, alpha)
     V = dico.fit(data)
     print('took', time.clock() - t, 'sec')
-    np.save('bases_iters=' + str(n_iter) + '_alpha=' + str(alpha) + '.npy', V.components_)
+    np.save('bases/bases_iters=' + str(n_iter) + '_alpha=' + str(alpha) + '.npy', V.components_)
 
 for n_iter in [200000]:
     for alpha in [1]: # 1
