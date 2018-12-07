@@ -62,5 +62,20 @@ dico = MiniBatchDictionaryLearning(n_components=p.num_bases, alpha=p.alpha, n_it
 for i in tqdm(range(50000)):
     V = dico.fit(X_d)
     if i % 100 == 0:
-        np.save('bases/bases_iters=' + str(i) + '_alpha=' + str(p.alpha) + '_ncomps=' + str(p.num_bases) + '_class=' + str(p.class_num) + '.npy', V.components_)        
-#         viz_weights.plot_weights(V.components_, dset='cifar10')
+        s = '_alpha=' + str(p.alpha) + '_ncomps=' + str(p.num_bases) + '_class=' + str(p.class_num)
+        fname1 = 'bases/bases_iters=' + str(i) + s + '.npy' 
+        np.save(fname1, V.components_)        
+        fname2 = 'bases/bases_iters=' + str(i - 1) + s + '.npy'
+        viz_weights.plot_weights(V.components_, dset='rgb')
+        fname3 = 'bases_figs/bases_iters=' + str(i - 1) + s + '.png'
+        plt.savefig('bases_figs/bases_iters=' + str(i) + s + '.png', dpi=200, bbox_inches = 'tight', pad_inches = 0)
+        
+        if os.path.exists(fname2):
+            os.remove(fname2)
+            
+        if os.path.exists(fname3):
+            os.remove(fname3)
+            
+        plt.clf()
+        plt.cla()
+        plt.close()
