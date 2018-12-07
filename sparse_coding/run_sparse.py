@@ -59,15 +59,16 @@ print(X_d.shape)
 
 n_iter = int(1000 / p.batch_size)
 dico = MiniBatchDictionaryLearning(n_components=p.num_bases, alpha=p.alpha, n_iter=n_iter, n_jobs=1, batch_size=p.batch_size) 
+save_freq = 100
 for i in tqdm(range(50000)):
     V = dico.fit(X_d)
-    if i % 100 == 0:
+    if i % save_freq == 0:
         s = '_alpha=' + str(p.alpha) + '_ncomps=' + str(p.num_bases) + '_class=' + str(p.class_num)
         fname1 = 'bases/bases_iters=' + str(i) + s + '.npy' 
         np.save(fname1, V.components_)        
-        fname2 = 'bases/bases_iters=' + str(i - 1) + s + '.npy'
+        fname2 = 'bases/bases_iters=' + str(i - save_freq) + s + '.npy'
         viz_weights.plot_weights(V.components_, dset='rgb')
-        fname3 = 'bases_figs/bases_iters=' + str(i - 1) + s + '.png'
+        fname3 = 'bases_figs/bases_iters=' + str(i - save_freq) + s + '.png'
         plt.savefig('bases_figs/bases_iters=' + str(i) + s + '.png', dpi=200, bbox_inches = 'tight', pad_inches = 0)
         
         if os.path.exists(fname2):

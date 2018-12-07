@@ -1,11 +1,8 @@
-import matplotlib.pyplot as plt
-import matplotlib as mpl
-import matplotlib.pylab as pylab
-
-
-
-
 def set_style():
+    import matplotlib.pyplot as plt
+    import matplotlib as mpl
+    import matplotlib.pylab as pylab
+    from cycler import cycler
     plt.style.use('fivethirtyeight')
     label_size = 12
     mpl.rcParams['xtick.labelsize'] = label_size 
@@ -28,4 +25,11 @@ def set_style():
     # mpl.rcParams['font.serif'] = 'Times New Roman'
     # # Then, "ALWAYS use sans-serif fonts"
     # mpl.rcParams['font.family'] = "Serif"
-
+    
+    from cycler import cycler
+    alpha = 0.5
+    to_rgba = mpl.colors.ColorConverter().to_rgba#
+    color_list=[]
+    for i, col in enumerate(plt.rcParams['axes.prop_cycle']):
+        color_list.append(to_rgba(col['color'], alpha))
+    plt.rcParams['axes.prop_cycle'] = cycler(color=color_list)
