@@ -1,7 +1,7 @@
 import itertools
 from slurmpy import Slurm
 
-partition = 'high'
+partition = 'low'
 
 # sweep mnist single
 '''

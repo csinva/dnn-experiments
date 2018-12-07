@@ -8,3 +8,6 @@ scripts/slurm-scripts
 **.png
 **.npy
 **.pkl
+**.txt
+**.jpg
+**.tif

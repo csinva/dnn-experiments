@@ -44,8 +44,7 @@ N = 60000
 data = train_set.train_data.numpy()[:N].reshape(N, -1)
 
 def fit_and_save(n_iter, alpha, data):
-    dico = MiniBatchDictionaryLearning(n_components=500, alpha=alpha, n_iter=n_iter,
-                                      n_jobs=4) # 500 took 7.5 mins, 5000 should be an hour, 10000 took 10 mins
+    dico = MiniBatchDictionaryLearning(n_components=500, alpha=alpha, n_iter=n_iter, n_jobs=4) # 500 took 7.5 mins, 5000 should be an hour, 10000 took 10 mins
     t = time.clock()
     print('fitting...', n_iter, alpha)
     V = dico.fit(data)
