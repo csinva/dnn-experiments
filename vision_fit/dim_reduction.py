@@ -23,7 +23,7 @@ def reduce_model(model, percent_to_explain=0.85):
     
     for layer_name in weight_dict.keys():
         if 'weight' in layer_name:
-            w = weight_dict[layer_name]
+            w = weight_dict[layer_name].cpu()
             
             wshape = w.shape
             if len(w.shape) > 2: # conv layer]--
@@ -61,7 +61,7 @@ def calc_activation_dims(use_cuda, model, dset_train, dset_test, calc_activation
             for batch_idx, (x, target) in enumerate(loader):
                 if use_cuda:
                     x, target = x.cuda(), target.cuda()
-                x = Variable(x, volatile=True)
+                x = x
                 y = model.forward_all(x)
                 y = {key: y[key].data.cpu().numpy().T for key in y.keys()}
                 if batch_idx >= 0:

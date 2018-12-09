@@ -22,6 +22,7 @@ params_to_vary = {
 '''
 
 # sweep small dsets
+'''
 params_to_vary = {
     'seed': range(0, 1),
     'lr': [1.0, 0.1, 0.001],
@@ -29,14 +30,15 @@ params_to_vary = {
     'num_layers': [4], # add in 2, 7
     'dset': ['mnist_small', 'cifar10_small'], # mnist, cifar10
     'batch_size': [100], # 10, 100, 1000
-    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/track_acts/dsets_small'],
-    'shuffle_labels': [True, False], # loop
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/track_acts/dsets_small_rerun'],
+    'shuffle_labels': [False], # loop
     'hidden_size': [512], # 128, 512
     'freeze': [False],
     'save_acts_and_reduce': [True],
     'num_iters': [100], 
     'num_points': [10, 100, 1000]
 }
+'''
 
 # sweep mnist 1st lay big lr (small sweep)
 '''
@@ -76,9 +78,9 @@ params_to_vary = {
 '''
 
 # sweep big compromise
-'''
+
 params_to_vary = {
-    'seed': range(0, 4),
+    'seed': range(4, 6),
     'lr': [1.0, 0.05, 0.001], # [1.0, 0.1, 0.001, 0.01]
     'optimizer': ['sgd', 'adam'],
     'num_layers': [2, 4, 7], # add in 2, 7
@@ -91,7 +93,6 @@ params_to_vary = {
     'save_acts_and_reduce': [True],
     'num_iters': [120]
 }
-'''
 
 # this is for layer by layer
 '''

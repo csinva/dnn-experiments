@@ -3,8 +3,8 @@ from numpy.random import randint
 
 class p:   
     # crucial params
-    dset = 'cifar10_small' # mnist, cifar10, noise, bars, mnist_single, mnist_small, cifar10_small
-    shuffle_labels = True
+    dset = 'mnist' # mnist, cifar10, noise, bars, mnist_single, mnist_small, cifar10_small
+    shuffle_labels = False
     num_points = 100 # only comes in to play when using mnist_small
     out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/track_acts/test' # test
     
@@ -22,8 +22,8 @@ class p:
     num_iters = 1 # note: this is total
 
     # optimizer params (sweep)
-    optimizer = 'sgd' # 'sgd' or 'adam', sgd_mult_first
-    lr = 1.0 # default 0.01
+    optimizer = 'adam' # 'sgd' or 'adam', sgd_mult_first
+    lr = 0.001 # default 0.01
     seed = 2
     batch_size = 100
     first_layer_lr_mult = 10
@@ -31,16 +31,9 @@ class p:
     # freezing
     freeze = False # False, first, last, progress_first, progress_last
     lr_step = 16 # used for progress    
-    lr_ticks = {0: 1, # note these will all be subtracted by 10
-                30: 0.5,
-                50: 0.25,
-                70: 0.125,
-                90: 0.1,
-                110: 0.05,
-                130: 0.025,
-                150: 0.01
-               }
-
+    # note these will all be subtracted by num_iters_small
+    lr_ticks = {0: 1, 30: 0.5, 50: 0.25, 70: 0.125, 
+                90: 0.1, 110: 0.05, 130: 0.025, 150: 0.01}
     '''
     lr_ticks = {0: 1, # initial lr should multiply by 1
                 **{8 + x * 16: 0.5 for x in range(30)}, # tick down (starts after num_iters_small)

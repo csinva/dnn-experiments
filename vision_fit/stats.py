@@ -21,8 +21,8 @@ from dim_reduction import *
 
 
 def layer_norms(weight_dict):
-    dfro = {lay_name + '_fro': np.linalg.norm(weight_dict[lay_name], ord='fro') for lay_name in weight_dict.keys() if 'weight' in lay_name and not 'conv' in lay_name}
-    dspectral = {lay_name + '_spectral': np.linalg.norm(weight_dict[lay_name], ord=2) for lay_name in weight_dict.keys() if 'weight' in lay_name and not 'conv' in lay_name}
+    dfro = {lay_name + '_fro': np.linalg.norm(weight_dict[lay_name].cpu(), ord='fro') for lay_name in weight_dict.keys() if 'weight' in lay_name and not 'conv' in lay_name}
+    dspectral = {lay_name + '_spectral': np.linalg.norm(weight_dict[lay_name].cpu(), ord=2) for lay_name in weight_dict.keys() if 'weight' in lay_name and not 'conv' in lay_name}
     return {**dfro, **dspectral}
 
 def calc_loss_acc(loader, batch_size, use_cuda, model, criterion, print_loss=False):
@@ -32,17 +32,18 @@ def calc_loss_acc(loader, batch_size, use_cuda, model, criterion, print_loss=Fal
     for batch_idx, (x, target) in enumerate(loader):
         if use_cuda:
             x, target = x.cuda(), target.cuda()
-        x, target = Variable(x, volatile=True), Variable(target, volatile=True)
+        x, target = x, target
         out = model(x)
         loss = criterion(out, target)
         _, pred_label = torch.max(out.data, 1)
-        correct_cnt += (pred_label == target.data).sum()
-        tot_loss_test += loss.data[0]
+        correct_cnt += (pred_label == target.data).sum().item()
+        tot_loss_test += loss.item()
         
         preds_unn = out.data.cpu().numpy()
         preds = F.softmax(out, dim=1).data.cpu().numpy()
         n = preds_unn.shape[0]
         mask = np.ones(preds_unn.shape).astype(bool)
+        pred_label = pred_label.cpu()
         mask[np.arange(n), pred_label] = False
         
         preds_unn_class = preds_unn[np.arange(n), pred_label]

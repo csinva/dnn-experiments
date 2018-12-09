@@ -77,9 +77,9 @@ class LinearNet(nn.Module):
         out = {}
         for i in range(len(self.fc) - 1):
             y = self.fc[i](y)
-            out['fc.' + str(i)] = deepcopy(y)
+            out['fc.' + str(i)] = y.data.clone() #deepcopy(y)
             y = F.relu(y)
-        out['fc.' + str(len(self.fc) - 1)] = deepcopy(self.fc[-1](y))
+        out['fc.' + str(len(self.fc) - 1)] = self.fc[-1](y).clone() # deepcopy(self.fc[-1](y))
         return out            
 
 class LeNet(nn.Module):
