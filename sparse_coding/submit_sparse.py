@@ -5,15 +5,15 @@ partition = 'high'
 
 # sweep small dsets
 params_to_vary = {
-    'alpha': [0.001, 0.05, 1, 10],
+    'alpha': [1, 10], # [0.001, 0.05, 1, 10],
     'num_bases': [25, 100, 400],
-    'class_num': [0, 1],
+    'class_num': [None], # [0, 1]
     'batch_size': [100]
 }
 
 
 # run
-s = Slurm("sparse_coding", {"partition": partition, "time": "4-0"})
+s = Slurm("max_corr", {"partition": partition, "time": "4-0"})
 ks = sorted(params_to_vary.keys())
 vals = [params_to_vary[k] for k in ks]
 param_combinations = list(itertools.product(*vals)) # list of tuples

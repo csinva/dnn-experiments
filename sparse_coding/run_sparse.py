@@ -50,9 +50,13 @@ Y_test = np.array(test_set.test_labels)
 lab_dict = {0: 'airplane', 1: 'automobile', 2: 'bird', 3: 'cat', 4: 'deer', 5: 'dog', 6: 'frog', 7: 'horse', 8: 'ship', 9: 'truck'}
 
 # filter by a class
-idxs = Y_test==p.class_num
-X = X_test[idxs]
-Y = Y_test[idxs]
+if p.class_num is None:
+    X = X_test
+    Y = Y_test
+else:
+    idxs = Y_test==p.class_num
+    X = X_test[idxs]
+    Y = Y_test[idxs]
 
 X_d = X.reshape(X.shape[0], -1)
 print(X_d.shape)

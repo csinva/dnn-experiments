@@ -78,12 +78,18 @@ def load_dset(batch_size, num_workers):
     
 # pick some layers
 max_corrs = {}
-model = get_model('alexnet')
+model_name = 'densenet' # alexnet, vgg16, inception_v3, resnet18, densenet
+model = get_model(model_name)
 train_loader = load_dset(batch_size=50, num_workers=1)
-lays = [model.classifier[1], model.classifier[4], model.classifier[6]]
-names = ['fc1', 'fc2', 'fc3']
-
-
+if model_name == 'alexnet':
+    lays = [model.classifier[1], model.classifier[4], model.classifier[6]]
+    names = ['fc1', 'fc2', 'fc3']
+elif model_name == 'vgg16':
+    lays = [model.classifier[0], model.classifier[3], model.classifier[6]]
+    names = ['fc1', 'fc2', 'fc3']
+else:
+    lays = [mod for mod in model.modules() if 'linear' in str(type(mod))]
+    names = ['fc' + str(i + 1) for i in range(len(lays))]
 for i, lay in enumerate(lays):
     lay.name = names[i]
     lay.register_forward_hook(linear_hook)
@@ -94,9 +100,6 @@ for i, x in tqdm(enumerate(train_loader)):
     _ = model(ims)
     
     if i % 20000 == 0:
-        pkl.dump(max_corrs, open(oj('max_corrs', 'alexnet_' + str(i) + '.pkl'), 'wb'))
+        pkl.dump(max_corrs, open(oj('/accounts/projects/vision/chandan/dl_theory/vision_analyze/max_corrs', model_name + '_' + str(i) + '.pkl'), 'wb'))
         
-pkl.dump(max_corrs, open(oj('max_corrs', 'alexnet_' + str(i) + '.pkl'), 'wb'))        
-        
-    
-#     print([(key, max_corrs[key].shape) for key in max_corrs.keys()])
+pkl.dump(max_corrs, open(oj('/accounts/projects/vision/chandan/dl_theory/vision_analyze/max_corrs', model_name + '_' + str(i) + '.pkl'), 'wb'))        
