@@ -33,6 +33,8 @@ for i in range(1, len(sys.argv), 2):
         setattr(p, sys.argv[i], t(True))            
     elif sys.argv[i+1] == 'False':
         setattr(p, sys.argv[i], t(False))
+    elif sys.argv[i+1] == 'None':
+        setattr(p, sys.argv[i], None)
     else:
         setattr(p, sys.argv[i], t(sys.argv[i+1]))
 

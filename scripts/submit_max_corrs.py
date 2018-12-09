@@ -4,8 +4,8 @@ from slurmpy import Slurm
 partition = 'low'
 
 # run
-s = Slurm("sweep_full", {"partition": "gpu_yugroup", "time": "4-0", "gres": "gpu:1"})
-models = ['alexnet']
+s = Slurm("cnn_corr", {"partition": "gpu_yugroup", "time": "4-0", "gres": "gpu:1"})
+models = ['vgg11', 'vgg13', 'vgg19', 'resnet34', 'resnet50', 'densenet121', 'densenet169', 'densenet201']
 
 # iterate
 for i, model in enumerate(models):

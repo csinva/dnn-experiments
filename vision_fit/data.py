@@ -13,6 +13,7 @@ import sys
 import numpy as np
 import models
 import random
+import time
 
 def get_binary_bars(numInputs, numDatapoints, probabilityOn):
     """
@@ -74,14 +75,16 @@ def get_model(p):
         model = models.LinearNet(p.num_layers, 8*8, p.hidden_size, 16)    
     return model
 
-# get data and model from params p
+# get data and model from params p - uses p.dset, p.shuffle_labels, p.batch_size
 def get_data_loaders(p):
-    if p.dset == 'cifar10':
+    if 'cifar10' in p.dset:
         root = oj('/scratch/users/vision/yu_dl/raaz.rsk/data/cifar10')
+    elif 'imagenet' in p.dset:
+        root = '/scratch/users/vision/data/cv/imagenet_full'
     else:
         root = oj('/scratch/users/vision/yu_dl/raaz.rsk/data/mnist')
     if not os.path.exists(root):
-        os.mkdir(root)
+        os.mkdir(root)      
             
         
     ## load dataset (train_loader, test_loader)
@@ -145,6 +148,29 @@ def get_data_loaders(p):
 
         if p.shuffle_labels:
             train_set.train_labels = [random.randint(0, 9) for _ in range(50000)]
+    elif 'imagenet' in p.dset:
+        normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                     std=[0.229, 0.224, 0.225])
+        t = time.clock()
+        print('loading imagenet train dset...')
+        train_loader = torch.utils.data.DataLoader(
+            dset.ImageFolder(oj(root, 'train'), transforms.Compose([
+                transforms.RandomResizedCrop(224),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+                normalize])), 
+            batch_size=p.batch_size, shuffle=False)    
+        print('done loading train dset', time.clock() - t, 'sec')
+
+        test_loader = torch.utils.data.DataLoader(
+            dset.ImageFolder(oj(root, 'val'), transforms.Compose([
+                transforms.Resize(256),
+                transforms.CenterCrop(224),
+                transforms.ToTensor(),
+                normalize])),
+            batch_size=p.batch_size, shuffle=False, 
+            pin_memory=True)
+
     return train_loader, test_loader
 
 # extract data from loaders
