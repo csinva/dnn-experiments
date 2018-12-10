@@ -5,7 +5,11 @@ partition = 'low'
 
 # run
 s = Slurm("cnn_corr", {"partition": "gpu_yugroup", "time": "4-0", "gres": "gpu:1"})
-models = ['resnet34', 'resnet50', 'densenet121', 'densenet169', 'densenet201']
+models = ['resnet50']
+# [['alexnet', 'inception_v3'],
+# ['vgg11', 'vgg13', 'vgg16', 'vgg19'],
+# ['resnet18', 'resnet34', 'resnet50'],                    
+# ['densenet121', 'densenet169', 'densenet201']]
 
 # iterate
 for i, model in enumerate(models):

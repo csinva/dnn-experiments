@@ -17,6 +17,7 @@ import data
 import warnings
 warnings.filterwarnings("ignore")
 
+max_corrs = {}
 
 def get_model_pretrained(s):
     if s == 'densenet121': model = models.densenet121(pretrained=True)
@@ -39,7 +40,6 @@ def linear_hook(module, act_in, act_out):
     # input is (b x in_size)
     # weight is (out_size x in_size)
     # output is (out_1, ...., out_b)
-    
     act_in_norm = act_in[0].t() / torch.norm(act_in[0], dim=1) # normalize each of b rows
     act_in_norm = act_in_norm.t() # transpose back to b x in_size
     
@@ -62,11 +62,11 @@ def conv_hook(module, act_in, act_out):
 
 
     
-def lays_and_names(model_name='densenet121'): # alexnet, vgg16, inception_v3, resnet18, densenet
-    model = get_model_pretrained(model_name)
+def lays_and_names(model, model_name='densenet121'): # alexnet, vgg16, inception_v3, resnet18, densenet
     if model_name == 'alexnet':
         lays = [model.classifier[1], model.classifier[4], model.classifier[6]]
         names = ['fc1', 'fc2', 'fc3']
+        
     elif model_name == 'vgg16':
         lays = [model.classifier[0], model.classifier[3], model.classifier[6]]
         names = ['fc1', 'fc2', 'fc3']
@@ -77,17 +77,18 @@ def lays_and_names(model_name='densenet121'): # alexnet, vgg16, inception_v3, re
 
 if __name__ == '__main__':    
     # pick some layers
-    max_corrs = {}
     if len(sys.argv) > 2:
         model_name = sys.argv[2]
     else:
         model_name = 'densenet121' # alexnet, vgg16, inception_v3, resnet18, densenet
+        
+    print(model_name)
     model = get_model_pretrained(model_name)
     class p: pass
     p.batch_size = 50
     p.dset = 'imagenet'
     train_loader, val_loader = data.get_data_loaders(p)
-    lays, names = lays_and_names(model_name)
+    lays, names = lays_and_names(model, model_name)
 
     for i, lay in enumerate(lays):
         lay.name = names[i]
@@ -97,7 +98,6 @@ if __name__ == '__main__':
     for i, x in tqdm(enumerate(train_loader)):
         ims = x[0].cuda()
         _ = model(ims)
-
         if i % 5000 == 0:
             pkl.dump(max_corrs, open(oj('/accounts/projects/vision/chandan/dl_theory/vision_analyze/max_corrs', model_name + '_' + str(i) + '.pkl'), 'wb'))
 
