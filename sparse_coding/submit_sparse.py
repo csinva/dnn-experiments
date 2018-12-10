@@ -13,7 +13,7 @@ params_to_vary = {
 
 
 # run
-s = Slurm("max_corr", {"partition": partition, "time": "4-0"})
+s = Slurm("sparse_coding", {"partition": partition, "time": "4-0"})
 ks = sorted(params_to_vary.keys())
 vals = [params_to_vary[k] for k in ks]
 param_combinations = list(itertools.product(*vals)) # list of tuples

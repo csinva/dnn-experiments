@@ -98,7 +98,7 @@ if __name__ == '__main__':
         ims = x[0].cuda()
         _ = model(ims)
 
-        if i % 20000 == 0:
+        if i % 5000 == 0:
             pkl.dump(max_corrs, open(oj('/accounts/projects/vision/chandan/dl_theory/vision_analyze/max_corrs', model_name + '_' + str(i) + '.pkl'), 'wb'))
 
     pkl.dump(max_corrs, open(oj('/accounts/projects/vision/chandan/dl_theory/vision_analyze/max_corrs', model_name + '_' + str(i) + '.pkl'), 'wb'))        
