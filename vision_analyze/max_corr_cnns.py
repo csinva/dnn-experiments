@@ -27,6 +27,8 @@ def get_model_pretrained(s):
     elif s == 'resnet18': model = models.resnet18(pretrained=True)
     elif s == 'resnet34': model = models.resnet34(pretrained=True)        
     elif s == 'resnet50': model = models.resnet50(pretrained=True)                
+    elif s == 'resnet101': model = models.resnet101(pretrained=True)       
+    elif s == 'resnet152': model = models.resnet152(pretrained=True)               
     elif s == 'vgg11': model = models.vgg11(pretrained=True)
     elif s == 'vgg13': model = models.vgg13(pretrained=True)
     elif s == 'vgg16': model = models.vgg16(pretrained=True)
@@ -86,10 +88,10 @@ if __name__ == '__main__':
     model = get_model_pretrained(model_name)
     class p: pass
     p.batch_size = 50
-    if 'densenet' in model_name:
+    if 'densenet' in model_name or 'resnet101' in model_name or 'resnet152' in model_name:
         p.batch_size = 10
     elif 'inception' in model_name:
-        p.batch_size = 5
+        p.batch_size = 2 # this still fails
     p.dset = 'imagenet'
     train_loader, val_loader = data.get_data_loaders(p)
     lays, names = lays_and_names(model, model_name)

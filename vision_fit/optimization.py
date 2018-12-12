@@ -58,7 +58,8 @@ def freeze_and_set_lr(p, model, it):
     elif p.optimizer == 'sgd_mult_first':
         model_params = dict(model.named_parameters())
         model_params_modified = [{'params': [val for key, val in model_params.items() if not 'fc.0' in key]},
-                                {'params':[val for key, val in model_params.items() if 'fc.0' in key], 'lr': p.lr * p.first_layer_lr_mult * lr_tick}]
+                                {'params':[val for key, val in model_params.items() if 'fc.0' in key], 
+                                 'lr': p.lr * p.first_layer_lr_mult * lr_tick}]
         optimizer = optim.SGD(model_params_modified, lr=p.lr * lr_tick)
 
     return model, optimizer

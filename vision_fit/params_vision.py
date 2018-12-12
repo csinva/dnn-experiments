@@ -26,7 +26,7 @@ class p:
     lr = 0.001 # default 0.01
     seed = 2
     batch_size = 100
-    first_layer_lr_mult = 10
+    first_layer_lr_mult = 1 # this should be left at 1!
     
     # freezing
     freeze = False # False, first, last, progress_first, progress_last

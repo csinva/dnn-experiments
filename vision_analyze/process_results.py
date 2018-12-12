@@ -23,13 +23,15 @@ def try_key_pca(d, key, t):
     
 # adds these vec keys: fc0_fro, fc1_fro, fc0_stab_rank, fc1_stab_rank, act0_stab_rank, act1_stab_rank, corr0, corr1
 # adds these scalar keys: max_train_acc, max_test_acc, _final of all the above
+# returns its (list with each epoch) and ts (list with each epoch for which weights were saved)
 def process_results(results):
     # filter by things that finished
     lens = np.array([len(row['mean_max_corrs'].keys()) for _, row in results.iterrows()])
     results = results[lens == max(lens)] 
     
-    
-    ts = sorted(results.iloc[0]['mean_max_corrs'].keys())
+    row = results.iloc[0]
+    its = row.its[:row.accs_train.size]    
+    ts = np.array(sorted(results.iloc[0]['mean_max_corrs'].keys()))
     t_max_w = int(max(ts))
     corr0, corr0_adj, corr1, corr1_adj = [], [], [], []
     fc0_fro, fc1_fro, fc0_stab_rank, fc1_stab_rank = [], [], [], []
@@ -74,4 +76,6 @@ def process_results(results):
     results['fc1_stab_rank_final'] = np.array([results.fc1_stab_rank[i][-1] for i in idxs]) 
     results['act0_stab_rank_final'] = np.array([results.act0_stab_rank[i][-1] for i in idxs]) 
     results['act1_stab_rank_final'] = np.array([results.act1_stab_rank[i][-1] for i in idxs])
-    return ts, results
+    
+    
+    return its, ts, results

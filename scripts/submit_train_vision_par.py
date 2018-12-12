@@ -17,7 +17,8 @@ params_to_vary = {
     'hidden_size': [128], # 128, 512
     'freeze': [False],
     'save_acts_and_reduce': [True],
-    'num_iters': [50]
+    'num_iters': [50],
+    'first_layer_lr_mult': 1
 }
 '''
 
@@ -36,7 +37,8 @@ params_to_vary = {
     'freeze': [False],
     'save_acts_and_reduce': [True],
     'num_iters': [100], 
-    'num_points': [10, 100, 1000]
+    'num_points': [10, 100, 1000],
+    'first_layer_lr_mult': 1
 }
 '''
 
@@ -59,8 +61,8 @@ params_to_vary = {
 }
 '''
 
-'''
 # sweep small
+'''
 params_to_vary = {
     'seed': range(0, 3),
     'lr': [1.0, 0.1, 0.001],
@@ -73,12 +75,12 @@ params_to_vary = {
     'hidden_size': [128], # 128, 512
     'freeze': [False],
     'save_acts_and_reduce': [True],
-    'num_iters': [100]
+    'num_iters': [100],
+    'first_layer_lr_mult': 1
 }
 '''
 
 # sweep big compromise
-
 params_to_vary = {
     'seed': range(4, 6),
     'lr': [1.0, 0.05, 0.001], # [1.0, 0.1, 0.001, 0.01]
@@ -91,7 +93,8 @@ params_to_vary = {
     'hidden_size': [128, 512], # 128, 512
     'freeze': [False],
     'save_acts_and_reduce': [True],
-    'num_iters': [120]
+    'num_iters': [120],
+    'first_layer_lr_mult': 1
 }
 
 # this is for layer by layer
@@ -105,7 +108,9 @@ params_to_vary = {
     'dset': ['mnist', 'cifar10'], 
     'freeze': ['progress_first', 'progress_last']
     'save_acts_and_reduce': [False],
-    'shuffle_labels': [False]
+    'shuffle_labels': [False],
+    'first_layer_lr_mult': 1
+
 }
 '''
 
