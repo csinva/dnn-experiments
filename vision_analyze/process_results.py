@@ -74,4 +74,4 @@ def process_results(results):
     results['fc1_stab_rank_final'] = np.array([results.fc1_stab_rank[i][-1] for i in idxs]) 
     results['act0_stab_rank_final'] = np.array([results.act0_stab_rank[i][-1] for i in idxs]) 
     results['act1_stab_rank_final'] = np.array([results.act1_stab_rank[i][-1] for i in idxs])
-    return results
+    return ts, results
