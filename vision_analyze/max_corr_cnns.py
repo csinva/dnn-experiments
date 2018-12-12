@@ -86,6 +86,10 @@ if __name__ == '__main__':
     model = get_model_pretrained(model_name)
     class p: pass
     p.batch_size = 50
+    if 'densenet' in model_name:
+        p.batch_size = 10
+    elif 'inception' in model_name:
+        p.batch_size = 5
     p.dset = 'imagenet'
     train_loader, val_loader = data.get_data_loaders(p)
     lays, names = lays_and_names(model, model_name)
