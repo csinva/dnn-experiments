@@ -39,10 +39,10 @@ def process_results(results):
     for _, row in results.iterrows():
         mem_stat_dict0 = [row['mean_max_corrs'][t]['fc.0.weight'] for t in ts]
         corr0.append([np.mean(d['max_corrs']) for d in mem_stat_dict0])
-    #     corr0_adj.append([np.multiply(d['W_norms'], d['max_corrs'])/np.sum(d['W_norms']) for d in mem_stat_dict0])
+        corr0_adj.append([np.mean(np.multiply(d['W_norms'], d['max_corrs'])/np.sum(d['W_norms'])) for d in mem_stat_dict0])
         mem_stat_dict1 = [row['mean_max_corrs'][t]['fc.1.weight'] for t in ts]
         corr1.append([np.mean(d['max_corrs']) for d in mem_stat_dict1])
-    #     corr1_adj.append([np.multiply(d['W_norms'], d['max_corrs'])/np.sum(d['W_norms']) for d in mem_stat_dict1])
+        corr1_adj.append([np.mean(np.multiply(d['W_norms'], d['max_corrs'])/np.sum(d['W_norms'])) for d in mem_stat_dict1])
 
         fc0_fro.append([row['weight_norms'][t]['fc.0.weight_fro'] for t in ts])
         fc1_fro.append([row['weight_norms'][t]['fc.1.weight_fro'] for t in ts])    
@@ -61,6 +61,8 @@ def process_results(results):
     results['act1_stab_rank'] = act1_stab_rank
     results['corr0'] = corr0
     results['corr1'] = corr1
+    results['corr0_adj'] = corr0_adj
+    results['corr1_adj'] = corr1_adj
 
     # scalar summaries
     idxs = results.index
@@ -68,6 +70,8 @@ def process_results(results):
     results['max_test_acc'] = np.array([max(results.accs_test[i]) for i in idxs])
     results['corr0_final'] = np.array([results.corr0[i][-1] for i in idxs])
     results['corr1_final'] = np.array([results.corr1[i][-1] for i in idxs])
+    results['corr0_adj_final'] = np.array([results.corr0_adj[i][-1] for i in idxs])
+    results['corr1_adj_final'] = np.array([results.corr1_adj[i][-1] for i in idxs])
     # results['corr0_adj_final'] = np.array([results.corr0_adj[i][-1] for i in range(len(results))])
     # results['corr1_adj_final'] = np.array([results.corr1_adj[i][-1] for i in range(len(results))])
     results['fc0_fro_final'] = np.array([results.fc0_fro[i][-1] for i in idxs]) #[results.iloc[row_num]['weight_norms'][t_max_w]['fc.0.weight_fro'] for row_num in results.index]
