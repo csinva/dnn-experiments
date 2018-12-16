@@ -20,6 +20,12 @@ def set_style():
     pylab.rcParams['figure.facecolor']='white'
     pylab.rcParams['axes.facecolor']='white'
     plt.rcParams['savefig.facecolor']='white'
+    plt.rcParams["font.family"] = "Times New Roman"
+    
+    from matplotlib import rc
+    #rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+#     rc('font',**{'family':'serif','serif':['Times']})
+#     rc('text', usetex=True)
     # mpl.rcParams['figure.figsize'] = [12, 10]
     # mpl.rcParams.keys()
     # Say, "the default sans-serif font is COMIC SANS"
