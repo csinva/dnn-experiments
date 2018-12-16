@@ -18,7 +18,7 @@ params_to_vary = {
     'freeze': [False],
     'save_acts_and_reduce': [True],
     'num_iters': [50],
-    'first_layer_lr_mult': 1
+    'first_layer_lr_mult': [1]
 }
 '''
 
@@ -38,7 +38,7 @@ params_to_vary = {
     'save_acts_and_reduce': [True],
     'num_iters': [100], 
     'num_points': [10, 100, 1000],
-    'first_layer_lr_mult': 1
+    'first_layer_lr_mult': [1]
 }
 '''
 
@@ -76,25 +76,25 @@ params_to_vary = {
     'freeze': [False],
     'save_acts_and_reduce': [True],
     'num_iters': [100],
-    'first_layer_lr_mult': 1
+    'first_layer_lr_mult': [1]
 }
 '''
 
 # sweep big compromise
 params_to_vary = {
-    'seed': range(4, 6),
-    'lr': [1.0, 0.05, 0.001], # [1.0, 0.1, 0.001, 0.01]
+    'seed': range(0, 6),
+    'lr': [0.1, 0.01], # [1.0, 0.05, 0.001], # [1.0, 0.1, 0.001, 0.01]
     'optimizer': ['sgd', 'adam'],
     'num_layers': [2, 4, 7], # add in 2, 7
     'dset': ['mnist', 'cifar10'], 
     'batch_size': [10, 100, 1000], # 10, 100, 1000
-    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/track_acts/resweep_full_new'],
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/track_acts/resweep_full_new2'],
     'shuffle_labels': [False, True], # loop
     'hidden_size': [128, 512], # 128, 512
     'freeze': [False],
     'save_acts_and_reduce': [True],
     'num_iters': [120],
-    'first_layer_lr_mult': 1
+    'first_layer_lr_mult': [1]
 }
 
 # this is for layer by layer
@@ -109,7 +109,7 @@ params_to_vary = {
     'freeze': ['progress_first', 'progress_last']
     'save_acts_and_reduce': [False],
     'shuffle_labels': [False],
-    'first_layer_lr_mult': 1
+    'first_layer_lr_mult': [1]
 
 }
 '''

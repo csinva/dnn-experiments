@@ -19,6 +19,7 @@ def set_style():
 
     pylab.rcParams['figure.facecolor']='white'
     pylab.rcParams['axes.facecolor']='white'
+    plt.rcParams['savefig.facecolor']='white'
     # mpl.rcParams['figure.figsize'] = [12, 10]
     # mpl.rcParams.keys()
     # Say, "the default sans-serif font is COMIC SANS"
@@ -28,7 +29,7 @@ def set_style():
     
     from cycler import cycler
     alpha = 0.5
-    to_rgba = mpl.colors.ColorConverter().to_rgba#
+    to_rgba = mpl.colors.ColorConverter().to_rgba# '008fd5', 'fc4f30', 'e5ae38', '6d904f', '8b8b8b', '810f7c'
     color_list=[]
     for i, col in enumerate(plt.rcParams['axes.prop_cycle']):
         color_list.append(to_rgba(col['color'], alpha))

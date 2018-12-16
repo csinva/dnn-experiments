@@ -19,21 +19,21 @@ warnings.filterwarnings("ignore")
 
 max_corrs = {}
 
-def get_model_pretrained(s):
-    if s == 'densenet121': model = models.densenet121(pretrained=True)
-    elif s == 'densenet169': model = models.densenet169(pretrained=True)
-    elif s == 'densenet201': model = models.densenet201(pretrained=True)
-    elif s == 'alexnet': model = models.alexnet(pretrained=True)
-    elif s == 'resnet18': model = models.resnet18(pretrained=True)
-    elif s == 'resnet34': model = models.resnet34(pretrained=True)        
-    elif s == 'resnet50': model = models.resnet50(pretrained=True)                
-    elif s == 'resnet101': model = models.resnet101(pretrained=True)       
-    elif s == 'resnet152': model = models.resnet152(pretrained=True)               
-    elif s == 'vgg11': model = models.vgg11(pretrained=True)
-    elif s == 'vgg13': model = models.vgg13(pretrained=True)
-    elif s == 'vgg16': model = models.vgg16(pretrained=True)
-    elif s == 'vgg19': model = models.vgg19(pretrained=True)        
-    elif s == 'inception_v3': model = models.inception_v3(pretrained=True)
+def get_model_pretrained(s, pretrained=True):
+    if s == 'densenet121': model = models.densenet121(pretrained=pretrained)
+    elif s == 'densenet169': model = models.densenet169(pretrained=pretrained)
+    elif s == 'densenet201': model = models.densenet201(pretrained=pretrained)
+    elif s == 'alexnet': model = models.alexnet(pretrained=pretrained)
+    elif s == 'resnet18': model = models.resnet18(pretrained=pretrained)
+    elif s == 'resnet34': model = models.resnet34(pretrained=pretrained)        
+    elif s == 'resnet50': model = models.resnet50(pretrained=pretrained)                
+    elif s == 'resnet101': model = models.resnet101(pretrained=pretrained)       
+    elif s == 'resnet152': model = models.resnet152(pretrained=pretrained)               
+    elif s == 'vgg11': model = models.vgg11(pretrained=pretrained)
+    elif s == 'vgg13': model = models.vgg13(pretrained=pretrained)
+    elif s == 'vgg16': model = models.vgg16(pretrained=pretrained)
+    elif s == 'vgg19': model = models.vgg19(pretrained=pretrained)        
+    elif s == 'inception_v3': model = models.inception_v3(pretrained=pretrained)
     return model.cuda()
 
 # calculate max corrs for a linear layer
