@@ -39,12 +39,13 @@ def plot_weights(W, dset='mnist', dpi=80): # W is num_filters x im_size
 
     R = math.floor(np.sqrt(num_filters))
     C = math.ceil(num_filters / R)
-    ratio = 1.0 * R/C
+    ratio = 1.0 * R / C
     plt.figure(figsize=(6, 6*R/C), dpi=dpi)
     for i in range(num_filters):
         plt.subplot(R, C, i+1)
         plt.imshow(filts[i], cmap='gray')
         plt.axis('off')
+#     plt.tight_layout()
     plt.subplots_adjust(hspace=0, wspace=0)
     
 def save_final_weights(results_weights, results, out_dir='figs'):

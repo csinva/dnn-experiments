@@ -1,2 +1,2 @@
-rm -f logs/*
-rm -f slurm-scripts/*
+rm -f -r logs
+rm -f -r slurm-scripts
