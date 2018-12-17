@@ -1,4 +1,9 @@
-- **overview**: analyzes stability for metrics + plots all of them over time
-- layer1_large_lrs analyzes sweeps that varied learning rate of only layer 1
-- vary_one_var: raaz's original nb which plots individual vars while varying one things (with error bars)
-- sweep_weights: how to load weights
+# eda - analyze things globally
+- **eda_overview**: analyzes stability for metrics + plots all of them over time
+- eda_vary_one_var: raaz's original nb which plots individual vars while varying one things (with error bars)
+
+# vary - targeted experiments
+- vary_dset_size: change number of points in dataset
+- vary_lr_lay1: change lr of first layer only
+
+# other things fname tells what it analyzes
