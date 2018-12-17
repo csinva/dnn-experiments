@@ -6,4 +6,4 @@
 - vary_dset_size: change number of points in dataset
 - vary_lr_lay1: change lr of first layer only
 
-# other things fname tells what it analyzes
+# ex - look at a specific variable (in original dset)
