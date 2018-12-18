@@ -7,6 +7,7 @@
 - vary_lr_lay1: change lr of first layer only
 
 # ex - look at a specific variable (in original dset)
+- ex_batch+step_size: also loads in new lrs
 
 # results
 - resweep_full_new has 6 reps of lrs 1.0, 0.05, 0.001
