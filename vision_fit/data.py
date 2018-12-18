@@ -77,6 +77,8 @@ def get_model(p):
 
 # get data and model from params p - uses p.dset, p.shuffle_labels, p.batch_size
 def get_data_loaders(p):
+    
+    ## where is the data
     if 'cifar10' in p.dset:
         root = oj('/scratch/users/vision/yu_dl/raaz.rsk/data/cifar10')
     elif 'imagenet' in p.dset:
@@ -86,10 +88,16 @@ def get_data_loaders(p):
     if not os.path.exists(root):
         os.mkdir(root)      
             
+    ## how to noise the images
+    transforms_noise = []
+    if hasattr(p, 'noise_rotate'):
+        transforms_noise.append(transforms.ColorJitter(brightness=p.noise_brightness))
+        transforms_noise.append(transforms.RandomRotation(p.noise_rotate))
+        
         
     ## load dataset (train_loader, test_loader)
     if 'mnist' in p.dset or p.dset in ['bars', 'noise']:
-        trans = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (1.0,))])
+        trans = transforms.Compose(transforms_noise + [transforms.ToTensor(), transforms.Normalize((0.5,), (1.0,))])
         train_set = dset.MNIST(root=root, train=True, transform=trans, download=True)
         test_set = dset.MNIST(root=root, train=False, transform=trans, download=True)
         if p.dset == 'noise':
@@ -173,8 +181,20 @@ def get_data_loaders(p):
 
     return train_loader, test_loader
 
-# extract data from loaders
-'''
+# extract only training data
+def get_XY(train_loader):
+    # need to load like this to ensure transformation applied
+    train_data = [batch[0] for batch in train_loader]
+    train_data = np.vstack(train_data)
+    X_train = torch.Tensor(train_data).float().cpu()
+    X_train = X_train.numpy().reshape(X_train.shape[0], -1)
+    Y_train = np.hstack([batch[1] for batch in train_loader])
+    Y_train_onehot = np.zeros((Y_train.size, 10))
+    for i in range(10):
+        Y_train_onehot[:, i] = np.array(Y_train==i)
+    return X_train, Y_train_onehot
+
+# data from training/testing loaders (not used in fit_vision)
 def process_loaders(train_loader, test_loader):
     # need to load like this to ensure transformation applied
     data_list_train = [batch for batch in train_loader]
@@ -187,19 +207,6 @@ def process_loaders(train_loader, test_loader):
     test_data_list = [batch[0] for batch in data_list_test]
     test_data = np.vstack(test_data_list)
     X_test = torch.Tensor(test_data).float().cuda()
-    Y_test = np.hstack([batch[1] for batch in test_data_list])
+    Y_test = np.hstack([batch[1] for batch in data_list_test])
     
     return X_train, Y_train, X_test, Y_test
-'''
-
-def get_XY(train_loader):
-    # need to load like this to ensure transformation applied
-    train_data = [batch[0] for batch in train_loader]
-    train_data = np.vstack(train_data)
-    X_train = torch.Tensor(train_data).float().cpu()
-    X_train = X_train.numpy().reshape(X_train.shape[0], -1)
-    Y_train = np.hstack([batch[1] for batch in train_loader])
-    Y_train_onehot = np.zeros((Y_train.size, 10))
-    for i in range(10):
-        Y_train_onehot[:, i] = np.array(Y_train==i)
-    return X_train, Y_train_onehot
