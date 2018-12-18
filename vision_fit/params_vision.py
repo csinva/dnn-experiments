@@ -45,8 +45,8 @@ class p:
     calc_activations = 8000 # (0) calculate activations for diff number of data points and then do dim reduction...
     if use_conv:
         calc_activations = 1000
-    save_all_weights_freq = 10 # how often to save all the weights (if high will never save)
-    save_all_freq = 40
+    save_all_weights_freq = 10 # how often to record all the weights (if high will never save)
+    save_all_freq = 40 # how often to dump to pkl
     
     pid = ''.join(["%s" % randint(0, 9) for num in range(0, 20)])
 
