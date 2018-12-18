@@ -81,14 +81,15 @@ params_to_vary = {
 '''
 
 # sweep big compromise
+
 params_to_vary = {
-    'seed': range(0, 6),
-    'lr': [0.1, 0.01], # [1.0, 0.05, 0.001], # [1.0, 0.1, 0.001, 0.01]
+    'seed': range(7, 9),
+    'lr': [0.1, 0.01] + [1.0, 0.05, 0.001], # [1.0, 0.1, 0.001, 0.01]
     'optimizer': ['sgd', 'adam'],
     'num_layers': [2, 4, 7], # add in 2, 7
     'dset': ['mnist', 'cifar10'], 
     'batch_size': [10, 100, 1000], # 10, 100, 1000
-    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/track_acts/resweep_full_new2'],
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/track_acts/resweep_full_new3'],
     'shuffle_labels': [False, True], # loop
     'hidden_size': [128, 512], # 128, 512
     'freeze': [False],
@@ -96,6 +97,7 @@ params_to_vary = {
     'num_iters': [120],
     'first_layer_lr_mult': [1]
 }
+
 
 # this is for layer by layer
 '''
