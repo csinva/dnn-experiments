@@ -83,7 +83,7 @@ params_to_vary = {
 # sweep big compromise
 
 params_to_vary = {
-    'seed': range(7, 9),
+    'seed': range(7, 8),
     'lr': [0.1, 0.01] + [1.0, 0.05, 0.001], # [1.0, 0.1, 0.001, 0.01]
     'optimizer': ['sgd', 'adam'],
     'num_layers': [2, 4, 7], # add in 2, 7
