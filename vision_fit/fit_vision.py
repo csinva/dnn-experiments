@@ -49,6 +49,7 @@ def reset_final_weights(p, s, it, model, X_train, Y_train_onehot):
         else:
             exs = torch.Tensor(s.exs)
         acts = model.features(exs)
+        acts = acts / acts.norm() * model.fc[-1].weight.data.norm() # maintain norm
         model.fc[-1].weight = torch.nn.Parameter(acts)
 
 def seed(p):
