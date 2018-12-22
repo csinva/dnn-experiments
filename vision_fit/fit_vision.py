@@ -26,6 +26,31 @@ import time
 import optimization
 from params_save import S
 
+# reset final weights to the activations of the final feature layer for 1 example per class
+def reset_final_weights(p, s, it, model, X_train, Y_train_onehot):
+    # get prototype images for each label (eventually support multiple reps)
+    # returns images (X) and labels (Y)
+    def get_ims_per_lab(X_train, Y_train_onehot):
+        exs = np.zeros((10, X_train.shape[1]))
+        for i in range(10):
+            idxs = Y_train_onehot[:, i] == 1
+            exs[i] = X_train[idxs][0]
+        return exs, range(10)
+    
+    # pick the examples on the first iteration
+    if it == 0:
+        exs, _ = get_ims_per_lab(X_train, Y_train_onehot)
+        s.exs = exs
+
+    # set the final layer of the dnn to the activations of the exs
+    if it % p.reset_final_weights_freq == 0:
+        if torch.cuda.is_available():
+            exs = torch.Tensor(s.exs).cuda()
+        else:
+            exs = torch.Tensor(s.exs)
+        acts = model.features(exs)
+        model.fc[-1].weight = torch.nn.Parameter(acts)
+
 def seed(p):
     # set random seed        
     np.random.seed(p.seed) 
@@ -105,6 +130,10 @@ def fit_vision(p):
             s.singular_val_dicts_lap.append(get_singular_vals_kernels(weight_dict, 'laplacian'))
         
 
+        # reset weights
+        if p.reset_final_weights_freq > 0:
+            reset_final_weights(p, s, it, model, X_train, Y_train_onehot)
+        
         # training
         for batch_idx, (x, target) in enumerate(train_loader):
             optimizer.zero_grad()

@@ -19,7 +19,7 @@ class p:
     saves_per_iter = 5 # really each iter is only iter / this
     saves_per_iter_end = 2 # stop saving densely after saves_per_iter * save_per_iter_end
     num_iters_small = saves_per_iter * saves_per_iter_end
-    num_iters = 1 # note: this is total
+    num_iters = 5 # note: this is total
 
     # optimizer params (sweep)
     optimizer = 'adam' # 'sgd' or 'adam', sgd_mult_first
@@ -27,6 +27,9 @@ class p:
     seed = 2
     batch_size = 100
     first_layer_lr_mult = 1 # this should be left at 1!
+    
+    # weight-init
+    reset_final_weights_freq = 0 # greater than zero will reset weights
     
     # freezing
     freeze = False # False, first, last, progress_first, progress_last

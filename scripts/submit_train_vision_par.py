@@ -3,6 +3,27 @@ from slurmpy import Slurm
 
 partition = 'low'
 
+
+# sweep reset_freq single
+
+params_to_vary = {
+    'seed': range(0, 1),
+    'lr': [0.1],
+    'optimizer': ['sgd'],
+    'num_layers': [4], # add in 2, 7
+    'dset': ['mnist', 'cifar10'], # mnist, cifar10
+    'batch_size': [100], # 10, 100, 1000
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/track_acts/reset_freq'],
+    'reset_final_weights_freq': [0, 1, 2, 3, 4, 5, 10, 20],
+    'shuffle_labels': [False], # loop
+    'hidden_size': [128], # 128, 512
+    'freeze': [False],
+    'save_acts_and_reduce': [True],
+    'num_iters': [50],
+    'first_layer_lr_mult': [1]
+}
+
+
 # sweep mnist single
 '''
 params_to_vary = {
@@ -81,7 +102,7 @@ params_to_vary = {
 '''
 
 # sweep big compromise
-
+'''
 params_to_vary = {
     'seed': range(7, 8),
     'lr': [0.1, 0.01] + [1.0, 0.05, 0.001], # [1.0, 0.1, 0.001, 0.01]
@@ -97,7 +118,7 @@ params_to_vary = {
     'num_iters': [120],
     'first_layer_lr_mult': [1]
 }
-
+'''
 
 # this is for layer by layer
 '''
