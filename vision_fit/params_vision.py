@@ -29,8 +29,8 @@ class p:
     first_layer_lr_mult = 1 # this should be left at 1!
     
     # kernel weight-init
-    reset_final_weights_freq = 1 # greater than zero will reset weights
-    reps = 2 # for kernel weight-init, how many reps per point
+    reset_final_weights_freq = 0 # greater than zero will reset weights
+    reps = 1 # for kernel weight-init, how many reps per point
     
     # freezing
     freeze = False # False, first, last, progress_first, progress_last

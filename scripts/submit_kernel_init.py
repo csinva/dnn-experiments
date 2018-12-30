@@ -23,7 +23,7 @@ params_to_vary = {
     'reps': [1, 2, 3, 4, 10, 20]
 }
 
-# sweep reset_freq
+# sweep reset_freq - conclusion resetting more isn't a big deal if you keep the norm the same
 '''
 params_to_vary = {
     'seed': range(0, 1),

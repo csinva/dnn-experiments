@@ -32,7 +32,7 @@ def reset_final_weights(p, s, it, model, X_train, Y_train_onehot):
     # get prototype images for each label (reps is how many repeats)
     # returns images (X) and labels (Y)
     def get_ims_per_lab(X_train, Y_train_onehot, reps=1):
-        exs = np.zeros((10 * reps, 784))
+        exs = np.zeros((10, X_train.shape[1]))
         labs = np.zeros(10 * reps)
         for i in range(10):
             idxs = Y_train_onehot[:, i] == 1
