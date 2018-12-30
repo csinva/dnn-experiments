@@ -13,14 +13,14 @@ params_to_vary = {
     'dset': ['mnist', 'cifar10'], # mnist, cifar10
     'batch_size': [100], # 10, 100, 1000
     'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/kernel_init/kernel_conv_reps'],
-    'reset_final_weights_freq': [2, 10],
+    'reset_final_weights_freq': [0, 2, 10],
     'shuffle_labels': [False], # loop
     'hidden_size': [128], # 128, 512
     'freeze': [False],
     'save_acts_and_reduce': [True],
     'num_iters': [50],
     'first_layer_lr_mult': [1],
-    'reps': [1, 2, 3, 4, 10, 20],
+    'reps': [0, 1, 2, 3, 4, 10, 20],
     'use_conv': [True]
 }
 

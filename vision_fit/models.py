@@ -72,6 +72,13 @@ class LinearNet(nn.Module):
             y = F.relu(self.fc[i](y))
         return y
     
+    def forward_no_pool(self, x):
+        y = x.view(-1, self.input_size)
+        for i in range(len(self.fc) - 1):
+            y = F.relu(self.fc[i](y))
+        y = self.fc[-1](y) # last layer has no relu
+        return y
+    
     def last_lay(self):
         return self.fc[-1]
 

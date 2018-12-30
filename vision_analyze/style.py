@@ -1,5 +1,5 @@
+import matplotlib.pyplot as plt
 def set_style():
-    import matplotlib.pyplot as plt
     import matplotlib as mpl
     import matplotlib.pylab as pylab
     from cycler import cycler
@@ -40,3 +40,8 @@ def set_style():
     for i, col in enumerate(plt.rcParams['axes.prop_cycle']):
         color_list.append(to_rgba(col['color'], alpha))
     plt.rcParams['axes.prop_cycle'] = cycler(color=color_list)
+    
+def show(x):
+    plt.imshow(x, interpolation='bilinear')
+    plt.grid(False)
+    plt.axis('off')
