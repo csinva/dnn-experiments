@@ -23,7 +23,6 @@ def get_weight_names(m):
     return weight_names
 
 
-
 ## network
 class LinearNet(nn.Module):
     def __init__(self, num_layers, input_size, hidden_size, output_size, reps=1):
@@ -72,6 +71,9 @@ class LinearNet(nn.Module):
         for i in range(len(self.fc) - 1):
             y = F.relu(self.fc[i](y))
         return y
+    
+    def last_lay(self):
+        return self.fc[-1]
 
 class LeNet(nn.Module):
     def __init__(self):
@@ -101,6 +103,53 @@ class LeNet(nn.Module):
         x7 = self.linear2(x6)
         return {'conv1': x1, 'relu1': x2, 'conv2': x3, 'relu2': x4, 'fc3': x5, 'relu3': x6, 'fc4': x7}
     
+    # doesn't use last layer
+    def features(self, x):
+        x = F.relu(self.conv1(x))
+        x = F.max_pool2d(x, 2, 2)
+        x = F.relu(self.conv2(x))
+        x = F.max_pool2d(x, 2, 2)
+        x = x.view(-1, 4*4*50)
+        x = F.relu(self.linear1(x))
+#         x = self.linear2(x)
+        return x
+
+    def last_lay(self):
+        return self.linear2
+
+    
+class Cifar10Conv(nn.Module):
+    def __init__(self):
+        super(Cifar10Conv, self).__init__()
+        self.conv1 = nn.Conv2d(3, 6, 5)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.conv2 = nn.Conv2d(6, 16, 5)
+        self.linear1 = nn.Linear(16 * 5 * 5, 120)
+        self.linear2 = nn.Linear(120, 84)
+        self.linear3 = nn.Linear(84, 10)
+
+    def forward(self, x):
+        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(F.relu(self.conv2(x)))
+        x = x.view(-1, 16 * 5 * 5)
+        x = F.relu(self.linear1(x))
+        x = F.relu(self.linear2(x))
+        x = self.linear3(x)
+        return x
+    
+    # doesn't use last layer
+    def features(self, x):
+        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(F.relu(self.conv2(x)))
+        x = x.view(-1, 16 * 5 * 5)
+        x = F.relu(self.linear1(x))
+        x = F.relu(self.linear2(x))
+#         x = self.linear3(x)
+        return x
+
+    def last_lay(self):
+        return self.linear3
+    
 class Linear_then_conv(nn.Module):
     def __init__(self):
         super(Linear_then_conv, self).__init__()
@@ -121,26 +170,6 @@ class Linear_then_conv(nn.Module):
         x = x.view(-1, 4*4*50)
         x = F.relu(self.linear1(x))
         x = self.linear2(x)
-        return x
-    
-    
-class Cifar10Conv(nn.Module):
-    def __init__(self):
-        super(Cifar10Conv, self).__init__()
-        self.conv1 = nn.Conv2d(3, 6, 5)
-        self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(6, 16, 5)
-        self.linear1 = nn.Linear(16 * 5 * 5, 120)
-        self.linear2 = nn.Linear(120, 84)
-        self.linear3 = nn.Linear(84, 10)
-
-    def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x)))
-        x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, 16 * 5 * 5)
-        x = F.relu(self.linear1(x))
-        x = F.relu(self.linear2(x))
-        x = self.linear3(x)
         return x
     
 class LinearThenConvCifar(nn.Module):

@@ -4,7 +4,28 @@ from slurmpy import Slurm
 partition = 'low'
 
 
+# sweep maxpool reps conv
+params_to_vary = {
+    'seed': range(0, 1),
+    'lr': [0.1],
+    'optimizer': ['sgd'],
+    'num_layers': [4], # add in 2, 7
+    'dset': ['mnist', 'cifar10'], # mnist, cifar10
+    'batch_size': [100], # 10, 100, 1000
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/kernel_init/kernel_conv_reps'],
+    'reset_final_weights_freq': [2, 10],
+    'shuffle_labels': [False], # loop
+    'hidden_size': [128], # 128, 512
+    'freeze': [False],
+    'save_acts_and_reduce': [True],
+    'num_iters': [50],
+    'first_layer_lr_mult': [1],
+    'reps': [1, 2, 3, 4, 10, 20],
+    'use_conv': [True]
+}
+
 # sweep maxpool reps
+'''
 params_to_vary = {
     'seed': range(0, 1),
     'lr': [0.1],
@@ -20,8 +41,10 @@ params_to_vary = {
     'save_acts_and_reduce': [True],
     'num_iters': [50],
     'first_layer_lr_mult': [1],
-    'reps': [1, 2, 3, 4, 10, 20]
+    'reps': [1, 2, 3, 4, 10, 20],
+    'use_conv': [False]
 }
+'''
 
 # sweep reset_freq - conclusion resetting more isn't a big deal if you keep the norm the same
 '''

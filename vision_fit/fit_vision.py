@@ -32,7 +32,7 @@ def reset_final_weights(p, s, it, model, X_train, Y_train_onehot):
     # get prototype images for each label (reps is how many repeats)
     # returns images (X) and labels (Y)
     def get_ims_per_lab(X_train, Y_train_onehot, reps=1):
-        exs = np.zeros((10, X_train.shape[1]))
+        exs = np.zeros((10 * reps, X_train.shape[1]))
         labs = np.zeros(10 * reps)
         for i in range(10):
             idxs = Y_train_onehot[:, i] == 1
@@ -51,9 +51,21 @@ def reset_final_weights(p, s, it, model, X_train, Y_train_onehot):
             exs = torch.Tensor(s.exs).cuda()
         else:
             exs = torch.Tensor(s.exs)
+        # reshape for conv
+        if p.use_conv:
+            if 'mnist' in p.dset or p.dset in ['noise', 'bars']:
+                exs = exs.reshape(exs.shape[0], 1, 28, 28)
+            elif 'cifar10' in p.dset:
+                exs = exs.reshape(exs.shape[0], 3, 32, 32)
+            elif 'imagenet' in p.dset:
+                print('imagenet not supported!')
+        print('shapes', X_train.shape, exs.shape)
         acts = model.features(exs)
-        acts = acts / acts.norm() * model.fc[-1].weight.data.norm() # maintain norm
-        model.fc[-1].weight = torch.nn.Parameter(acts)
+        last_lay = model.last_lay()
+        acts = acts / acts.norm() * last_lay.weight.data.norm() # maintain norm
+#         last_lay.weight = torch.nn.Parameter(acts)
+        last_lay.weight.data = acts.data # torch.nn.Parameter(acts)
+
 
 def seed(p):
     # set random seed        
@@ -109,7 +121,8 @@ def fit_vision(p):
         weight_dict = deepcopy({x[0]:x[1].data.cpu().numpy() for x in model.named_parameters()})
         if it % p.save_all_weights_freq == 0 or it == p.num_iters - 1 or it == 0 or (it < p.num_iters_small and it % 2 == 0): # save first, last, jumps
             s.weights[p.its[it]] = weight_dict 
-            s.mean_max_corrs[p.its[it]] = stats.calc_max_corr_input(X_train, Y_train_onehot, model)
+            if not p.use_conv:
+                s.mean_max_corrs[p.its[it]] = stats.calc_max_corr_input(X_train, Y_train_onehot, model)
         s.weights_first10[p.its[it]] = deepcopy(model.state_dict()[s.weight_names[0]][:20].cpu().numpy())            
         s.weight_norms[p.its[it]] = stats.layer_norms(model.state_dict())    
         s.singular_val_dicts.append(get_singular_vals_from_weight_dict(weight_dict))   
@@ -144,6 +157,7 @@ def fit_vision(p):
             if use_cuda:
                 x, target = x.cuda(), target.cuda()
             x, target = Variable(x), Variable(target)
+            print('shapes2', x.shape)
             out = model(x)
             loss = criterion(out, target)
             loss.backward()
