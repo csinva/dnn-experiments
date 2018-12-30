@@ -26,25 +26,35 @@ def get_weight_names(m):
 
 ## network
 class LinearNet(nn.Module):
-    def __init__(self, num_layers, input_size, hidden_size, output_size):
+    def __init__(self, num_layers, input_size, hidden_size, output_size, reps=1):
         # num_layers is number of weight matrices
         super(LinearNet, self).__init__()
         self.input_size = input_size
-        self.output_size = output_size
+        self.output_size = output_size * reps
         
-        # for one layer nets
         if num_layers == 1:
-            self.fc = nn.ModuleList([nn.Linear(input_size, output_size)])
+            self.fc = nn.ModuleList([nn.Linear(input_size, self.output_size)])
         else:
             self.fc = nn.ModuleList([nn.Linear(input_size, hidden_size)])
             self.fc.extend([nn.Linear(hidden_size, hidden_size) for i in range(num_layers - 2)])
-            self.fc.append(nn.Linear(hidden_size, output_size))
+            self.fc.append(nn.Linear(hidden_size, self.output_size))
+        
+        # for kernel layers
+        self.reps = reps
+        if reps > 1:
+            self.maxpool = nn.MaxPool1d(self.reps, stride=self.reps, padding=0)
+            
 
     def forward(self, x):
         y = x.view(-1, self.input_size)
         for i in range(len(self.fc) - 1):
             y = F.relu(self.fc[i](y))
-        return self.fc[-1](y)
+        y = self.fc[-1](y) # last layer has no relu
+        if self.reps > 1: # if need to add a final layer maxpool, might want to make this avgpool
+            y = y.unsqueeze(0)
+            y = self.maxpool(y)
+            y = y.squeeze(0)
+        return y
     
     def forward_all(self, x):
         y = x.view(-1, self.input_size)

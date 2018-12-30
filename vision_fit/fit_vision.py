@@ -28,18 +28,21 @@ from params_save import S
 
 # reset final weights to the activations of the final feature layer for 1 example per class
 def reset_final_weights(p, s, it, model, X_train, Y_train_onehot):
-    # get prototype images for each label (eventually support multiple reps)
+    
+    # get prototype images for each label (reps is how many repeats)
     # returns images (X) and labels (Y)
-    def get_ims_per_lab(X_train, Y_train_onehot):
-        exs = np.zeros((10, X_train.shape[1]))
+    def get_ims_per_lab(X_train, Y_train_onehot, reps=1):
+        exs = np.zeros((10 * reps, 784))
+        labs = np.zeros(10 * reps)
         for i in range(10):
             idxs = Y_train_onehot[:, i] == 1
-            exs[i] = X_train[idxs][0]
-        return exs, range(10)
+            exs[reps * i: reps * (i + 1)] = X_train[idxs][:reps]
+            labs[reps * i: reps * (i + 1)] = i
+        return exs, labs
     
     # pick the examples on the first iteration
     if it == 0:
-        exs, _ = get_ims_per_lab(X_train, Y_train_onehot)
+        exs, _ = get_ims_per_lab(X_train, Y_train_onehot, p.reps)
         s.exs = exs
 
     # set the final layer of the dnn to the activations of the exs
