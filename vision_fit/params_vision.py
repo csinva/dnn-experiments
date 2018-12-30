@@ -11,7 +11,7 @@ class p:
     # arch
     num_layers = 2 # set to 0 or False to ignore
     hidden_size = 512
-    use_conv = True
+    use_conv = False
     use_conv_special = False
 
     # saving
@@ -31,6 +31,7 @@ class p:
     # kernel weight-init
     reset_final_weights_freq = 1 # greater than zero will reset weights
     reps = 2 # for kernel weight-init, how many reps per point
+    normalize_features = True
     
     # freezing
     freeze = False # False, first, last, progress_first, progress_last

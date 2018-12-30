@@ -25,7 +25,8 @@ def get_weight_names(m):
 
 ## network
 class LinearNet(nn.Module):
-    def __init__(self, num_layers, input_size, hidden_size, output_size, reps=1):
+    def __init__(self, num_layers, input_size, hidden_size, output_size, 
+                 reps=1, normalize=False):
         # num_layers is number of weight matrices
         super(LinearNet, self).__init__()
         self.input_size = input_size
@@ -39,15 +40,27 @@ class LinearNet(nn.Module):
             self.fc.append(nn.Linear(hidden_size, self.output_size))
         
         # for kernel layers
+        self.normalize = normalize
         self.reps = reps
         if reps > 1:
             self.maxpool = nn.MaxPool1d(self.reps, stride=self.reps, padding=0)
             
-
-    def forward(self, x):
+    # doesn't use last layer
+    def features(self, x):
         y = x.view(-1, self.input_size)
         for i in range(len(self.fc) - 1):
             y = F.relu(self.fc[i](y))
+        return y
+            
+            
+    def forward(self, x):
+        y = self.features(x)
+        
+        # normalize features of each datapoint to 1
+        if self.normalize:
+            y = y.transpose(1, 0) / y.norm(dim=1)
+            y = y.transpose(1, 0)
+        
         y = self.fc[-1](y) # last layer has no relu
         if self.reps > 1: # if need to add a final layer maxpool, might want to make this avgpool
             y = y.unsqueeze(0)
@@ -63,19 +76,10 @@ class LinearNet(nn.Module):
             out['fc.' + str(i)] = y.data.clone() #deepcopy(y)
             y = F.relu(y)
         out['fc.' + str(len(self.fc) - 1)] = self.fc[-1](y).clone() # deepcopy(self.fc[-1](y))
-        return out      
-    
-    # doesn't use last layer
-    def features(self, x):
-        y = x.view(-1, self.input_size)
-        for i in range(len(self.fc) - 1):
-            y = F.relu(self.fc[i](y))
-        return y
+        return out
     
     def forward_no_pool(self, x):
-        y = x.view(-1, self.input_size)
-        for i in range(len(self.fc) - 1):
-            y = F.relu(self.fc[i](y))
+        y = self.features(x)
         y = self.fc[-1](y) # last layer has no relu
         return y
     

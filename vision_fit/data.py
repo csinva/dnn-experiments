@@ -59,20 +59,20 @@ def get_model(p):
         elif p.use_conv:
             model = models.LeNet()
         elif p.num_layers > 0:
-            model = models.LinearNet(p.num_layers, 28*28, p.hidden_size, 10, p.reps)
+            model = models.LinearNet(p.num_layers, 28*28, p.hidden_size, 10, p.reps, p.normalize_features)
         else:
-            model = models.LinearNet(3, 28*28, 256, 10, p.reps)
+            model = models.LinearNet(3, 28*28, 256, 10, p.reps, p.normalize_features)
     elif 'cifar10' in p.dset:
         if p.use_conv_special:
             model = models.LinearThenConvCifar()        
         elif p.use_conv:
             model = models.Cifar10Conv()        
         elif p.num_layers > 0:
-            model = models.LinearNet(p.num_layers, 32*32*3, p.hidden_size, 10, p.reps)
+            model = models.LinearNet(p.num_layers, 32*32*3, p.hidden_size, 10, p.reps, p.normalize_features)
         else:
-            model = models.LinearNet(3, 32*32*3, 256, 10, p.reps)
+            model = models.LinearNet(3, 32*32*3, 256, 10, p.reps, p.normalize_features)
     elif p.dset in ['bars', 'noise']:
-        model = models.LinearNet(p.num_layers, 8*8, p.hidden_size, 16, p.reps)    
+        model = models.LinearNet(p.num_layers, 8*8, p.hidden_size, 16, p.reps, p.normalize_features)    
     return model
 
 # get data and model from params p - uses p.dset, p.shuffle_labels, p.batch_size
