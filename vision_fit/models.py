@@ -50,17 +50,15 @@ class LinearNet(nn.Module):
         y = x.view(-1, self.input_size)
         for i in range(len(self.fc) - 1):
             y = F.relu(self.fc[i](y))
-        return y
             
-            
-    def forward(self, x):
-        y = self.features(x)
-        
         # normalize features of each datapoint to 1
         if self.normalize:
             y = y.transpose(1, 0) / y.norm(dim=1)
             y = y.transpose(1, 0)
-        
+        return y
+            
+    def forward(self, x):
+        y = self.features(x)
         y = self.fc[-1](y) # last layer has no relu
         if self.reps > 1: # if need to add a final layer maxpool, might want to make this avgpool
             y = y.unsqueeze(0)

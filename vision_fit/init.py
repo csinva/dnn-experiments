@@ -21,7 +21,7 @@ def reset_final_weights(p, s, it, model, X_train, Y_train_onehot):
         s.exs = exs
 
     # set the final layer of the dnn to the activations of the exs
-    if it % p.reset_final_weights_freq == 0:A
+    if it % p.reset_final_weights_freq == 0:
             
         # get data
         if torch.cuda.is_available():
