@@ -9,8 +9,8 @@ class p:
     out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/track_acts/test' # test
     
     # arch
-    num_layers = 2 # set to 0 or False to ignore
-    hidden_size = 512
+    num_layers = 4 # set to 0 or False to ignore
+    hidden_size = 128
     use_conv = False
     use_conv_special = False
 
@@ -22,15 +22,15 @@ class p:
     num_iters = 5 # note: this is total
 
     # optimizer params (sweep)
-    optimizer = 'adam' # 'sgd' or 'adam', sgd_mult_first
-    lr = 0.001 # default 0.01
-    seed = 2
+    optimizer = 'sgd' # 'sgd' or 'adam', sgd_mult_first
+    lr = 0.1 # default 0.01
+    seed = 0
     batch_size = 100
     first_layer_lr_mult = 1 # this should be left at 1!
     
     # kernel weight-init
     reset_final_weights_freq = 1 # greater than zero will reset weights
-    reps = 2 # for kernel weight-init, how many reps per point
+    reps = 1 # for kernel weight-init, how many reps per point
     normalize_features = True
     
     # freezing
@@ -39,12 +39,6 @@ class p:
     # note these will all be subtracted by num_iters_small
     lr_ticks = {0: 1, 30: 0.5, 50: 0.25, 70: 0.125, 
                 90: 0.1, 110: 0.05, 130: 0.025, 150: 0.01}
-    '''
-    lr_ticks = {0: 1, # initial lr should multiply by 1
-                **{8 + x * 16: 0.5 for x in range(30)}, # tick down (starts after num_iters_small)
-                **{x * 16: 1.0 for x in range(1, 30)}} # tick up (starts after num_iters_small)
-    '''
-    
     
     # its
     calc_activations = 8000 # (0) calculate activations for diff number of data points and then do dim reduction...
