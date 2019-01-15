@@ -57,7 +57,7 @@ class LinearNet(nn.Module):
         if self.normalize_features:
             y = y.transpose(1, 0)
             ynorm = y.norm(dim=0)
-            ynorm[ynorm==0] = 1
+#             ynorm[ynorm==0] = 1
             y = y / ynorm
             y = y.transpose(1, 0) 
         return y
@@ -89,13 +89,13 @@ class LinearNet(nn.Module):
     def last_lay(self):
         return self.fc[-1]
     
+    # calculate acts and set lay    
     def reset_final_weights(self, exs):
-            # calculate acts and set lay
         acts = self.features(exs) # note: if normalize is true this is already norm 1 for each point
-        # acts = acts / acts.norm() * last_lay.weight.data.norm() # maintain norm
-        acts = acts / acts.norm() # don't maintain norm
+#         acts = acts / acts.norm() # don't maintain norm
+        self.last_lay().weight.data = acts.data # torch.nn.Parameter(acts)        
+        # acts = acts / acts.norm() * last_lay.weight.data.norm() # maintain norm        
 #         last_lay.weight = torch.nn.Parameter(acts)
-        self.last_lay().weight.data = acts.data # torch.nn.Parameter(acts)
 #         self.fc[-1].bias.data = self.fc[-1].bias.data * 0 # not needed, bias was set to false
 
 class LeNet(nn.Module):

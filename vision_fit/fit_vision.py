@@ -86,7 +86,6 @@ def fit_vision(p):
                 s.mean_max_corrs[p.its[it]] = stats.calc_max_corr_input(X_train, Y_train_onehot, model)
         s.weights_first10[p.its[it]] = deepcopy(model.state_dict()[s.weight_names[0]][:20].cpu().numpy())            
         s.weight_norms[p.its[it]] = stats.layer_norms(model.state_dict())    
-        s.singular_val_dicts.append(get_singular_vals_from_weight_dict(weight_dict))   
         
         # calculated reduced stats + act stats + explained var complicated
         if p.save_acts_and_reduce:
@@ -103,6 +102,7 @@ def fit_vision(p):
             s.act_singular_val_dicts_test_rbf.append(act_var_dicts['test']['rbf'])
             
             # weight kernels
+            s.singular_val_dicts.append(get_singular_vals_from_weight_dict(weight_dict))   
             s.singular_val_dicts_cosine.append(get_singular_vals_kernels(weight_dict, 'cosine'))
             s.singular_val_dicts_rbf.append(get_singular_vals_kernels(weight_dict, 'rbf'))
             s.singular_val_dicts_lap.append(get_singular_vals_kernels(weight_dict, 'laplacian'))

@@ -26,6 +26,7 @@ params_to_vary = {
     'num_iters': [50],
     'first_layer_lr_mult': [1],
     'use_conv': [False], # could also make this True
+    'save_acts_and_reduce', [False],
 }
 
 # run

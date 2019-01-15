@@ -6,7 +6,7 @@ class p:
     dset = 'mnist' # mnist, cifar10, noise, bars, mnist_single, mnist_small, cifar10_small
     shuffle_labels = False
     num_points = 100 # only comes in to play when using mnist_small
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/track_acts/test' # test
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/kernel_init/test' # test
     
     # arch
     num_layers = 4 # set to 0 or False to ignore
@@ -19,7 +19,7 @@ class p:
     saves_per_iter = 5 # really each iter is only iter / this
     saves_per_iter_end = 2 # stop saving densely after saves_per_iter * save_per_iter_end
     num_iters_small = saves_per_iter * saves_per_iter_end
-    num_iters = 5 # note: this is total
+    num_iters = 7 # note: this is total
 
     # optimizer params (sweep)
     optimizer = 'sgd' # 'sgd' or 'adam', sgd_mult_first
