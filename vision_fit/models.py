@@ -26,7 +26,7 @@ def get_weight_names(m):
 ## network
 class LinearNet(nn.Module):
     def __init__(self, num_layers, input_size, hidden_size, output_size, 
-                 reps=1, normalize=False):
+                 reps=1, normalize_features=False):
         # num_layers is number of weight matrices
         super(LinearNet, self).__init__()
         self.input_size = input_size
@@ -40,7 +40,9 @@ class LinearNet(nn.Module):
             self.fc.append(nn.Linear(hidden_size, self.output_size))
         
         # for kernel layers
-        self.normalize = normalize
+        self.normalize_features = normalize_features
+        if self.normalize_features:
+            self.last_lay().register_parameter('bias', None)
         self.reps = reps
         if reps > 1:
             self.maxpool = nn.MaxPool1d(self.reps, stride=self.reps, padding=0)
@@ -52,9 +54,12 @@ class LinearNet(nn.Module):
             y = F.relu(self.fc[i](y))
             
         # normalize features of each datapoint to 1
-        if self.normalize:
-            y = y.transpose(1, 0) / y.norm(dim=1)
+        if self.normalize_features:
             y = y.transpose(1, 0)
+            ynorm = y.norm(dim=0)
+            ynorm[ynorm==0] = 1
+            y = y / ynorm
+            y = y.transpose(1, 0) 
         return y
             
     def forward(self, x):
@@ -83,6 +88,15 @@ class LinearNet(nn.Module):
     
     def last_lay(self):
         return self.fc[-1]
+    
+    def reset_final_weights(self, exs):
+            # calculate acts and set lay
+        acts = self.features(exs) # note: if normalize is true this is already norm 1 for each point
+        # acts = acts / acts.norm() * last_lay.weight.data.norm() # maintain norm
+        acts = acts / acts.norm() # don't maintain norm
+#         last_lay.weight = torch.nn.Parameter(acts)
+        self.last_lay().weight.data = acts.data # torch.nn.Parameter(acts)
+#         self.fc[-1].bias.data = self.fc[-1].bias.data * 0 # not needed, bias was set to false
 
 class LeNet(nn.Module):
     def __init__(self):

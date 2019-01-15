@@ -1,22 +1,22 @@
 import itertools
 from slurmpy import Slurm
 
-partition = 'high'
+partition = 'low'
 
 # sweep maxpool reps and reset freq
 # conclusion resetting more isn't a big deal if you keep the norm the same
 # problems when you don't maintain the norm
 params_to_vary = {
-    'reset_final_weights_freq': [0, 2, 10],
+    'reset_final_weights_freq': [2, 10], # add 10
     'normalize_features': [False, True],
-    'reps': [1], # 1, 3
-    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/kernel_init/kernel_reps_norm_no_acts'],
+    'reps': [1, 3], # 1, 3
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/kernel_init/kernel_norm_new_no_maintain_norm'],
     'dset': ['mnist', 'cifar10'], # mnist, cifar10    
     'save_all_freq': [10],
     'save_acts_and_reduce': [False],
     'seed': range(0, 1),
     'lr': [0.01, 0.1],
-    'optimizer': ['sgd'],
+    'optimizer': ['sgd', 'adam'],
     'num_layers': [4], # add in 2, 7
     'batch_size': [100], # 10, 100, 1000
     'shuffle_labels': [False], # loop
@@ -29,7 +29,7 @@ params_to_vary = {
 }
 
 # run
-s = Slurm("sweep_full", {"partition": partition, "time": "4-0"})
+s = Slurm("sweep_full", {"partition": partition, "time": "3-0"})
 ks = sorted(params_to_vary.keys())
 vals = [params_to_vary[k] for k in ks]
 param_combinations = list(itertools.product(*vals)) # list of tuples

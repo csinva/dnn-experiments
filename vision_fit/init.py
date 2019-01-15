@@ -38,10 +38,5 @@ def reset_final_weights(p, s, it, model, X_train, Y_train_onehot):
             elif 'imagenet' in p.dset:
                 print('imagenet not supported!')
         
-        # calculate acts and set lay
-        acts = model.features(exs) # note: if normalize is true this is already norm 1 for each point
-        last_lay = model.last_lay()
-#         acts = acts / acts.norm() * last_lay.weight.data.norm() # maintain norm
-#         last_lay.weight = torch.nn.Parameter(acts)
-        last_lay.weight.data = acts.data # torch.nn.Parameter(acts)
-        last_lay.bias.data = last_lay.bias.data * 0
+        model.reset_final_weights(exs)
+        
