@@ -7,10 +7,10 @@ partition = 'low'
 # conclusion resetting more isn't a big deal if you keep the norm the same
 # problems when you don't maintain the norm
 params_to_vary = {
-    'reset_final_weights_freq': [2, 10], # add 10
+    'reset_final_weights_freq': [1, 2, 10], # add 10
     'normalize_features': [False, True],
     'reps': [1, 3], # 1, 3
-    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/kernel_init/kernel_norm_new_no_maintain_norm'],
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/kernel_init/sweep_reps'],
     'dset': ['mnist', 'cifar10'], # mnist, cifar10    
     'save_all_freq': [10],
     'save_acts_and_reduce': [False],
@@ -23,10 +23,9 @@ params_to_vary = {
     'hidden_size': [128], # 128, 512
     'freeze': [False],
     'save_acts_and_reduce': [True],
-    'num_iters': [50],
+    'num_iters': [35],
     'first_layer_lr_mult': [1],
     'use_conv': [False], # could also make this True
-    'save_acts_and_reduce', [False],
 }
 
 # run

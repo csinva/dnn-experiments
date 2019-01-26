@@ -24,7 +24,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 # plot all the weights
-def plot_weights(W, dset='mnist', dpi=80, C=None, interpolation=None): # W is num_filters x im_size
+def plot_weights(W, dset='mnist', dpi=80, C=None, interpolation=None, small_fig=False): # W is num_filters x im_size
     num_filters = W.shape[0]
     d = int(np.sqrt(W.size / num_filters))
     if 'cifar10' in dset:
@@ -40,7 +40,10 @@ def plot_weights(W, dset='mnist', dpi=80, C=None, interpolation=None): # W is nu
         C = math.floor(np.sqrt(num_filters))
     R = math.ceil(num_filters / C)
     ratio = 1.0 * R / C
-    plt.figure(figsize=(6 * C/R, 6), dpi=dpi)
+    if small_fig:
+        plt.figure(figsize=(2 * C/R, 2), dpi=dpi)
+    else:
+        plt.figure(figsize=(6 * C/R, 6), dpi=dpi)
     for i in range(num_filters):
         plt.subplot(R, C, i+1)
         plt.imshow(filts[i], cmap='gray', interpolation=interpolation)

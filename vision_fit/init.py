@@ -21,22 +21,21 @@ def reset_final_weights(p, s, it, model, X_train, Y_train_onehot):
         s.exs = exs
 
     # set the final layer of the dnn to the activations of the exs
-    if it % p.reset_final_weights_freq == 0:
-            
-        # get data
-        if torch.cuda.is_available():
-            exs = torch.Tensor(s.exs).cuda()
-        else:
-            exs = torch.Tensor(s.exs)
 
-        # reshape for conv
-        if p.use_conv:
-            if 'mnist' in p.dset or p.dset in ['noise', 'bars']:
-                exs = exs.reshape(exs.shape[0], 1, 28, 28)
-            elif 'cifar10' in p.dset:
-                exs = exs.reshape(exs.shape[0], 3, 32, 32)
-            elif 'imagenet' in p.dset:
-                print('imagenet not supported!')
-        
-        model.reset_final_weights(exs)
-        
+    # get data
+    if torch.cuda.is_available():
+        exs = torch.Tensor(s.exs).cuda()
+    else:
+        exs = torch.Tensor(s.exs)
+
+    # reshape for conv
+    if p.use_conv:
+        if 'mnist' in p.dset or p.dset in ['noise', 'bars']:
+            exs = exs.reshape(exs.shape[0], 1, 28, 28)
+        elif 'cifar10' in p.dset:
+            exs = exs.reshape(exs.shape[0], 3, 32, 32)
+        elif 'imagenet' in p.dset:
+            print('imagenet not supported!')
+
+    model.reset_final_weights(exs)
+

@@ -62,6 +62,7 @@ class LinearNet(nn.Module):
             y = y.transpose(1, 0) 
         return y
             
+        
     def forward(self, x):
         y = self.features(x)
         y = self.fc[-1](y) # last layer has no relu
@@ -71,6 +72,14 @@ class LinearNet(nn.Module):
             y = y.squeeze(0)
         return y
     
+    def forward_normalize_output(self, x):
+        y = self.features(x)
+        y = self.fc[-1](y) # last layer has no relu
+        wnorm = self.fc[-1].weight.data.norm(dim=1)
+        return y / wnorm
+#         y = y.transpose(1, 0) / wnorm
+#         return y.transpose(1, 0)
+        
     def forward_all(self, x):
         y = x.view(-1, self.input_size)
         out = {}
@@ -80,11 +89,6 @@ class LinearNet(nn.Module):
             y = F.relu(y)
         out['fc.' + str(len(self.fc) - 1)] = self.fc[-1](y).clone() # deepcopy(self.fc[-1](y))
         return out
-    
-    def forward_no_pool(self, x):
-        y = self.features(x)
-        y = self.fc[-1](y) # last layer has no relu
-        return y
     
     def last_lay(self):
         return self.fc[-1]

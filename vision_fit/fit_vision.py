@@ -109,7 +109,7 @@ def fit_vision(p):
         
 
         # reset weights
-        if p.reset_final_weights_freq > 0:
+        if p.reset_final_weights_freq > 0 and it % p.reset_final_weights_freq == 0:
             init.reset_final_weights(p, s, it, model, X_train, Y_train_onehot)
         
         # training
