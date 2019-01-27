@@ -127,7 +127,18 @@ def get_data_loaders(p):
         if p.dset == 'cifar10_small':
             train_set.train_data = train_set.train_data[:p.num_points]
             train_set.train_labels = train_set.train_labels[:p.num_points]            
-
+        elif 'cifar10_5_5' in p.dset:
+            train_set.train_labels = np.array(train_set.train_labels)
+            test_set.test_labels = np.array(test_set.test_labels)
+            if 'flip' in p.dset and p.flip_iter > 0:
+                idxs_train = train_set.train_labels >= 5
+            else:
+                idxs_train = train_set.train_labels <= 4
+            train_set.train_labels = train_set.train_labels[idxs_train]
+            train_set.train_data = train_set.train_data[idxs_train]
+            idxs_last5 = test_set.test_labels >= 5
+            test_set.test_labels = test_set.test_labels[idxs_last5]
+            test_set.test_data = test_set.test_data[idxs_last5]
         if p.shuffle_labels:
             train_set.train_labels = [random.randint(0, 9) for _ in range(50000)]
     elif 'imagenet' in p.dset:

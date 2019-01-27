@@ -23,7 +23,7 @@ def get_weight_names(m):
     return weight_names
 
 
-## network
+## MLP which takes arguments for number of layers, sizes 
 class LinearNet(nn.Module):
     def __init__(self, num_layers, input_size, hidden_size, output_size, 
                  reps=1, normalize_features=False):

@@ -3,9 +3,9 @@ from numpy.random import randint
 
 class p:   
     # dset params ####################################################################################
-    dset = 'mnist_5_5_flip' # mnist, cifar10, noise, bars, mnist_single, mnist_small, cifar10_small
-    # mnist_small (less data points), mnist_5_5 (train is first 5 digits, test is last 5)
-    # mnist_5_5_flip flips the training labels halfway
+    dset = 'cifar10_5_5_flip' # mnist, cifar10, noise, bars, mnist_single, mnist_small, cifar10_small
+    # mnist_small (less data points), [dset]_5_5 (train is first 5 digits, test is last 5)
+    # [dset]_5_5_flip flips the training labels halfway
     shuffle_labels = False # shuffles only training labels
     num_points = 100 # only comes in to play when using mnist_small
     flip_iter = 0 # leave as 0, signals when to flip training/testing classes (halfway), only comes in to play when using [dset]_flip
@@ -17,12 +17,12 @@ class p:
     use_conv_special = False # whether to use a linear + convnet architecture
 
     # saving ###########################################################################################
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/test' # directory for saving
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/test/5_5_cifar_test' # directory for saving
     save_acts_and_reduce = True # considers stats for network reconstructed from principal components
     saves_per_iter = 5 # really each iter is only iter / this
     saves_per_iter_end = 2 # stop saving densely after saves_per_iter * save_per_iter_end
     num_iters_small = saves_per_iter * saves_per_iter_end
-    num_iters = 7 # total iterations
+    num_iters = 6 # total iterations
 
     # optimizer params (sweep) #########################################################################
     optimizer = 'sgd' # sgd, adam, sgd_mult_first

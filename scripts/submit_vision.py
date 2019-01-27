@@ -4,15 +4,15 @@ from slurmpy import Slurm
 partition = 'high'
 
 
-# sweep mnist_5_5 or mnist_5_5_flip
+# sweep mnist_5_5 or mnist_5_5_flip, or cifar10_5_5_flip
 params_to_vary = {
     'seed': range(0, 2),
     'lr': [1.0, 0.1, 0.001],
     'optimizer': ['sgd', 'adam'],
     'num_layers': [2, 4], # add in 2, 7
-    'dset': ['mnist_5_5_flip'], # mnist, cifar10
+    'dset': ['cifar10_5_5_flip'], # mnist, cifar10
     'batch_size': [100], # 10, 100, 1000
-    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/simple_dsets/mnist_5_5_flip'],
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/simple_dsets/cifar10_5_5_flip'],
     'shuffle_labels': [False], # loop
     'hidden_size': [128], # 128, 512
     'freeze': [False],
@@ -146,7 +146,7 @@ print(param_combinations)
 
 # iterate
 for i in range(len(param_combinations)):
-    param_str = 'module load python; module load pytorch; python3 ../vision_fit/fit_vision.py '
+    param_str = 'module load python; module load pytorch; python3 ../vision_fit/fit.py '
     for j, key in enumerate(ks):
         param_str += key + ' ' + str(param_combinations[i][j]) + ' '
     s.run(param_str)
