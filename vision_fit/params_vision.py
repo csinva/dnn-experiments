@@ -2,11 +2,11 @@ import numpy as np
 from numpy.random import randint
 
 class p:   
-    # crucial params
-    dset = 'mnist' # mnist, cifar10, noise, bars, mnist_single, mnist_small, cifar10_small
+    # dset params
+    dset = 'mnist_5_5' # mnist, cifar10, noise, bars, mnist_single, mnist_small, cifar10_small
+    # mnist_small (less data points), mnist_5_5 (train is first 5 digits, test is last 5)
     shuffle_labels = False
     num_points = 100 # only comes in to play when using mnist_small
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/kernel_init/test' # test
     
     # arch
     num_layers = 4 # set to 0 or False to ignore
@@ -15,6 +15,7 @@ class p:
     use_conv_special = False
 
     # saving
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/test' # test
     save_acts_and_reduce = True    
     saves_per_iter = 5 # really each iter is only iter / this
     saves_per_iter_end = 2 # stop saving densely after saves_per_iter * save_per_iter_end
@@ -29,7 +30,7 @@ class p:
     first_layer_lr_mult = 1 # this should be left at 1!
     
     # kernel weight-init
-    reset_final_weights_freq = 1 # greater than zero will reset weights
+    reset_final_weights_freq = 0 # greater than zero will reset weights
     reps = 1 # for kernel weight-init, how many reps per point
     normalize_features = True
     

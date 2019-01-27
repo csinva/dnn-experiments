@@ -90,6 +90,13 @@ def get_data_loaders(p):
         elif p.dset == 'mnist_small':
             train_set.train_data = train_set.train_data[:p.num_points]
             train_set.train_labels = train_set.train_labels[:p.num_points]
+        elif p.dset == 'mnist_5_5':
+            idxs_first5 = train_set.train_labels <= 4
+            train_set.train_labels = train_set.train_labels[idxs_first5]
+            train_set.train_data = train_set.train_data[idxs_first5]
+            idxs_last5 = test_set.test_labels >= 5
+            test_set.test_labels = test_set.test_labels[idxs_last5]
+            test_set.test_data = test_set.test_data[idxs_last5]
         if p.shuffle_labels:
             num_labs = train_set.train_labels.size()[0]
             train_set.train_labels = torch.Tensor(np.random.randint(0, 10, num_labs)).long()
