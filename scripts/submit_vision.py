@@ -1,8 +1,25 @@
 import itertools
 from slurmpy import Slurm
 
-partition = 'low'
+partition = 'high'
 
+
+# sweep mnist_5_5
+params_to_vary = {
+    'seed': range(0, 2),
+    'lr': [1.0, 0.1, 0.001],
+    'optimizer': ['sgd', 'adam'],
+    'num_layers': [2, 4], # add in 2, 7
+    'dset': ['mnist_5_5'], # mnist, cifar10
+    'batch_size': [100], # 10, 100, 1000
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/simple_dsets/mnist_5_5'],
+    'shuffle_labels': [False], # loop
+    'hidden_size': [128], # 128, 512
+    'freeze': [False],
+    'save_acts_and_reduce': [True],
+    'num_iters': [30],
+    'first_layer_lr_mult': [1]
+}
 
 # sweep mnist single
 '''
