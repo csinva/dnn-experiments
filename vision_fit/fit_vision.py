@@ -134,7 +134,13 @@ def fit_vision(p):
         if it % p.save_all_freq == 0:
             save(out_name, p, s)
             
-
+        # check for need to flip dset
+        if 'flip' in p.dset and it == p.num_iters // 2:
+            print('flipped dset')
+            p.flip_iter = p.num_iters // 2 # flip_iter tells when dset flipped
+            train_loader, test_loader = data.get_data_loaders(p)
+            X_train, Y_train_onehot = data.get_XY(train_loader)
+            
     save(out_name, p, s)
         
 

@@ -3,10 +3,11 @@ from numpy.random import randint
 
 class p:   
     # dset params
-    dset = 'mnist_5_5' # mnist, cifar10, noise, bars, mnist_single, mnist_small, cifar10_small
-    # mnist_small (less data points), mnist_5_5 (train is first 5 digits, test is last 5)
+    dset = 'mnist_5_5_flip' # mnist, cifar10, noise, bars, mnist_single, mnist_small, cifar10_small
+    # mnist_small (less data points), mnist_5_5 (train is first 5 digits, test is last 5), mnist_5_5_flip flips the training labels halfway
     shuffle_labels = False
     num_points = 100 # only comes in to play when using mnist_small
+    flip_iter = 0 # leave as 0, signals when to flip training/testing classes (halfway), only comes in to play when using [dset]_flip
     
     # arch
     num_layers = 4 # set to 0 or False to ignore

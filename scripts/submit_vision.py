@@ -4,20 +4,20 @@ from slurmpy import Slurm
 partition = 'high'
 
 
-# sweep mnist_5_5
+# sweep mnist_5_5 or mnist_5_5_flip
 params_to_vary = {
     'seed': range(0, 2),
     'lr': [1.0, 0.1, 0.001],
     'optimizer': ['sgd', 'adam'],
     'num_layers': [2, 4], # add in 2, 7
-    'dset': ['mnist_5_5'], # mnist, cifar10
+    'dset': ['mnist_5_5_flip'], # mnist, cifar10
     'batch_size': [100], # 10, 100, 1000
-    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/simple_dsets/mnist_5_5'],
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/simple_dsets/mnist_5_5_flip'],
     'shuffle_labels': [False], # loop
     'hidden_size': [128], # 128, 512
     'freeze': [False],
     'save_acts_and_reduce': [True],
-    'num_iters': [30],
+    'num_iters': [60],
     'first_layer_lr_mult': [1]
 }
 
