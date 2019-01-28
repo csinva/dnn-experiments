@@ -3,7 +3,7 @@ from numpy.random import randint
 
 class p:   
     # dset params ####################################################################################
-    dset = 'cifar10_5_5_flip' # mnist, cifar10, noise, bars, mnist_single, mnist_small, cifar10_small
+    dset = 'mnist' # mnist, cifar10, noise, bars, mnist_single, mnist_small, cifar10_small
     # mnist_small (less data points), [dset]_5_5 (train is first 5 digits, test is last 5)
     # [dset]_5_5_flip flips the training labels halfway
     shuffle_labels = False # shuffles only training labels
