@@ -75,8 +75,8 @@ def fit_vision(p):
     for it in tqdm(range(0, p.num_iters)):
         
         # calc stats and record
-        s.losses_train[it], s.accs_train[it], s.mean_margin_train_unn[it], s.mean_margin_train[it] = stats.calc_loss_acc(train_loader, p.batch_size, use_cuda, model, criterion)
-        s.losses_test[it], s.accs_test[it], s.mean_margin_test_unn[it], s.mean_margin_test[it] = stats.calc_loss_acc(test_loader, p.batch_size, use_cuda, model, criterion, print_loss=True)
+        s.losses_train[it], s.accs_train[it], s.confidence_unn_train[it], s.confidence_norm_train[it], s.margin_unn_train[it], s.margin_norm_train[it] = stats.calc_loss_acc_margins(train_loader, p.batch_size, use_cuda, model, criterion)
+        s.losses_test[it], s.accs_test[it], s.confidence_unn_test[it], s.confidence_norm_test[it], s.margin_unn_test[it], s.margin_norm_test[it] = stats.calc_loss_acc_margins(test_loader, p.batch_size, use_cuda, model, criterion, print_loss=True)
         
         # record weights
         weight_dict = deepcopy({x[0]:x[1].data.cpu().numpy() for x in model.named_parameters()})
@@ -91,8 +91,8 @@ def fit_vision(p):
         if p.save_acts_and_reduce:
             # reduced moel
             model_r = reduce_model(model)
-            s.losses_train_r[it], s.accs_train_r[it], _, _ = stats.calc_loss_acc(train_loader, p.batch_size, use_cuda, model_r, criterion)
-            s.losses_test_r[it], s.accs_test_r[it], _, _ = stats.calc_loss_acc(test_loader, p.batch_size, use_cuda, model_r, criterion)
+            s.losses_train_r[it], s.accs_train_r[it] = stats.calc_loss_acc_margins(train_loader, p.batch_size, use_cuda, model_r, criterion)[:2]
+            s.losses_test_r[it], s.accs_test_r[it] = stats.calc_loss_acc_margins(test_loader, p.batch_size, use_cuda, model_r, criterion)[:2]
             
             # activations
             act_var_dicts = calc_activation_dims(use_cuda, model, train_loader.dataset, test_loader.dataset, calc_activations=p.calc_activations)
@@ -134,7 +134,13 @@ def fit_vision(p):
         if it % p.save_all_freq == 0:
             save(out_name, p, s)
             
-
+        # check for need to flip dset
+        if 'flip' in p.dset and it == p.num_iters // 2:
+            print('flipped dset')
+            p.flip_iter = p.num_iters // 2 # flip_iter tells when dset flipped
+            train_loader, test_loader = data.get_data_loaders(p)
+            X_train, Y_train_onehot = data.get_XY(train_loader)
+            
     save(out_name, p, s)
         
 
