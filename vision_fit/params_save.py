@@ -29,7 +29,8 @@ class S:
         self.confidence_norm_train = np.zeros(p.num_iters) # mean train confidence at each it (after softmax)
         self.confidence_norm_test = np.zeros(p.num_iters)  # mean test confidence at each it (after softmax)
         
-        # singular vals of pxp kernel matrix (using different kernel functions)
+        # singular vals of weight matrix (size of singular vector = input_size)
+        # using different kernel functions
         self.singular_val_dicts = [] # should also be plotted against p.its
         self.singular_val_dicts_cosine = []
         self.singular_val_dicts_rbf = [] 

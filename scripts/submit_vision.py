@@ -5,16 +5,18 @@ partition = 'high'
 
 
 # sweep mnist_5_5 or mnist_5_5_flip, or cifar10_5_5_flip
+# raaz.rsk/simple_dsets/all_flips_big - has big hidden_size stuff
 params_to_vary = {
+    'flip_freeze': [True],
+    'dset': ['mnist_5_5_flip', 'cifar10_5_5_flip'], # mnist, cifar10    
     'seed': range(0, 2),
     'lr': [1.0, 0.1, 0.001],
     'optimizer': ['sgd', 'adam'],
-    'num_layers': [2, 4], # add in 2, 7
-    'dset': ['cifar10_5_5_flip'], # mnist, cifar10
+    'num_layers': [4], # add in 2, 7
     'batch_size': [100], # 10, 100, 1000
-    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/simple_dsets/cifar10_5_5_flip'],
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/simple_dsets/freeze_transfer'],
     'shuffle_labels': [False], # loop
-    'hidden_size': [128], # 128, 512
+    'hidden_size': [128, 1024], # 128, 512
     'freeze': [False],
     'save_acts_and_reduce': [True],
     'num_iters': [60],

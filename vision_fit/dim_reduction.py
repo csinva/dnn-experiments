@@ -74,11 +74,12 @@ def calc_activation_dims(use_cuda, model, dset_train, dset_test, calc_activation
                 dicts_dict['test'] = {'pca': act_var_dict, 'rbf': act_var_dict_rbf}                
         return dicts_dict
 
+# get singular vals for each weight dict (where singular vector shape = input_shape)
 def get_singular_vals_from_weight_dict(weight_dict, activation=False):
     explained_var_dict = {}
     for layer_name in weight_dict.keys():
         if 'weight' in layer_name or activation:
-            w = weight_dict[layer_name]
+            w = weight_dict[layer_name] # w is output x input
             if len(w.shape) > 2: # conv layer
                 w = w.reshape(w.shape[0] * w.shape[1], -1)
             pca = PCA(n_components=w.shape[1])
@@ -86,6 +87,7 @@ def get_singular_vals_from_weight_dict(weight_dict, activation=False):
             explained_var_dict[layer_name] = deepcopy(pca.singular_values_)
     return explained_var_dict
 
+# get singular vals for each weight dict using kernels (where singular vector shape = input_shape)
 def get_singular_vals_kernels(weight_dict, kernel='cosine', activation=False):
     explained_var_dict = {}
     for layer_name in weight_dict.keys():

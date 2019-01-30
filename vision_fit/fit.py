@@ -64,7 +64,6 @@ def fit_vision(p):
     criterion = nn.CrossEntropyLoss()
     if use_cuda:
         model = model.cuda()
-    
 
     # things to record
     s = S(p)
@@ -140,14 +139,14 @@ def fit_vision(p):
             p.flip_iter = p.num_iters // 2 # flip_iter tells when dset flipped
             train_loader, test_loader = data.get_data_loaders(p)
             X_train, Y_train_onehot = data.get_XY(train_loader)
+            if p.flip_freeze:
+                p.freeze = 'last'
+                model, optimizer = optimization.freeze_and_set_lr(p, model, it)
             
     save(out_name, p, s)
         
 
-
-    
 if __name__ == '__main__':
-    print('starting...')
     t0 = time.time()
     from params_vision import p
     
@@ -163,7 +162,9 @@ if __name__ == '__main__':
     p.its = np.hstack((1.0 * np.arange(p.num_iters_small) / p.saves_per_iter, p.saves_per_iter_end + np.arange(p.num_iters - p.num_iters_small)))
     
     print('fname ', p._str(p))
-    print('params ', p._dict(p))
+    for key, val in p._dict(p).items():
+        print('  ', key, val)
+    print('starting...')
     fit_vision(p)
     
     print('success! saved to ', p.out_dir, 'in ', time.time() - t0, 'sec')
