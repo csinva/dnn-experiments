@@ -19,11 +19,11 @@ import models
 def get_lr(p, it):
     # if we haven't gotten to num_iters_small, return 1
     it_minus_num_iters_small = it - p.num_iters_small    
-    if it_minus_num_iters_small <=0:
+    if it_minus_num_iters_small <= 0:
         return 1
     
     # otherwise return lr_tick treating lr_ticks as a step function
-    it_keys = sorted(list(lr_ticks.keys()))
+    it_keys = sorted(list(p.lr_ticks.keys()))
     i = 0
     while i < len(it_keys) and it_minus_num_iters_small > it_keys[i]:
         i += 1
