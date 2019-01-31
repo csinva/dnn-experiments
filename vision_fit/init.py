@@ -39,3 +39,22 @@ def reset_final_weights(p, s, it, model, X_train, Y_train_onehot):
 
     model.reset_final_weights(exs)
 
+# initializes the bs in the first layer based on random xs * -1 * ws (elementwise)
+# X should have atleast as many examples as there are weights in any layer
+def initialize_bs_as_neg_x_times_w(X, model):
+    print('init bias zero lay 1')
+    num_weights = model.fc[0].weight.shape[0]
+    xs = X[np.random.choice(X.shape[0], num_weights, replace=True)]
+    xs = torch.Tensor(xs)
+    xs = xs.reshape(xs.shape[0], -1)
+    ws = model.fc[0].weight.data
+    bs = torch.sum(-xs * ws, dim=1)
+    # print('shapes', 'xs', xs.shape, 'ws', ws.shape, 'bs', bs.shape)    
+    model.fc[0].bias.data = bs.reshape(-1) #bs.view(-1, 1)
+    
+    
+def initialize_weights(p, X_train, model):
+    if p.init == 'bias_zero_lay1':
+        initialize_bs_as_neg_x_times_w(X_train, model)
+        
+    

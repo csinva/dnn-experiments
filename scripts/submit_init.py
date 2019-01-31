@@ -3,14 +3,10 @@ from slurmpy import Slurm
 
 partition = 'low'
 
-# sweep maxpool reps and reset freq
-# conclusion resetting more isn't a big deal if you keep the norm the same
-# problems when you don't maintain the norm
+# sweep different ways to initialize weights
 params_to_vary = {
-    'reset_final_weights_freq': [1, 2, 10], # add 10
-    'normalize_features': [False, True],
-    'reps': [1, 3], # 1, 3
-    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/kernel_init/sweep_reps'],
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/init/lay1_zero_bias'],
+    'init': ['default', 'bias_zero_lay1'],
     'dset': ['mnist', 'cifar10'], # mnist, cifar10    
     'save_all_freq': [10],
     'save_acts_and_reduce': [False],
@@ -23,9 +19,11 @@ params_to_vary = {
     'hidden_size': [128], # 128, 512
     'freeze': [False],
     'save_acts_and_reduce': [True],
-    'num_iters': [35],
+    'num_iters': [20],
     'first_layer_lr_mult': [1],
-    'use_conv': [False], # could also make this True
+    'use_conv': [False], # could also make this True,
+    'saves_per_iter': [10],
+    'num_iters_small': [3],
 }
 
 # run

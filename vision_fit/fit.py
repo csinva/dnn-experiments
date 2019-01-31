@@ -58,6 +58,7 @@ def fit_vision(p):
     train_loader, test_loader = data.get_data_loaders(p)
     X_train, Y_train_onehot = data.get_XY(train_loader)
     model = data.get_model(p)
+    init.initialize_weights(p, X_train, model)
 
     # set up optimizer and freeze appropriate layers
     model, optimizer = optimization.freeze_and_set_lr(p, model, it=0)

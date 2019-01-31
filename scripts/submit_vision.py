@@ -6,6 +6,7 @@ partition = 'high'
 
 # sweep mnist_5_5 or mnist_5_5_flip, or cifar10_5_5_flip
 # raaz.rsk/simple_dsets/all_flips_big - has big hidden_size stuff
+# raaz.rsk/simple_dsets/freeze_transfer - freezes when transferring
 params_to_vary = {
     'flip_freeze': [True],
     'dset': ['mnist_5_5_flip', 'cifar10_5_5_flip'], # mnist, cifar10    

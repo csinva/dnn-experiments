@@ -3,13 +3,13 @@ from numpy.random import randint
 
 class p:   
     # dset params ########
-    dset = 'mnist_5_5_flip' # mnist, cifar10, noise, bars, mnist_single, mnist_small, cifar10_small
+    dset = 'mnist' # mnist, cifar10, noise, bars, mnist_single, mnist_small, cifar10_small
     # mnist_small (less data points), [dset]_5_5 (train is first 5 digits, test is last 5)
     # [dset]_5_5_flip flips the training labels halfway
     shuffle_labels = False # shuffles only training labels
     num_points = 100 # only comes in to play when using mnist_small
     flip_iter = 0 # leave as 0, signals when to flip training/testing classes (halfway), only comes in to play when using [dset]_flip
-    flip_freeze = False # boolean, whether to freeze early layers when flipping
+    flip_freeze = True # boolean, whether to freeze early layers when flipping, only comes in to play when using [dset]_flip
     
     # arch ########
     num_layers = 4 # set to 0 or False to ignore
@@ -21,9 +21,9 @@ class p:
     out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/test/test' # directory for saving
     save_acts_and_reduce = True # considers stats for network reconstructed from principal components
     saves_per_iter = 5 # really each iter is only iter / this
-    saves_per_iter_end = 2 # stop saving densely after saves_per_iter * save_per_iter_end
+    saves_per_iter_end = 1 # stop saving densely after saves_per_iter * save_per_iter_end
     num_iters_small = saves_per_iter * saves_per_iter_end
-    num_iters = 6 # total iterations
+    num_iters = 4 # total iterations
 
     # optimizer params (sweep) ########
     optimizer = 'sgd' # sgd, adam, sgd_mult_first
@@ -32,10 +32,11 @@ class p:
     first_layer_lr_mult = 1 # leave at 1 - how much to multiply first layer lr only
     seed = 0 # random seed    
     
-    # kernel weight-init ########
+    # init / prototypes ########
     reset_final_weights_freq = 0 # greater than zero will reset weights
     reps = 1 # for kernel weight-init, how many reps per point
     normalize_features = True
+    init = 'default' # default, bias_zero_lay1
     
     # freezing ########
     freeze = False # False, first, last, progress_first, progress_last
