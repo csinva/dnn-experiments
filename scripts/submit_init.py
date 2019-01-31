@@ -5,8 +5,8 @@ partition = 'low'
 
 # sweep different ways to initialize weights
 params_to_vary = {
-    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/init/lay1_zero_bias'],
-    'init': ['default', 'bias_zero_lay1'],
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/init/misc'],
+    'init': ['default', 'bias_zero_lay1', 'w_bias_zero_lay1'], # 'default', 'bias_zero_lay1'
     'dset': ['mnist', 'cifar10'], # mnist, cifar10    
     'save_all_freq': [10],
     'save_acts_and_reduce': [False],
@@ -19,7 +19,7 @@ params_to_vary = {
     'hidden_size': [128], # 128, 512
     'freeze': [False],
     'save_acts_and_reduce': [True],
-    'num_iters': [20],
+    'num_iters': [35],
     'first_layer_lr_mult': [1],
     'use_conv': [False], # could also make this True,
     'saves_per_iter': [10],

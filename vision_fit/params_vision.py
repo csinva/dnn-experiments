@@ -36,7 +36,7 @@ class p:
     reset_final_weights_freq = 0 # greater than zero will reset weights
     reps = 1 # for kernel weight-init, how many reps per point
     normalize_features = True
-    init = 'default' # default, bias_zero_lay1
+    init = 'w_bias_zero_lay1' # default, bias_zero_lay1, w_bias_zero_lay1
     
     # freezing ########
     freeze = False # False, first, last, progress_first, progress_last
