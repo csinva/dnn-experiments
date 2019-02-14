@@ -11,7 +11,6 @@ import torchvision
 from os.path import join as oj
 import sys
 import numpy as np
-import models
 
 
 # gets the lr at a certain it using lr_ticks
@@ -32,18 +31,23 @@ def get_lr(p, it):
 
 def freeze_and_set_lr(p, model, it):
     # freezing
-    if p.freeze == 'first':
-#             print('freezing all but first...')
+    if p.freeze == 'first': # freeze all but first
         for name, param in model.named_parameters():
             if ('fc1' in name or 'fc.0' in name or 'conv1' in name):
                 param.requires_grad = True 
             else:
                 param.requires_grad = False
             print(name, param.requires_grad)
-    elif p.freeze == 'last':
-#             print('freezing all but last...')
+    elif p.freeze == 'last': # freeze all but last
         for name, param in model.named_parameters():
             if 'fc.' + str(p.num_layers - 1) in name:
+                param.requires_grad = True 
+            else:
+                param.requires_grad = False
+            print(name, param.requires_grad)   
+    elif p.freeze == 'firstlast': # freeze all but first and last
+        for name, param in model.named_parameters():
+            if  ('fc1' in name or 'fc.0' in name or 'conv1' in name) or 'fc.' + str(p.num_layers - 1) in name:
                 param.requires_grad = True 
             else:
                 param.requires_grad = False

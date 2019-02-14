@@ -39,7 +39,7 @@ class p:
     init = 'default' # default, bias_zero_lay1, w_bias_zero_lay1, w_lay_final
     
     # freezing ########
-    freeze = False # False, first, last, progress_first, progress_last
+    freeze = False # False, first, last, progress_first, progress_last, firstlast
     lr_step = 16 # used for progress (which freezes layers one by one)
     # note these will all be subtracted by num_iters_small
     lr_ticks = {0: 1, 30: 0.5, 50: 0.25, 70: 0.125, 

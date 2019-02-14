@@ -69,7 +69,6 @@ def initialize_ws_and_zero_bias_lay1(X, model):
     ws = model.fc[0].weight.data # here, ws=xs
     bs = torch.sum(-xs * ws, dim=1)
     model.fc[0].bias.data = bs.reshape(-1) #bs.view(-1, 1)  
-    
 
 
 # final layer only

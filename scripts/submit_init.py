@@ -1,27 +1,27 @@
 import itertools
 from slurmpy import Slurm
 
-partition = 'high'
+partition = 'low'
 
 # sweep different ways to initialize weights
 params_to_vary = {
-    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/init/init_final'],
-    'init': ['default', 'w_lay_final'], # 'default', 'bias_zero_lay1', 'w_bias_zero_lay1'
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/init/freeze_sweep_4lay'],
+    'init': ['default', 'w_lay_final', 'w_bias_zero_lay1'], # 'default', 'bias_zero_lay1', 'w_bias_zero_lay1'
     'dset': ['mnist', 'cifar10'], # mnist, cifar10    
     'save_all_freq': [10],
     'save_acts_and_reduce': [False],
     'seed': range(0, 1),
     'lr': [0.01, 0.1],
     'optimizer': ['sgd', 'adam'],
-    'num_layers': [4], # add in 2, 7
+    'num_layers': [4], # 2, 4, 7
     'batch_size': [100], # 10, 100, 1000
     'shuffle_labels': [False], # loop
     'hidden_size': [128], # 128, 512
-    'freeze': [False],
+    'freeze': [False, 'firstlast', 'first', 'last'],
     'save_acts_and_reduce': [True],
     'num_iters': [35],
     'first_layer_lr_mult': [1],
-    'use_conv': [False], # could also make this True,
+    'use_conv': [False], 
     'saves_per_iter': [10],
     'num_iters_small': [3],
     'normalize_features': [False]
