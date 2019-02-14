@@ -9,7 +9,7 @@ class p:
     shuffle_labels = False # shuffles only training labels
     num_points = 100 # only comes in to play when using mnist_small
     flip_iter = 0 # leave as 0, signals when to flip training/testing classes (halfway), only comes in to play when using [dset]_flip
-    flip_freeze = True # boolean, whether to freeze early layers when flipping, only comes in to play when using [dset]_flip
+    flip_freeze = False # boolean, whether to freeze early layers when flipping, only comes in to play when using [dset]_flip
     
     # arch ########
     num_layers = 4 # set to 0 or False to ignore
@@ -20,7 +20,7 @@ class p:
     # saving ########
     out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/test/test' # directory for saving
     save_acts_and_reduce = True # considers stats for network reconstructed from principal components
-    saves_per_iter = 5 # really each iter is only iter / this
+    saves_per_iter = 5 # how many times to save per iteration
     saves_per_iter_end = 1 # stop saving densely after saves_per_iter * save_per_iter_end
     num_iters_small = saves_per_iter * saves_per_iter_end
     num_iters = 4 # total iterations
@@ -35,8 +35,8 @@ class p:
     # init / prototypes ########
     reset_final_weights_freq = 0 # greater than zero will reset weights
     reps = 1 # for kernel weight-init, how many reps per point
-    normalize_features = True
-    init = 'w_bias_zero_lay1' # default, bias_zero_lay1, w_bias_zero_lay1
+    normalize_features = False # should default to False
+    init = 'default' # default, bias_zero_lay1, w_bias_zero_lay1, w_lay_final
     
     # freezing ########
     freeze = False # False, first, last, progress_first, progress_last
