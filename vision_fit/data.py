@@ -118,12 +118,15 @@ def get_data_loaders(p):
         train_set = dset.CIFAR10(root=root, train=True, download=True, transform=trans)
 
         test_set = dset.CIFAR10(root=root, train=False, download=True, transform=trans)
+        if p.shuffle_labels:
+            train_set.train_labels = [random.randint(0, 9) for _ in range(50000)]
         train_loader = torch.utils.data.DataLoader(train_set, 
                                                    batch_size=p.batch_size,
                                                    shuffle=True)
         test_loader = torch.utils.data.DataLoader(test_set, 
                                                   batch_size=p.batch_size,
                                                   shuffle=False)
+        
         if p.dset == 'cifar10_small':
             train_set.train_data = train_set.train_data[:p.num_points]
             train_set.train_labels = train_set.train_labels[:p.num_points]            
@@ -139,8 +142,7 @@ def get_data_loaders(p):
             idxs_last5 = test_set.test_labels >= 5
             test_set.test_labels = test_set.test_labels[idxs_last5]
             test_set.test_data = test_set.test_data[idxs_last5]
-        if p.shuffle_labels:
-            train_set.train_labels = [random.randint(0, 9) for _ in range(50000)]
+        
     elif 'imagenet' in p.dset:
         normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
