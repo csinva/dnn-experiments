@@ -57,7 +57,7 @@ def fit_vision(p):
     print('loading dset...')
     train_loader, test_loader = data.get_data_loaders(p)
     X_train, Y_train_onehot = data.get_XY(train_loader)
-    model = data.get_model(p)
+    model = data.get_model(p, X_train, Y_train_onehot)
     init.initialize_weights(p, X_train, Y_train_onehot, model)
 
 
@@ -70,6 +70,8 @@ def fit_vision(p):
     # things to record
     s = S(p)
     s.weight_names = models.get_weight_names(model)
+    s.exs = model.exs.data.cpu().numpy()
+
         
     # run
     print('training...')
@@ -108,10 +110,6 @@ def fit_vision(p):
             s.singular_val_dicts_rbf.append(get_singular_vals_kernels(weight_dict, 'rbf'))
             s.singular_val_dicts_lap.append(get_singular_vals_kernels(weight_dict, 'laplacian'))
         
-
-        # reset weights
-        if p.reset_final_weights_freq > 0 and it % p.reset_final_weights_freq == 0:
-            init.reset_final_weights(p, s, it, model, X_train, Y_train_onehot)
         
         # training
         for batch_idx, (x, target) in enumerate(train_loader):

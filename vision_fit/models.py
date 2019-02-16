@@ -10,10 +10,6 @@ from os.path import join as oj
 import sys
 import numpy as np
 from copy import deepcopy
-import pickle as pkl
-from torch.optim.lr_scheduler import StepLR
-from sklearn.decomposition import PCA
-from sklearn.metrics import pairwise
 
 def get_weight_names(m):
     weight_names = []
@@ -21,16 +17,15 @@ def get_weight_names(m):
         if 'weight' in x:
             weight_names.append(x)
     return weight_names
-
+    
 
 ## MLP which takes arguments for number of layers, sizes 
 class LinearNet(nn.Module):
-    def __init__(self, num_layers, input_size, hidden_size, output_size, 
-                 reps=1, normalize_features=False):
+    def __init__(self, num_layers, input_size, hidden_size, output_size):
         # num_layers is number of weight matrices
         super(LinearNet, self).__init__()
         self.input_size = input_size
-        self.output_size = output_size * reps
+        self.output_size = output_size
         
         if num_layers == 1:
             self.fc = nn.ModuleList([nn.Linear(input_size, self.output_size)])
@@ -38,48 +33,16 @@ class LinearNet(nn.Module):
             self.fc = nn.ModuleList([nn.Linear(input_size, hidden_size)])
             self.fc.extend([nn.Linear(hidden_size, hidden_size) for i in range(num_layers - 2)])
             self.fc.append(nn.Linear(hidden_size, self.output_size))
-        
-        # for kernel layers
-        self.normalize_features = normalize_features
-        if self.normalize_features:
-            self.last_lay().register_parameter('bias', None)
-        self.reps = reps
-        if reps > 1:
-            self.maxpool = nn.MaxPool1d(self.reps, stride=self.reps, padding=0)
             
     # doesn't use last layer
     def features(self, x):
         y = x.view(-1, self.input_size)
         for i in range(len(self.fc) - 1):
             y = F.relu(self.fc[i](y))
-            
-        # normalize features of each datapoint to 1
-        if self.normalize_features:
-            y = y.transpose(1, 0)
-            ynorm = y.norm(dim=0)
-#             ynorm[ynorm==0] = 1
-            y = y / ynorm
-            y = y.transpose(1, 0) 
         return y
-            
         
-    def forward(self, x):
-        y = self.features(x)
-        y = self.fc[-1](y) # last layer has no relu
-        if self.reps > 1: # if need to add a final layer maxpool, might want to make this avgpool
-            y = y.unsqueeze(0)
-            y = self.maxpool(y)
-            y = y.squeeze(0)
-        return y
-    
-    def forward_normalize_output(self, x):
-        y = self.features(x)
-        y = self.fc[-1](y) # last layer has no relu
-        wnorm = self.fc[-1].weight.data.norm(dim=1)
-        return y / wnorm
-#         y = y.transpose(1, 0) / wnorm
-#         return y.transpose(1, 0)
-        
+    def forward(self, x): return self.fc[-1](self.features(x)) # last layer has no relu
+
     def forward_all(self, x):
         y = x.view(-1, self.input_size)
         out = {}
@@ -90,17 +53,8 @@ class LinearNet(nn.Module):
         out['fc.' + str(len(self.fc) - 1)] = self.fc[-1](y).clone() # deepcopy(self.fc[-1](y))
         return out
     
-    def last_lay(self):
-        return self.fc[-1]
+    def last_lay(self): return self.fc[-1]
     
-    # calculate acts and set lay    
-    def reset_final_weights(self, exs):
-        acts = self.features(exs) # note: if normalize is true this is already norm 1 for each point
-#         acts = acts / acts.norm() # don't maintain norm
-        self.last_lay().weight.data = acts.data # torch.nn.Parameter(acts)        
-        # acts = acts / acts.norm() * last_lay.weight.data.norm() # maintain norm        
-#         last_lay.weight = torch.nn.Parameter(acts)
-#         self.fc[-1].bias.data = self.fc[-1].bias.data * 0 # not needed, bias was set to false
 
 class LeNet(nn.Module):
     def __init__(self):

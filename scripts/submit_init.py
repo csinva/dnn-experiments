@@ -17,7 +17,7 @@ params_to_vary = {
     'batch_size': [100], # 10, 100, 1000
     'shuffle_labels': [False], # loop
     'hidden_size': [128], # 128, 512
-    'freeze': [False, 'firstlast', 'first', 'last'],
+    'freeze': ['False', 'firstlast', 'first', 'last'],
     'save_acts_and_reduce': [True],
     'num_iters': [35],
     'first_layer_lr_mult': [1],

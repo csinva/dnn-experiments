@@ -11,6 +11,14 @@ class p:
     flip_iter = 0 # leave as 0, signals when to flip training/testing classes (halfway), only comes in to play when using [dset]_flip
     flip_freeze = False # boolean, whether to freeze early layers when flipping, only comes in to play when using [dset]_flip
     
+    # init / prototypes ########
+    init = 'default' # default, bias_zero_lay1, w_bias_zero_lay1, w_lay_final
+    siamese = True # default to False
+    reps = 1 # for kernel weight-init, how many reps per point
+    similarity = 'cosine'
+    siamese_init = 'unif' # points, unif
+    train_prototypes = False # whether to train the prototypes
+    
     # arch ########
     num_layers = 4 # set to 0 or False to ignore
     hidden_size = 128 # size of each hidden layer for mlps
@@ -30,16 +38,10 @@ class p:
     lr = 0.1 # default 0.01
     batch_size = 100
     first_layer_lr_mult = 1 # leave at 1 - how much to multiply first layer lr only
-    seed = 0 # random seed    
-    
-    # init / prototypes ########
-    reset_final_weights_freq = 0 # greater than zero will reset weights
-    reps = 1 # for kernel weight-init, how many reps per point
-    normalize_features = False # should default to False
-    init = 'default' # default, bias_zero_lay1, w_bias_zero_lay1, w_lay_final
+    seed = 0 # random seed        
     
     # freezing ########
-    freeze = False # False, first, last, progress_first, progress_last, firstlast
+    freeze = 'False' # False, first, last, progress_first, progress_last, firstlast
     lr_step = 16 # used for progress (which freezes layers one by one)
     # note these will all be subtracted by num_iters_small
     lr_ticks = {0: 1, 30: 0.5, 50: 0.25, 70: 0.125, 

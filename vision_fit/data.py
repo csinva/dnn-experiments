@@ -14,29 +14,32 @@ import numpy as np
 import models
 import random
 import time
+import siamese
 
 # get model (based on dset, etc.)
-def get_model(p):
+def get_model(p, X_train=None, Y_train_onehot=None):
     if 'mnist' in p.dset:
         if p.use_conv_special:
             model = models.Linear_then_conv()
         elif p.use_conv:
             model = models.LeNet()
         elif p.num_layers > 0:
-            model = models.LinearNet(p.num_layers, 28*28, p.hidden_size, 10, p.reps, p.normalize_features)
+            model = models.LinearNet(p.num_layers, 28*28, p.hidden_size, 10) 
         else:
-            model = models.LinearNet(3, 28*28, 256, 10, p.reps, p.normalize_features)
+            model = models.LinearNet(3, 28*28, 256, 10)
     elif 'cifar10' in p.dset:
         if p.use_conv_special:
             model = models.LinearThenConvCifar()        
         elif p.use_conv:
             model = models.Cifar10Conv()        
         elif p.num_layers > 0:
-            model = models.LinearNet(p.num_layers, 32*32*3, p.hidden_size, 10, p.reps, p.normalize_features)
+            model = models.LinearNet(p.num_layers, 32*32*3, p.hidden_size, 10)
         else:
-            model = models.LinearNet(3, 32*32*3, 256, 10, p.reps, p.normalize_features)
+            model = models.LinearNet(3, 32*32*3, 256, 10)
     elif p.dset in ['bars', 'noise']:
-        model = models.LinearNet(p.num_layers, 8*8, p.hidden_size, 16, p.reps, p.normalize_features)    
+        model = models.LinearNet(p.num_layers, 8*8, p.hidden_size, 16) 
+    if p.siamese:
+        model = siamese.SiameseNet(model, X_train, Y_train_onehot, p.reps, p.similarity, p.siamese_init, p.train_prototypes)
     return model
 
 # get data and model from params p - uses p.dset, p.shuffle_labels, p.batch_size
@@ -57,7 +60,6 @@ def get_data_loaders(p):
     if hasattr(p, 'noise_rotate'):
         transforms_noise.append(transforms.ColorJitter(brightness=p.noise_brightness))
         transforms_noise.append(transforms.RandomRotation(p.noise_rotate))
-        
         
     ## load dataset (train_loader, test_loader)
     if 'mnist' in p.dset or p.dset in ['bars', 'noise']:

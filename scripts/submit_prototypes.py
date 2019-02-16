@@ -7,9 +7,10 @@ partition = 'high'
 # conclusion resetting more isn't a big deal if you keep the norm the same
 # problems when you don't maintain the norm
 params_to_vary = {
-    'reset_final_weights_freq': [1, 2, 10], # add 10
-    'normalize_features': [False, True],
     'reps': [1, 3], # 1, 3
+    'train_prototypes': [False, True],
+    'similarity': ['cosine'],
+    'siamese_init': ['points', 'unif'],
     'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/kernel_init/sweep_reps'],
     'dset': ['mnist', 'cifar10'], # mnist, cifar10    
     'save_all_freq': [10],
@@ -40,7 +41,7 @@ print(param_combinations)
 
 # iterate
 for i in range(len(param_combinations)):
-    param_str = 'module load python; module load pytorch; python3 ../vision_fit/fit.py '
+    param_str = 'module unload python/3.7; module load python/3.5; module load pytorch; python ../vision_fit/fit.py '
     for j, key in enumerate(ks):
         param_str += key + ' ' + str(param_combinations[i][j]) + ' '
     s.run(param_str)
