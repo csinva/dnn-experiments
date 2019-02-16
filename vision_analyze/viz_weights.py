@@ -23,8 +23,11 @@ from sklearn.decomposition import PCA
 import warnings
 warnings.filterwarnings("ignore")
 
-# plot all the weights
+def show(X):
+    plt.imshow(X)
+    plt.axis('off')
 
+# plot all the weights
 def plot_weights(W, dset='mnist', conv=False, dpi=80, C=None, interpolation=None, small_fig=False): # W is num_filters x im_size
     num_filters = W.shape[0]
     d = int(np.sqrt(W.size / num_filters))

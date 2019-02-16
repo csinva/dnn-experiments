@@ -39,30 +39,31 @@ def process_results(results):
     fc2_fro, fc3_fro = [], []
     act0_stab_rank, act1_stab_rank = [], []
     for _, row in results.iterrows():
-        mem_stat_dict0 = [row['mean_max_corrs'][t]['fc.0.weight'] for t in ts]
+        pre = 'model.' if row.siamese else ''
+        mem_stat_dict0 = [row['mean_max_corrs'][t][pre + 'fc.0.weight'] for t in ts]
         corr0.append([np.mean(d['max_corrs']) for d in mem_stat_dict0])
         corr0_adj.append([np.sum(np.multiply(d['W_norms'], d['max_corrs'])/np.sum(d['W_norms'])) for d in mem_stat_dict0])
-        mem_stat_dict1 = [row['mean_max_corrs'][t]['fc.1.weight'] for t in ts]
+        mem_stat_dict1 = [row['mean_max_corrs'][t][pre + 'fc.1.weight'] for t in ts]
         corr1.append([np.mean(d['max_corrs']) for d in mem_stat_dict1])
         corr1_adj.append([np.sum(np.multiply(d['W_norms'], d['max_corrs'])/np.sum(d['W_norms'])) for d in mem_stat_dict1])
 
-        fc0_fro.append([row['weight_norms'][t]['fc.0.weight_fro'] for t in ts])
-        fc1_fro.append([row['weight_norms'][t]['fc.1.weight_fro'] for t in ts])    
-        fc0_stab_rank.append(np.array(np.apply_along_axis(stable_rank, axis=1, arr=[try_key_pca(row, 'singular_val_dicts', t)['fc.0.weight'] for t in ts])))
-        fc1_stab_rank.append(np.apply_along_axis(stable_rank, axis=1, arr=[try_key_pca(row, 'singular_val_dicts', t)['fc.1.weight'] for t in ts]))
+        fc0_fro.append([row['weight_norms'][t][pre + 'fc.0.weight_fro'] for t in ts])
+        fc1_fro.append([row['weight_norms'][t][pre + 'fc.1.weight_fro'] for t in ts])    
+        fc0_stab_rank.append(np.array(np.apply_along_axis(stable_rank, axis=1, arr=[try_key_pca(row, 'singular_val_dicts', t)[pre  + 'fc.0.weight'] for t in ts])))
+        fc1_stab_rank.append(np.apply_along_axis(stable_rank, axis=1, arr=[try_key_pca(row, 'singular_val_dicts', t)[pre + 'fc.1.weight'] for t in ts]))
         act0_stab_rank.append(np.apply_along_axis(stable_rank, axis=1, arr=[try_key_pca(row, 'act_singular_val_dicts_train', t)['fc.0'] for t in ts]))
         act1_stab_rank.append(np.apply_along_axis(stable_rank, axis=1, arr=[try_key_fc2(try_key_pca(row, 'act_singular_val_dicts_train', t)) for t in ts]))
         
         
         
         if row.num_layers >= 4:
-            mem_stat_dict2 = [row['mean_max_corrs'][t]['fc.2.weight'] for t in ts]
+            mem_stat_dict2 = [row['mean_max_corrs'][t][pre + 'fc.2.weight'] for t in ts]
             corr2.append([np.mean(d['max_corrs']) for d in mem_stat_dict2])
-            mem_stat_dict3 = [row['mean_max_corrs'][t]['fc.3.weight'] for t in ts]
+            mem_stat_dict3 = [row['mean_max_corrs'][t][pre + 'fc.3.weight'] for t in ts]
             corr3.append([np.mean(d['max_corrs']) for d in mem_stat_dict3])
 
-            fc2_fro.append([row['weight_norms'][t]['fc.2.weight_fro'] for t in ts])
-            fc3_fro.append([row['weight_norms'][t]['fc.3.weight_fro'] for t in ts])
+            fc2_fro.append([row['weight_norms'][t][pre + 'fc.2.weight_fro'] for t in ts])
+            fc3_fro.append([row['weight_norms'][t][pre + 'fc.3.weight_fro'] for t in ts])
         else:
             corr2.append(None)
             corr3.append(None)

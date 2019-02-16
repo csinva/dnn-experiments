@@ -185,21 +185,18 @@ def get_XY(train_loader):
     return X_train, Y_train_onehot
 
 # data from training/testing loaders (not used in fit_vision)
+# need to load like this to ensure transformation applied
 def process_loaders(train_loader, test_loader):
-    # need to load like this to ensure transformation applied
-    data_list_train = [batch for batch in train_loader]
-    train_data_list = [batch[0] for batch in data_list_train]
-    train_data = np.vstack(train_data_list)
-    X_train = torch.Tensor(train_data).float().cuda()
-    Y_train = np.hstack([batch[1] for batch in data_list_train])
-
-    data_list_test = [batch for batch in test_loader]
-    test_data_list = [batch[0] for batch in data_list_test]
-    test_data = np.vstack(test_data_list)
-    X_test = torch.Tensor(test_data).float().cuda()
-    Y_test = np.hstack([batch[1] for batch in data_list_test])
-    
+    X_train, Y_train = process_loader(train_loader)
+    X_test, Y_test = process_loader(test_loader)
     return X_train, Y_train, X_test, Y_test
+
+def process_loader(loader):
+    data_list = [batch for batch in loader]
+    X = np.vstack([batch[0] for batch in data_list])
+    X = torch.Tensor(X).float().cuda()
+    Y = np.hstack([batch[1] for batch in data_list])
+    return X, Y
 
 def get_binary_bars(numInputs, numDatapoints, probabilityOn):
     """

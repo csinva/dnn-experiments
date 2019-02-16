@@ -64,16 +64,23 @@ class SiameseNet(nn.Module):
             feat2 = feat2 / (norm2 + 1e-8)
             similarities = torch.matmul(feat1.transpose(1, 0), feat2)
         return similarities
+    
+    # pool similarities
+    def pool_similarities(self, similarities):
+        if self.reps > 1: # if need to add a final layer maxpool, might want to make this avgpool
+            similarities = similarities.unsqueeze(0)
+            similarities = self.pool(similarities)
+            similarities = similarities.squeeze(0)
+        return similarities
         
+    
+    # compute features from both nets then compare them to 
     def forward(self, x):
         feat1 = self.model.features(x)
         feat2 = self.model.features(self.exs)        
-        y = self.similiarity(feat1, feat2)
-        if self.reps > 1: # if need to add a final layer maxpool, might want to make this avgpool
-            y = y.unsqueeze(0)
-            y = self.pool(y)
-            y = y.squeeze(0)
-        return y
+        similarities = self.similiarity(feat1, feat2)
+        preds = self.pool_similarities(similarities)
+        return preds
     
     def forward_all(self, x):
         return self.model.forward_all(x)

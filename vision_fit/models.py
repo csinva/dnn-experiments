@@ -64,17 +64,24 @@ class LeNet(nn.Module):
         self.linear1 = nn.Linear(4*4*50, 500)
         self.linear2 = nn.Linear(500, 10)
 
-    def forward(self, x):
+    # doesn't use last layer
+    def features(self, x):
+        x = x.reshape(x.shape[0], 1, 28, 28)
         x = F.relu(self.conv1(x))
         x = F.max_pool2d(x, 2, 2)
         x = F.relu(self.conv2(x))
         x = F.max_pool2d(x, 2, 2)
-        x = x.view(-1, 4*4*50)
+        x = x.view(-1, 4 * 4 * 50)
         x = F.relu(self.linear1(x))
+        return x        
+        
+    def forward(self, x):
+        x = self.features(x)
         x = self.linear2(x)
         return x
     
     def forward_all(self, x):
+        x = x.reshape(x.shape[0], 1, 28, 28)
         x1 = self.conv1(x)
         x2 = F.max_pool2d(F.relu(x1), 2, 2)
         x3 = self.conv2(x2)
@@ -83,17 +90,7 @@ class LeNet(nn.Module):
         x6 = F.relu(x5)
         x7 = self.linear2(x6)
         return {'conv1': x1, 'relu1': x2, 'conv2': x3, 'relu2': x4, 'fc3': x5, 'relu3': x6, 'fc4': x7}
-    
-    # doesn't use last layer
-    def features(self, x):
-        x = F.relu(self.conv1(x))
-        x = F.max_pool2d(x, 2, 2)
-        x = F.relu(self.conv2(x))
-        x = F.max_pool2d(x, 2, 2)
-        x = x.view(-1, 4*4*50)
-        x = F.relu(self.linear1(x))
-#         x = self.linear2(x)
-        return x
+
 
     def last_lay(self):
         return self.linear2
@@ -108,24 +105,19 @@ class Cifar10Conv(nn.Module):
         self.linear1 = nn.Linear(16 * 5 * 5, 120)
         self.linear2 = nn.Linear(120, 84)
         self.linear3 = nn.Linear(84, 10)
+    
+    def features(self, x):
+        x = x.reshape(x.shape[0], 3, 32, 32)        
+        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(F.relu(self.conv2(x)))
+        x = x.view(-1, 16 * 5 * 5)
+        x = F.relu(self.linear1(x))
+        x = F.relu(self.linear2(x))
+        return x
 
     def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x)))
-        x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, 16 * 5 * 5)
-        x = F.relu(self.linear1(x))
-        x = F.relu(self.linear2(x))
+        x = self.features(x)
         x = self.linear3(x)
-        return x
-    
-    # doesn't use last layer
-    def features(self, x):
-        x = self.pool(F.relu(self.conv1(x)))
-        x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, 16 * 5 * 5)
-        x = F.relu(self.linear1(x))
-        x = F.relu(self.linear2(x))
-#         x = self.linear3(x)
         return x
 
     def last_lay(self):

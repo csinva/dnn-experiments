@@ -7,26 +7,26 @@ partition = 'high'
 # conclusion resetting more isn't a big deal if you keep the norm the same
 # problems when you don't maintain the norm
 params_to_vary = {
-    'reps': [1, 3], # 1, 3
+    'reps': [1], # 1, 3
     'train_prototypes': [False, True],
     'similarity': ['cosine'],
+    'use_conv': [True], # True, False,
     'siamese_init': ['points', 'unif'],
-    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/kernel_init/sweep_reps'],
-    'dset': ['mnist', 'cifar10'], # mnist, cifar10    
-    'save_all_freq': [10],
-    'save_acts_and_reduce': [False],
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/kernel_init/sweep_reps_conv'],  
     'seed': range(0, 1),
-    'lr': [0.01, 0.1],
-    'optimizer': ['sgd', 'adam'],
+    'dset': ['mnist', 'cifar10'], # mnist, cifar10  
+    'lr': [0.01, 0.1, 0.5],
+    'optimizer': ['adam'],
     'num_layers': [4], # add in 2, 7
     'batch_size': [100], # 10, 100, 1000
     'shuffle_labels': [False], # loop
     'hidden_size': [128], # 128, 512
     'freeze': [False],
-    'save_acts_and_reduce': [True],
-    'num_iters': [35],
+    'num_iters': [40],
     'first_layer_lr_mult': [1],
-    'use_conv': [False], # could also make this True
+    'save_all_freq': [20],
+    'save_acts_and_reduce': [False],
+    'saves_per_iter': [2],
 }
 
 
