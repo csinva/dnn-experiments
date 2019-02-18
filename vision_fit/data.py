@@ -172,18 +172,18 @@ def get_data_loaders(p):
     return train_loader, test_loader
 
 # extract only training data
-def get_XY(train_loader):
+def get_XY(loader):
     # need to load like this to ensure transformation applied
-    data_list = [batch for batch in train_loader]
-    train_data = [batch[0] for batch in data_list]
-    train_data = np.vstack(train_data)
-    X_train = torch.Tensor(train_data).float().cpu()
-    X_train = X_train.numpy().reshape(X_train.shape[0], -1)
-    Y_train = np.hstack([batch[1] for batch in data_list])
-    Y_train_onehot = np.zeros((Y_train.size, 10))
+    data_list = [batch for batch in loader]
+    data = [batch[0] for batch in data_list]
+    data = np.vstack(data)
+    X = torch.Tensor(data).float().cpu()
+    X = X.numpy().reshape(X.shape[0], -1)
+    Y = np.hstack([batch[1] for batch in data_list])
+    Y_onehot = np.zeros((Y.size, 10))
     for i in range(10):
-        Y_train_onehot[:, i] = np.array(Y_train==i)
-    return X_train, Y_train_onehot
+        Y_onehot[:, i] = np.array(Y==i)
+    return X, Y_onehot
 
 # data from training/testing loaders (not used in fit_vision)
 # need to load like this to ensure transformation applied

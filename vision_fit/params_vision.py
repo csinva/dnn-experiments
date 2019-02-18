@@ -15,14 +15,15 @@ class p:
     init = 'default' # default, bias_zero_lay1, w_bias_zero_lay1, w_lay_final
     siamese = True # default to False
     reps = 1 # for kernel weight-init, how many reps per point
-    similarity = 'dot'
+    similarity = 'cosine'
     siamese_init = 'unif' # points, unif
-    train_prototypes = False # whether to train the prototypes
-    prototype_dim = 14 # how big to make the smaller prototypes (0 for default, must be at least as big as receptive field, smaller than whole image)
+    train_prototypes = True # whether to train the prototypes
+    prototype_dim = 0 # how big to make the smaller prototypes (0 for default, must be at least as big as receptive field, smaller than whole image)
+    prototype_reg = 'tv' # reg to add to the prototype image (not implemented)
     
     # arch ########
-    use_conv = True # whether to use a convnet (there is a default for each dset)
-    num_layers = 4 # set to 0 or False to ignore
+    use_conv = False # whether to use a convnet (there is a default for each dset)
+    num_layers = 3 # set to 0 or False to ignore
     hidden_size = 128 # size of each hidden layer for mlps
     use_conv_special = False # whether to use a linear + convnet architecture
 
@@ -41,10 +42,10 @@ class p:
     # saving ########
     out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/test/test' # directory for saving
     save_acts_and_reduce = False # considers stats for network reconstructed from principal components
-    saves_per_iter = 5 # how many times to save per iteration
+    saves_per_iter = 3 # how many times to save per iteration
     saves_per_iter_end = 1 # stop saving densely after saves_per_iter * save_per_iter_end
     num_iters_small = saves_per_iter * saves_per_iter_end
-    num_iters = 4 # total iterations
+    num_iters = 12 # total iterations
     
     # its ########
     calc_activations = 8000 # (0) calculate activations for diff number of data points and then do dim reduction...

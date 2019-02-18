@@ -43,7 +43,7 @@ class SiameseNet(nn.Module):
 
         
         # crop exs based on prototype dim
-        if prototype_dim > 0:
+        if prototype_dim > 0: # must be convnet for this!
             if siamese_init == 'unif':
                 exs = exs[:, :int(prototype_dim * prototype_dim)]   
             else:

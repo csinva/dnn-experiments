@@ -14,7 +14,7 @@ params_to_vary = {
     'similarity': ['dot'], # 'cosine'
     'use_conv': [True], # True, False,
     'siamese_init': ['unif'],
-    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/kernel_init/sweep_reps_conv_dot'],  
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/kernel_init/conv'],  
     'lr': [0.01], # 0.01 is what works for LeNet
     'optimizer': ['adam'],
     
