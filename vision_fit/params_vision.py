@@ -15,37 +15,36 @@ class p:
     init = 'default' # default, bias_zero_lay1, w_bias_zero_lay1, w_lay_final
     siamese = True # default to False
     reps = 1 # for kernel weight-init, how many reps per point
-    similarity = 'cosine'
+    similarity = 'dot'
     siamese_init = 'unif' # points, unif
     train_prototypes = False # whether to train the prototypes
+    prototype_dim = 14 # how big to make the smaller prototypes (0 for default, must be at least as big as receptive field, smaller than whole image)
     
     # arch ########
+    use_conv = True # whether to use a convnet (there is a default for each dset)
     num_layers = 4 # set to 0 or False to ignore
     hidden_size = 128 # size of each hidden layer for mlps
-    use_conv = False # whether to use a convnet (there is a default for each dset)
     use_conv_special = False # whether to use a linear + convnet architecture
 
-    # saving ########
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/test/test' # directory for saving
-    save_acts_and_reduce = True # considers stats for network reconstructed from principal components
-    saves_per_iter = 5 # how many times to save per iteration
-    saves_per_iter_end = 1 # stop saving densely after saves_per_iter * save_per_iter_end
-    num_iters_small = saves_per_iter * saves_per_iter_end
-    num_iters = 4 # total iterations
-
     # optimizer params (sweep) ########
-    optimizer = 'sgd' # sgd, adam, sgd_mult_first
-    lr = 0.1 # default 0.01
+    optimizer = 'adam' # sgd, adam, sgd_mult_first
+    lr = 0.01 # default 0.01
     batch_size = 100
     first_layer_lr_mult = 1 # leave at 1 - how much to multiply first layer lr only
     seed = 0 # random seed        
     
     # freezing ########
-    freeze = 'False' # False, first, last, progress_first, progress_last, firstlast
+    freeze = 'False' # 'False', first, last, progress_first, progress_last, firstlast
     lr_step = 16 # used for progress (which freezes layers one by one)
-    # note these will all be subtracted by num_iters_small
-    lr_ticks = {0: 1, 30: 0.5, 50: 0.25, 70: 0.125, 
-                90: 0.1, 110: 0.05, 130: 0.025, 150: 0.01}
+    lr_ticks = {0: 1, 30: 0.1} # {0: 1, 30: 0.5, 50: 0.25, 70: 0.125, 90: 0.1} - note these will all be subtracted by num_iters_small
+    
+    # saving ########
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/test/test' # directory for saving
+    save_acts_and_reduce = False # considers stats for network reconstructed from principal components
+    saves_per_iter = 5 # how many times to save per iteration
+    saves_per_iter_end = 1 # stop saving densely after saves_per_iter * save_per_iter_end
+    num_iters_small = saves_per_iter * saves_per_iter_end
+    num_iters = 4 # total iterations
     
     # its ########
     calc_activations = 8000 # (0) calculate activations for diff number of data points and then do dim reduction...

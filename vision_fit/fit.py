@@ -42,7 +42,6 @@ def save(out_name, p, s):
     results_combined = {**params_dict, **s._dict_vals()}    
     weights_results_combined = {**params_dict, **s._dict_weights()}
 
-
     # dump
     pkl.dump(params_dict, open(oj(p.out_dir, 'idx_' + out_name + '.pkl'), 'wb'))
     pkl.dump(results_combined, open(oj(p.out_dir, out_name + '.pkl'), 'wb'))
@@ -60,7 +59,6 @@ def fit_vision(p):
     model = data.get_model(p, X_train, Y_train_onehot)
     init.initialize_weights(p, X_train, Y_train_onehot, model)
 
-
     # set up optimizer and freeze appropriate layers
     model, optimizer = optimization.freeze_and_set_lr(p, model, it=0)
     criterion = nn.CrossEntropyLoss()
@@ -70,7 +68,8 @@ def fit_vision(p):
     # things to record
     s = S(p)
     s.weight_names = models.get_weight_names(model)
-    s.exs = model.exs.data.cpu().numpy()
+    if p.siamese:
+        s.exs = model.exs.data.cpu().numpy()
 
         
     # run
@@ -83,12 +82,12 @@ def fit_vision(p):
         
         # record weights
         weight_dict = deepcopy({x[0]:x[1].data.cpu().numpy() for x in model.named_parameters()})
+        s.weights_first10[p.its[it]] = deepcopy(model.state_dict()[s.weight_names[0]][:20].cpu().numpy())            
+        s.weight_norms[p.its[it]] = stats.layer_norms(model.state_dict())
         if it % p.save_all_weights_freq == 0 or it == p.num_iters - 1 or it == 0 or (it < p.num_iters_small and it % 2 == 0): # save first, last, jumps
             s.weights[p.its[it]] = weight_dict 
             if not p.use_conv:
                 s.mean_max_corrs[p.its[it]] = stats.calc_max_corr_input(X_train, Y_train_onehot, model)
-        s.weights_first10[p.its[it]] = deepcopy(model.state_dict()[s.weight_names[0]][:20].cpu().numpy())            
-        s.weight_norms[p.its[it]] = stats.layer_norms(model.state_dict())    
         
         # calculated reduced stats + act stats + explained var complicated
         if p.save_acts_and_reduce:

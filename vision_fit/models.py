@@ -66,21 +66,23 @@ class LeNet(nn.Module):
 
     # doesn't use last layer
     def features(self, x):
-        x = x.reshape(x.shape[0], 1, 28, 28)
+        width = int(np.sqrt(x.numel() / x.shape[0]))
+        x = x.reshape(x.shape[0], 1, width, width)
         x = F.relu(self.conv1(x))
         x = F.max_pool2d(x, 2, 2)
         x = F.relu(self.conv2(x))
         x = F.max_pool2d(x, 2, 2)
-        x = x.view(-1, 4 * 4 * 50)
-        x = F.relu(self.linear1(x))
         return x        
         
     def forward(self, x):
         x = self.features(x)
+        x = x.view(-1, 4 * 4 * 50)
+        x = F.relu(self.linear1(x))
         x = self.linear2(x)
         return x
     
     def forward_all(self, x):
+        d = int(np.sqrt(x.shape[1]))
         x = x.reshape(x.shape[0], 1, 28, 28)
         x1 = self.conv1(x)
         x2 = F.max_pool2d(F.relu(x1), 2, 2)
@@ -107,16 +109,17 @@ class Cifar10Conv(nn.Module):
         self.linear3 = nn.Linear(84, 10)
     
     def features(self, x):
-        x = x.reshape(x.shape[0], 3, 32, 32)        
+        width = int(np.sqrt(x.numel() / 3 / x.shape[0]))
+        x = x.reshape(x.shape[0], 3, width, width)        
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, 16 * 5 * 5)
-        x = F.relu(self.linear1(x))
-        x = F.relu(self.linear2(x))
         return x
 
     def forward(self, x):
         x = self.features(x)
+        x = x.view(-1, 16 * 5 * 5)
+        x = F.relu(self.linear1(x))
+        x = F.relu(self.linear2(x))
         x = self.linear3(x)
         return x
 
@@ -246,55 +249,3 @@ class Linear_then_AlexNet(nn.Module):
     
     
     
-## network
-class MnistNet(nn.Module):
-    def __init__(self):
-        super(MnistNet, self).__init__()
-        self.fc1 = nn.Linear(28*28, 500)
-        self.fc2 = nn.Linear(500, 256)
-        self.fc3 = nn.Linear(256, 10)
-        
-    def forward(self, x):
-        x = x.view(-1, 28*28)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-        return x
-    
-    def forward_all(self, x):
-        x = x.view(-1, 28*28)
-        x1 = self.fc1(x)
-        x2 = F.relu(x1)
-        x3 = self.fc2(x2)
-        x4 = F.relu(x3)
-        x5 = self.fc3(x4)
-        return {'fc1': x1, 'relu1': x2, 'fc2': x3, 'relu2': x4, 'fc3': x5}
-
-    def name(self):
-        return "mlp"
-    
-## network
-class Cifar10Net(nn.Module):
-    def __init__(self):
-        super(Cifar10Net, self).__init__()
-        self.fc1 = nn.Linear(32*32*3, 500)
-        self.fc2 = nn.Linear(500, 256)
-        self.fc3 = nn.Linear(256, 10)
-    def forward(self, x):
-        x = x.view(-1, 32*32*3)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-        return x
-    
-    def forward_all(self, x):
-        x = x.view(-1, 32*32*3)
-        x1 = self.fc1(x)
-        x2 = F.relu(x1)
-        x3 = self.fc2(x2)
-        x4 = F.relu(x3)
-        x5 = self.fc3(x4)
-        return {'fc1': x1, 'relu1': x2, 'fc2': x3, 'relu2': x4, 'fc3': x5}    
-
-    def name(self):
-        return "cifar_mlp"
