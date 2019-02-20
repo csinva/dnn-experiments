@@ -3,7 +3,7 @@ from numpy.random import randint
 
 class p:   
     # dset params ########
-    dset = 'mnist' # mnist, cifar10, noise, bars, mnist_single, mnist_small, cifar10_small
+    dset = 'cifar10' # mnist, cifar10, noise, bars, mnist_single, mnist_small, cifar10_small
     # mnist_small (less data points), [dset]_5_5 (train is first 5 digits, test is last 5)
     # [dset]_5_5_flip flips the training labels halfway
     shuffle_labels = False # shuffles only training labels
@@ -12,8 +12,7 @@ class p:
     flip_freeze = False # boolean, whether to freeze early layers when flipping, only comes in to play when using [dset]_flip
     
     # init / prototypes ########
-    init = 'default' # default, bias_zero_lay1, w_bias_zero_lay1, w_lay_final
-    siamese = True # default to False
+    siamese = False # default to False
     reps = 1 # for kernel weight-init, how many reps per point
     similarity = 'cosine'
     siamese_init = 'unif' # points, unif
@@ -22,14 +21,15 @@ class p:
     prototype_reg = 'tv' # reg to add to the prototype image (not implemented)
     
     # arch ########
-    use_conv = False # whether to use a convnet (there is a default for each dset)
+    use_conv = 'stacknet' # whether to use a convnet (there is a default for each dset), custom values: stacknet
     num_layers = 3 # set to 0 or False to ignore
     hidden_size = 128 # size of each hidden layer for mlps
     use_conv_special = False # whether to use a linear + convnet architecture
+    init = 'default' # default, bias_zero_lay1, w_bias_zero_lay1, w_lay_final
 
     # optimizer params (sweep) ########
     optimizer = 'adam' # sgd, adam, sgd_mult_first
-    lr = 0.01 # default 0.01
+    lr = 0.001 # default 0.01
     batch_size = 100
     first_layer_lr_mult = 1 # leave at 1 - how much to multiply first layer lr only
     seed = 0 # random seed        

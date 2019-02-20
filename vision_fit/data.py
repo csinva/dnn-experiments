@@ -15,6 +15,7 @@ import models
 import random
 import time
 import siamese
+import cnns.stacknet
 
 # get model (based on dset, etc.)
 def get_model(p, X_train=None, Y_train_onehot=None):
@@ -30,6 +31,8 @@ def get_model(p, X_train=None, Y_train_onehot=None):
     elif 'cifar10' in p.dset:
         if p.use_conv_special:
             model = models.LinearThenConvCifar()        
+        elif p.use_conv == 'stacknet':
+            model = cnns.stacknet.StackNet()        
         elif p.use_conv:
             model = models.Cifar10Conv()        
         elif p.num_layers > 0:
