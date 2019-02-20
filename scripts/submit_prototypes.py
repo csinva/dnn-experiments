@@ -45,7 +45,7 @@ print(param_combinations)
 
 # iterate
 for i in range(len(param_combinations)):
-    param_str = 'module unload python/3.7; module load python/3.5; module load pytorch; python ../vision_fit/fit.py '
+    param_str = 'module load python; module load pytorch; python ../vision_fit/fit.py '
     for j, key in enumerate(ks):
         param_str += key + ' ' + str(param_combinations[i][j]) + ' '
     s.run(param_str)

@@ -160,7 +160,7 @@ def get_data_loaders(p):
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 normalize])), 
-            batch_size=p.batch_size, shuffle=False)    
+            batch_size=p.batch_size, shuffle=False, drop_last=True)    
         print('done loading train dset', time.clock() - t, 'sec')
 
         test_loader = torch.utils.data.DataLoader(
@@ -170,7 +170,7 @@ def get_data_loaders(p):
                 transforms.ToTensor(),
                 normalize])),
             batch_size=p.batch_size, shuffle=False, 
-            pin_memory=True)
+            pin_memory=True, drop_last=True)
 
     return train_loader, test_loader
 
