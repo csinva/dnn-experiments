@@ -48,6 +48,10 @@ class S:
         self.weights = {}         # records some weights at certain epochs {it: {'fc.0.weight_spectral': val1, 'fc.0.weight_fro': val2}}
         self.weights_first10 = {} # records 10 weights in first layer at every iteration
         self.exs = []
+        
+        # about data changing
+        self.flip_iter = 0 # it at which data flips
+        self.permute_rng = []
     
     # dictionary of everything but weights
     def _dict_vals(self):

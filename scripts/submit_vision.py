@@ -4,9 +4,29 @@ from slurmpy import Slurm
 partition = 'high'
 
 
+# experiments on mnist_permute
+params_to_vary = {
+    'dset': ['mnist_permute'], # mnist, cifar10    
+    'seed': range(0, 2),
+    'lr': [1.0, 0.1, 0.001],
+    'optimizer': ['sgd', 'adam'],
+    'hidden_size': [32, 64, 128, 512, 1024], # 128, 512
+    'num_layers': [3], # add in 2, 7
+    'batch_size': [100], # 10, 100, 1000
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/transfer/mnist_permute'],
+    'shuffle_labels': [False], # loop
+    'freeze': [False],
+    'save_acts_and_reduce': [True],
+    'num_iters': [40],
+    'first_layer_lr_mult': [1]
+}
+
+
+
 # sweep mnist_5_5 or mnist_5_5_flip, or cifar10_5_5_flip
 # raaz.rsk/simple_dsets/all_flips_big - has big hidden_size stuff
 # raaz.rsk/simple_dsets/freeze_transfer - freezes when transferring
+'''
 params_to_vary = {
     'flip_freeze': [True],
     'dset': ['mnist_5_5_flip', 'cifar10_5_5_flip'], # mnist, cifar10    
@@ -23,6 +43,7 @@ params_to_vary = {
     'num_iters': [60],
     'first_layer_lr_mult': [1]
 }
+'''
 
 # sweep mnist single
 '''

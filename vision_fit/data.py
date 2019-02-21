@@ -47,7 +47,7 @@ def get_model(p, X_train=None, Y_train_onehot=None):
     return model
 
 # get data and model from params p - uses p.dset, p.shuffle_labels, p.batch_size
-def get_data_loaders(p):
+def get_data_loaders(p, it=0):
     
     ## where is the data
     if 'cifar10' in p.dset:
@@ -97,7 +97,7 @@ def get_data_loaders(p):
             train_set.train_data = train_set.train_data[:p.num_points]
             train_set.train_labels = train_set.train_labels[:p.num_points]
         elif 'mnist_5_5' in p.dset:
-            if 'flip' in p.dset and p.flip_iter > 0:
+            if 'flip' in p.dset and it > 0:
                 idxs_train = train_set.train_labels >= 5
             else:
                 idxs_train = train_set.train_labels <= 4
@@ -106,6 +106,15 @@ def get_data_loaders(p):
             idxs_last5 = test_set.test_labels >= 5
             test_set.test_labels = test_set.test_labels[idxs_last5]
             test_set.test_data = test_set.test_data[idxs_last5]
+        elif p.dset == 'mnist_permute':
+            if it > 0:
+                print('permute', it)
+                rng = np.random.RandomState(it)
+                idx_permute = torch.LongTensor(rng.permutation(784))
+                trans = transforms.Compose(transforms_noise + [transforms.ToTensor(), transforms.Normalize((0.5,), (1.0,)),
+                                                               transforms.Lambda(lambda x: x.view(-1)[idx_permute].view(1, 28, 28))])
+                train_set = dset.MNIST(root=root, train=True, transform=trans, download=True)
+                test_set = dset.MNIST(root=root, train=False, transform=trans, download=True)                
         if p.shuffle_labels:
             num_labs = train_set.train_labels.size()[0]
             train_set.train_labels = torch.Tensor(np.random.randint(0, 10, num_labs)).long()

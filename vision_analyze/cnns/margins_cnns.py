@@ -47,10 +47,11 @@ if __name__ == '__main__':
     if len(sys.argv) > 2:
         model_name = sys.argv[2]
     else:
-        model_name = 'densenet121' # alexnet, vgg16, inception_v3, resnet18, densenet
+        model_name = 'resnet18' # alexnet, vgg16, inception_v3, resnet18, densenet
         
     print(model_name)
     model = get_model_pretrained(model_name)
+    use_cuda = torch.cuda.is_available()
     class p: pass
     p.seed = 13
     p.batch_size = 50
@@ -93,12 +94,12 @@ if __name__ == '__main__':
         preds = model(ims)
         f['preds_train'][i * p.batch_size: (i + 1) * p.batch_size, :] = preds.cpu().detach().numpy()
 #         f2['labs_train'][i * p.batch_size: (i + 1) * p.batch_size] = x[1].detach().numpy()
-        
+
     for i, x in tqdm(enumerate(val_loader)):
         ims = x[0].cuda()
         preds = model(ims)
         f['preds_val'][i * p.batch_size: (i + 1) * p.batch_size, :] = preds.cpu().detach().numpy()
 #         f2['labs_val'][i * p.batch_size: (i + 1) * p.batch_size] = x[1].detach().numpy()
-        
+
     f.close()
 #     f2.close()

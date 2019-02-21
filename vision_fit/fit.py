@@ -74,7 +74,7 @@ def fit_vision(p):
         
     # run
     print('training...')
-    for it in tqdm(range(0, p.num_iters)):
+    for i, it in enumerate(tqdm(range(0, p.num_iters))):
         
         # calc stats and record
         s.losses_train[it], s.accs_train[it], s.confidence_unn_train[it], s.confidence_norm_train[it], s.margin_unn_train[it], s.margin_norm_train[it] = stats.calc_loss_acc_margins(train_loader, p.batch_size, use_cuda, model, criterion)
@@ -135,12 +135,17 @@ def fit_vision(p):
         # check for need to flip dset
         if 'flip' in p.dset and it == p.num_iters // 2:
             print('flipped dset')
-            p.flip_iter = p.num_iters // 2 # flip_iter tells when dset flipped
-            train_loader, test_loader = data.get_data_loaders(p)
+            s.flip_iter = p.num_iters // 2 # flip_iter tells when dset flipped
+            train_loader, test_loader = data.get_data_loaders(p, it=s.flip_iter)
             X_train, Y_train_onehot = data.get_XY(train_loader)
             if p.flip_freeze:
                 p.freeze = 'last'
                 model, optimizer = optimization.freeze_and_set_lr(p, model, it)
+        elif 'permute' in p.dset and p.its[it] % 1 == 0:
+            s.permute_rng.append(int(p.its[it]))
+            train_loader, test_loader = data.get_data_loaders(p, it=s.permute_rng[-1])
+            X_train, Y_train_onehot = data.get_XY(train_loader)
+            
             
     save(out_name, p, s)
         
