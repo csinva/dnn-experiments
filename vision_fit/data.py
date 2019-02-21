@@ -108,7 +108,6 @@ def get_data_loaders(p, it=0):
             test_set.test_data = test_set.test_data[idxs_last5]
         elif p.dset == 'mnist_permute':
             if it > 0:
-                print('permute', it)
                 rng = np.random.RandomState(it)
                 idx_permute = torch.LongTensor(rng.permutation(784))
                 trans = transforms.Compose(transforms_noise + [transforms.ToTensor(), transforms.Normalize((0.5,), (1.0,)),

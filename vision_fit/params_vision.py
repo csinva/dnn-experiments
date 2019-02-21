@@ -9,6 +9,7 @@ class p:
     shuffle_labels = False # shuffles only training labels
     num_points = 100 # only comes in to play when using mnist_small
     flip_freeze = False # boolean, whether to freeze early layers when flipping, only comes in to play when using [dset]_flip
+    change_freq = 5 # frequency to change (permute/rotate) dset, only if using [dset]_permute or [dset]_rotate
     
     # init / prototypes ########
     siamese = False # default to False
@@ -40,7 +41,8 @@ class p:
     
     # saving ########
     out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/test/test' # directory for saving
-    save_acts_and_reduce = False # considers stats for network reconstructed from principal components
+    save_singular_vals = True # whether to save singular vals of weights/acts
+    save_reduce = False # considers stats for network reconstructed from principal components
     calc_activations = 1000 if use_conv else 8000 # (0) calculate activations and do dim reduction
     save_all_weights_freq = 10 # how often to record all the weights (if high will never save)
     save_all_freq = 40 # how often to dump to pkl

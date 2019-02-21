@@ -7,16 +7,18 @@ partition = 'high'
 # experiments on mnist_permute
 params_to_vary = {
     'dset': ['mnist_permute'], # mnist, cifar10    
-    'seed': range(0, 2),
+    'seed': range(0, 1),
     'lr': [1.0, 0.1, 0.001],
     'optimizer': ['sgd', 'adam'],
-    'hidden_size': [32, 64, 128, 512, 1024], # 128, 512
+    'hidden_size': [32, 128, 1024], # 128, 512
+    'change_freq': [3, 5, 10],
     'num_layers': [3], # add in 2, 7
     'batch_size': [100], # 10, 100, 1000
-    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/transfer/mnist_permute'],
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/transfer/mnist_permute_change_freq'],
+    'use_conv': [False],
     'shuffle_labels': [False], # loop
     'freeze': [False],
-    'save_acts_and_reduce': [True],
+    'save_acts_and_reduce': [False],
     'num_iters': [40],
     'first_layer_lr_mult': [1]
 }
@@ -170,7 +172,7 @@ print(param_combinations)
 
 # iterate
 for i in range(len(param_combinations)):
-    param_str = 'module load python; module load pytorch; python3 ../vision_fit/fit.py '
+    param_str = 'module load python; python3 ../vision_fit/fit.py '
     for j, key in enumerate(ks):
         param_str += key + ' ' + str(param_combinations[i][j]) + ' '
     s.run(param_str)

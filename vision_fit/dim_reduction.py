@@ -31,16 +31,16 @@ def reduce_model(model, percent_to_explain=0.85):
                 w = w.reshape(w.shape[0] * w.shape[1], -1)
 
             # get number of components
-            pca = PCA(n_components=w.shape[1])
+            pca = PCA()
             pca.fit(w)
             explained_vars = pca.explained_variance_ratio_
-            dim, perc_explained = 0, 0
+            perc_explained, dim = 0, 0
             while perc_explained <= percent_to_explain:
                 perc_explained += explained_vars[dim]
                 dim += 1
             
             # actually project
-            pca = PCA(n_components=dim)            
+            pca = PCA()            
             w2 = pca.inverse_transform(pca.fit_transform(w))
             weight_dict_new[layer_name] = torch.Tensor(w2.reshape(wshape))
             
@@ -82,7 +82,7 @@ def get_singular_vals_from_weight_dict(weight_dict, activation=False):
             w = weight_dict[layer_name] # w is output x input
             if len(w.shape) > 2: # conv layer
                 w = w.reshape(w.shape[0] * w.shape[1], -1)
-            pca = PCA(n_components=w.shape[1])
+            pca = PCA()
             pca.fit(w)
             explained_var_dict[layer_name] = deepcopy(pca.singular_values_)
     return explained_var_dict

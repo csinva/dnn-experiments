@@ -89,26 +89,26 @@ def fit_vision(p):
             if not p.use_conv:
                 s.mean_max_corrs[p.its[it]] = stats.calc_max_corr_input(X_train, Y_train_onehot, model)
         
-        # calculated reduced stats + act stats + explained var complicated
-        if p.save_acts_and_reduce:
-            # reduced moel
-            model_r = reduce_model(model)
-            s.losses_train_r[it], s.accs_train_r[it] = stats.calc_loss_acc_margins(train_loader, p.batch_size, use_cuda, model_r, criterion)[:2]
-            s.losses_test_r[it], s.accs_test_r[it] = stats.calc_loss_acc_margins(test_loader, p.batch_size, use_cuda, model_r, criterion)[:2]
             
-            # activations
+        if p.save_singular_vals:
+            # weight singular vals
+            s.singular_val_dicts.append(get_singular_vals_from_weight_dict(weight_dict))   
+            s.singular_val_dicts_cosine.append(get_singular_vals_kernels(weight_dict, 'cosine'))
+            s.singular_val_dicts_rbf.append(get_singular_vals_kernels(weight_dict, 'rbf'))
+            s.singular_val_dicts_lap.append(get_singular_vals_kernels(weight_dict, 'laplacian'))            
+            
+            # activations singular vals
             act_var_dicts = calc_activation_dims(use_cuda, model, train_loader.dataset, test_loader.dataset, calc_activations=p.calc_activations)
             s.act_singular_val_dicts_train.append(act_var_dicts['train']['pca'])
             s.act_singular_val_dicts_test.append(act_var_dicts['test']['pca'])
             s.act_singular_val_dicts_train_rbf.append(act_var_dicts['train']['rbf'])
-            s.act_singular_val_dicts_test_rbf.append(act_var_dicts['test']['rbf'])
-            
-            # weight kernels
-            s.singular_val_dicts.append(get_singular_vals_from_weight_dict(weight_dict))   
-            s.singular_val_dicts_cosine.append(get_singular_vals_kernels(weight_dict, 'cosine'))
-            s.singular_val_dicts_rbf.append(get_singular_vals_kernels(weight_dict, 'rbf'))
-            s.singular_val_dicts_lap.append(get_singular_vals_kernels(weight_dict, 'laplacian'))
+            s.act_singular_val_dicts_test_rbf.append(act_var_dicts['test']['rbf'])        
         
+        # reduced model
+        if p.save_reduce:
+            model_r = reduce_model(model)
+            s.losses_train_r[it], s.accs_train_r[it] = stats.calc_loss_acc_margins(train_loader, p.batch_size, use_cuda, model_r, criterion)[:2]
+            s.losses_test_r[it], s.accs_test_r[it] = stats.calc_loss_acc_margins(test_loader, p.batch_size, use_cuda, model_r, criterion)[:2]
         
         # training
         for batch_idx, (x, target) in enumerate(train_loader):
@@ -141,7 +141,7 @@ def fit_vision(p):
             if p.flip_freeze:
                 p.freeze = 'last'
                 model, optimizer = optimization.freeze_and_set_lr(p, model, it)
-        elif 'permute' in p.dset and p.its[it] % 1 == 0:
+        elif 'permute' in p.dset and it > 0 and p.its[it] % p.change_freq == 0:
             s.permute_rng.append(int(p.its[it]))
             train_loader, test_loader = data.get_data_loaders(p, it=s.permute_rng[-1])
             X_train, Y_train_onehot = data.get_XY(train_loader)
