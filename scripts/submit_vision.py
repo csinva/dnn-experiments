@@ -3,25 +3,53 @@ from slurmpy import Slurm
 
 partition = 'high'
 
+# experiments on mnist_rotate
+params_to_vary = {
+    'dset': ['mnist_rotate'], # mnist, cifar10    
+    'seed': range(0, 1),
+    'lr': [1.0, 0.1, 0.001],
+    'optimizer': ['sgd', 'adam'],
+    'hidden_size': [32, 128, 1024], # 128, 512
+    'change_freq': [1], #, 3, 5, 10],
+    'num_layers': [3, 5], # add in 2, 7
+    'batch_size': [100], # 10, 100, 1000
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/transfer/mnist_rotate'],
+    'use_conv': [False],
+    'shuffle_labels': [False], # loop
+    'freeze': [False],
+    'save_singular_vals': [True],
+    'save_all_weights_freq': [10], # how often to record all the weights (if high will never save)
+    'saves_per_iter': [3], # how many times to save per iteration
+    'saves_per_iter_end': [1], # stop saving densely after saves_per_iter * save_per_iter_end
+    'save_reduce': [False],
+    'num_iters': [40],
+    'first_layer_lr_mult': [1]
+}
 
 # experiments on mnist_permute
+'''
 params_to_vary = {
     'dset': ['mnist_permute'], # mnist, cifar10    
     'seed': range(0, 1),
     'lr': [1.0, 0.1, 0.001],
     'optimizer': ['sgd', 'adam'],
     'hidden_size': [32, 128, 1024], # 128, 512
-    'change_freq': [3, 5, 10],
+    'change_freq': [1, 2], #, 3, 5, 10],
     'num_layers': [3], # add in 2, 7
     'batch_size': [100], # 10, 100, 1000
     'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/transfer/mnist_permute_change_freq'],
     'use_conv': [False],
     'shuffle_labels': [False], # loop
     'freeze': [False],
-    'save_acts_and_reduce': [False],
+    'save_all_weights_freq': [10], # how often to record all the weights (if high will never save)
+    'saves_per_iter': [3], # how many times to save per iteration
+    'saves_per_iter_end': [1], # stop saving densely after saves_per_iter * save_per_iter_end
+    'save_singular_vals': [True],
+    'save_reduce': [False],
     'num_iters': [40],
     'first_layer_lr_mult': [1]
 }
+'''
 
 
 
@@ -41,7 +69,7 @@ params_to_vary = {
     'shuffle_labels': [False], # loop
     'hidden_size': [128, 1024], # 128, 512
     'freeze': [False],
-    'save_acts_and_reduce': [True],
+    'save_reduce': [True],
     'num_iters': [60],
     'first_layer_lr_mult': [1]
 }
@@ -60,7 +88,7 @@ params_to_vary = {
     'shuffle_labels': [False], # loop
     'hidden_size': [128], # 128, 512
     'freeze': [False],
-    'save_acts_and_reduce': [True],
+    'save_reduce': [True],
     'num_iters': [50],
     'first_layer_lr_mult': [1]
 }
@@ -79,7 +107,7 @@ params_to_vary = {
     'shuffle_labels': [False], # loop
     'hidden_size': [512], # 128, 512
     'freeze': [False],
-    'save_acts_and_reduce': [True],
+    'save_reduce': [True],
     'num_iters': [100], 
     'num_points': [10, 100, 1000],
     'first_layer_lr_mult': [1]
@@ -99,7 +127,7 @@ params_to_vary = {
     'shuffle_labels': [False], # loop
     'hidden_size': [512], # 128, 512
     'freeze': [False],
-    'save_acts_and_reduce': [True],
+    'save_reduce': [True],
     'num_iters': [100], 
     'first_layer_lr_mult': [1, 2, 5, 10, 20]
 }
@@ -118,7 +146,7 @@ params_to_vary = {
     'shuffle_labels': [False], # loop
     'hidden_size': [128], # 128, 512
     'freeze': [False],
-    'save_acts_and_reduce': [True],
+    'save_reduce': [True],
     'num_iters': [100],
     'first_layer_lr_mult': [1]
 }
@@ -137,7 +165,7 @@ params_to_vary = {
     'shuffle_labels': [False, True], # loop
     'hidden_size': [128, 512], # 128, 512
     'freeze': [False],
-    'save_acts_and_reduce': [True],
+    'save_reduce': [True],
     'num_iters': [120],
     'first_layer_lr_mult': [1]
 }
@@ -153,7 +181,7 @@ params_to_vary = {
     'hidden_size': [256],
     'dset': ['mnist', 'cifar10'], 
     'freeze': ['progress_first', 'progress_last']
-    'save_acts_and_reduce': [False],
+    'save_reduce': [False],
     'shuffle_labels': [False],
     'first_layer_lr_mult': [1]
 

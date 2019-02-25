@@ -33,7 +33,7 @@ def get_model_pretrained(s, pretrained=True):
     elif s == 'vgg16': model = models.vgg16(pretrained=pretrained)
     elif s == 'vgg19': model = models.vgg19(pretrained=pretrained)        
     elif s == 'inception_v3': model = models.inception_v3(pretrained=pretrained)
-    return model.cuda()
+    return model.cuda().eval()
 
 
 def seed(p):
@@ -79,27 +79,16 @@ if __name__ == '__main__':
     f.create_dataset("preds_train", (len(train_loader) * p.batch_size, 1000), dtype=np.float32)
     f.create_dataset("preds_val", (len(val_loader) * p.batch_size, 1000), dtype=np.float32)
     
-    # save the labels
-#     out_file_labs = oj(out_dir, 'labs' + '.h5')
-#     if os.path.exists(out_file_labs):
-#         os.remove(out_file_labs)
-#     f2 = h5py.File(out_file_labs, "w") 
-#     f2.create_dataset("labs_train", (len(train_loader) * p.batch_size,), dtype=np.int32)
-#     f2.create_dataset("labs_val", (len(val_loader) * p.batch_size,), dtype=np.int32)
-    
     # run - training set is about 1.281 mil, val set about 50k (although imagenet supposedly has 14 mil)
     print('num iters', len(train_loader))
     for i, x in tqdm(enumerate(train_loader)):
         ims = x[0].cuda()
         preds = model(ims)
         f['preds_train'][i * p.batch_size: (i + 1) * p.batch_size, :] = preds.cpu().detach().numpy()
-#         f2['labs_train'][i * p.batch_size: (i + 1) * p.batch_size] = x[1].detach().numpy()
 
     for i, x in tqdm(enumerate(val_loader)):
         ims = x[0].cuda()
         preds = model(ims)
         f['preds_val'][i * p.batch_size: (i + 1) * p.batch_size, :] = preds.cpu().detach().numpy()
-#         f2['labs_val'][i * p.batch_size: (i + 1) * p.batch_size] = x[1].detach().numpy()
 
     f.close()
-#     f2.close()

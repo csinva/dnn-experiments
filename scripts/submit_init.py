@@ -9,7 +9,7 @@ params_to_vary = {
     'init': ['default', 'w_lay_final', 'w_bias_zero_lay1'], # 'default', 'bias_zero_lay1', 'w_bias_zero_lay1'
     'dset': ['mnist', 'cifar10'], # mnist, cifar10    
     'save_all_freq': [10],
-    'save_acts_and_reduce': [False],
+    'save_reduce': [False],
     'seed': range(0, 1),
     'lr': [0.01, 0.1],
     'optimizer': ['sgd', 'adam'],

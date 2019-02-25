@@ -15,7 +15,6 @@ import models
 import random
 import time
 import siamese
-import cnns.stacknet
 
 # get model (based on dset, etc.)
 def get_model(p, X_train=None, Y_train_onehot=None):
@@ -32,6 +31,7 @@ def get_model(p, X_train=None, Y_train_onehot=None):
         if p.use_conv_special:
             model = models.LinearThenConvCifar()        
         elif p.use_conv == 'stacknet':
+            import cnns.stacknet
             model = cnns.stacknet.StackNet()        
         elif p.use_conv:
             model = models.Cifar10Conv()        
@@ -64,10 +64,21 @@ def get_data_loaders(p, it=0):
     if hasattr(p, 'noise_rotate'):
         transforms_noise.append(transforms.ColorJitter(brightness=p.noise_brightness))
         transforms_noise.append(transforms.RandomRotation(p.noise_rotate))
-        
+    if 'permute' in p.dset:
+        if it > 0:        
+            if 'mnist' in p.dset:
+                rng = np.random.RandomState(it)
+                idx_permute = torch.LongTensor(rng.permutation(784))
+                transforms_noise.append(transforms.Lambda(lambda x: x.view(-1)[idx_permute].view(1, 28, 28)))
+    if 'rotate' in p.dset:
+        if it > 0:        
+            if 'mnist' in p.dset:
+                degrees = 90 * (it % 4)
+                transforms_noise.append(transforms.RandomRotation((degrees, degrees)))
+
     ## load dataset (train_loader, test_loader)
     if 'mnist' in p.dset or p.dset in ['bars', 'noise']:
-        trans = transforms.Compose(transforms_noise + [transforms.ToTensor(), transforms.Normalize((0.5,), (1.0,))])
+        trans = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (1.0,))] + transforms_noise)
         train_set = dset.MNIST(root=root, train=True, transform=trans, download=True)
         test_set = dset.MNIST(root=root, train=False, transform=trans, download=True)
         if p.dset == 'noise':
@@ -105,15 +116,9 @@ def get_data_loaders(p, it=0):
             train_set.train_data = train_set.train_data[idxs_train]
             idxs_last5 = test_set.test_labels >= 5
             test_set.test_labels = test_set.test_labels[idxs_last5]
-            test_set.test_data = test_set.test_data[idxs_last5]
-        elif p.dset == 'mnist_permute':
-            if it > 0:
-                rng = np.random.RandomState(it)
-                idx_permute = torch.LongTensor(rng.permutation(784))
-                trans = transforms.Compose(transforms_noise + [transforms.ToTensor(), transforms.Normalize((0.5,), (1.0,)),
-                                                               transforms.Lambda(lambda x: x.view(-1)[idx_permute].view(1, 28, 28))])
-                train_set = dset.MNIST(root=root, train=True, transform=trans, download=True)
-                test_set = dset.MNIST(root=root, train=False, transform=trans, download=True)                
+            test_set.test_data = test_set.test_data[idxs_last5]             
+        
+        # shuffle labels
         if p.shuffle_labels:
             num_labs = train_set.train_labels.size()[0]
             train_set.train_labels = torch.Tensor(np.random.randint(0, 10, num_labs)).long()
@@ -172,7 +177,7 @@ def get_data_loaders(p, it=0):
         print('done loading train dset', time.clock() - t, 'sec')
 
         test_loader = torch.utils.data.DataLoader(
-            dset.ImageFolder(oj(root, 'val'), transforms.Compose([
+            dset.ImageFolder(oj(root, 'val/val'), transforms.Compose([
                 transforms.Resize(256),
                 transforms.CenterCrop(224),
                 transforms.ToTensor(),

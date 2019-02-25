@@ -51,6 +51,7 @@ def fit_vision(p):
     out_name = p._str(p) # generate random fname str before saving
     seed(p)
     use_cuda = torch.cuda.is_available()
+    device = 'cuda' if use_cuda else 'cpu'
     
     # pick dataset and model
     print('loading dset...')
@@ -61,9 +62,33 @@ def fit_vision(p):
 
     # set up optimizer and freeze appropriate layers
     model, optimizer = optimization.freeze_and_set_lr(p, model, it=0)
+    def reg_init(p):
+        if p.lambda_reg == 0:
+            return None
+        
+        # load the gan
+        gan_dir = '/accounts/projects/vision/chandan/gan/mnist_dcgan'
+        sys.path.insert(1, gan_dir)
+        from dcgan import Discriminator
+        D = Discriminator(ngpu=1 if torch.cuda.is_available() else 0).to(device)
+        D.load_state_dict(torch.load(oj(gan_dir, 'weights/netD_epoch_99.pth')))
+        D = D.eval()
+        return D
+    
+    def reg(p, it, model, D, device):
+        if p.lambda_reg == 0:
+            return 0
+            
+        exs = model.exs.reshape(model.exs.shape[0], 1, 28, 28) # mnist-specific
+        outputs = D(exs)
+
+        # discriminator outputs 1 for real, 0 for fake
+        loss = p.lambda_reg * torch.sum(1 - outputs)
+        return loss
+    
+    model = model.to(device)
     criterion = nn.CrossEntropyLoss()
-    if use_cuda:
-        model = model.cuda()
+    reg_model = reg_init(p)
 
     # things to record
     s = S(p)
@@ -88,7 +113,6 @@ def fit_vision(p):
             s.weights[p.its[it]] = weight_dict 
             if not p.use_conv:
                 s.mean_max_corrs[p.its[it]] = stats.calc_max_corr_input(X_train, Y_train_onehot, model)
-        
             
         if p.save_singular_vals:
             # weight singular vals
@@ -113,11 +137,11 @@ def fit_vision(p):
         # training
         for batch_idx, (x, target) in enumerate(train_loader):
             optimizer.zero_grad()
-            if use_cuda:
-                x, target = x.cuda(), target.cuda()
+            x = x.to(device)
+            target = target.to(device)
             x, target = Variable(x), Variable(target)
             out = model(x)
-            loss = criterion(out, target)
+            loss = criterion(out, target) + reg(p, it, model, reg_model, device)
             loss.backward()
             optimizer.step()
             

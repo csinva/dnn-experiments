@@ -3,7 +3,7 @@ from numpy.random import randint
 
 class p:   
     # dset params ########
-    dset = 'mnist_permute' # mnist, cifar10, noise, bars, mnist_single, mnist_small, cifar10_small, mnist_permute
+    dset = 'mnist' # mnist, cifar10, noise, bars, mnist_single, mnist_small, cifar10_small, mnist_permute, mnist_rotate (not supported)
     # mnist_small (less data points), [dset]_5_5 (train is first 5 digits, test is last 5)
     # [dset]_5_5_flip flips the training labels halfway
     shuffle_labels = False # shuffles only training labels
@@ -12,13 +12,13 @@ class p:
     change_freq = 5 # frequency to change (permute/rotate) dset, only if using [dset]_permute or [dset]_rotate
     
     # init / prototypes ########
-    siamese = False # default to False
+    siamese = True # default to False
     reps = 1 # for kernel weight-init, how many reps per point
     similarity = 'cosine'
     siamese_init = 'unif' # points, unif
     train_prototypes = True # whether to train the prototypes
     prototype_dim = 0 # how big to make the smaller prototypes (0 for default, must be at least as big as receptive field, smaller than whole image)
-    # prototype_reg = 'tv' # reg to add to the prototype image (not implemented)
+    lambda_reg = 0.0 # reg to add to the prototype image (0.0 means use)
     
     # arch ########
     use_conv = False # whether to use a convnet (there is a default for each dset), custom values: stacknet

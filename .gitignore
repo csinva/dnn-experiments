@@ -12,3 +12,4 @@
 **slurm*
 **logs*
 env
+**.pyc

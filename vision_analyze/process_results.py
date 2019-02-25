@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+import traceback
+
 
 # things that were renamed
 # singular_val_dicts_pca -> singular_val_dicts
@@ -39,7 +41,7 @@ def process_results(results):
     fc2_fro, fc3_fro = [], []
     act0_stab_rank, act1_stab_rank = [], []
     
-    ts = np.array(sorted(row['weight_norms'].keys())) #results.iloc[0]['mean_max_corrs'].keys()))
+    ts = np.array(sorted(row['mean_max_corrs'].keys())) #results.iloc[0]['mean_max_corrs'].keys()))
     t_max_w = int(max(ts))
     try:
         
@@ -92,6 +94,7 @@ def process_results(results):
         results['corr3'] = corr3
     except:
         print('no reduce')
+        traceback.print_exc()
         
 
     
