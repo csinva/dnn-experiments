@@ -190,7 +190,7 @@ params_to_vary = {
 
 
 # run
-s = Slurm("sweep_full", {"partition": partition, "time": "4-0"})
+s = Slurm("vision_standard", {"partition": partition, "time": "4-0"})
 ks = sorted(params_to_vary.keys())
 vals = [params_to_vary[k] for k in ks]
 param_combinations = list(itertools.product(*vals)) # list of tuples

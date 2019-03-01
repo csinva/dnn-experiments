@@ -32,7 +32,7 @@ class p:
     lr = 0.001 # default 0.01
     batch_size = 100
     first_layer_lr_mult = 1 # leave at 1 - how much to multiply first layer lr only
-    seed = 0 # random seed        
+    seed = 0 # random seed  
     
     # freezing ########
     freeze = 'False' # 'False', first, last, progress_first, progress_last, firstlast

@@ -71,7 +71,7 @@ def fit_vision(p):
         sys.path.insert(1, gan_dir)
         from dcgan import Discriminator
         D = Discriminator(ngpu=1 if torch.cuda.is_available() else 0).to(device)
-        D.load_state_dict(torch.load(oj(gan_dir, 'weights/netD_epoch_99.pth')))
+        D.load_state_dict(torch.load(oj(gan_dir, 'weights/netD_epoch_99.pth'), map_location=device))
         D = D.eval()
         return D
     
