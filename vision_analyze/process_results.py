@@ -46,7 +46,7 @@ def process_results(results):
     try:
         
         for _, row in results.iterrows():
-            pre = 'model.' if row.siamese else ''
+            pre = 'model.' if ('siamese' in row and row.siamese == True) else ''
             mem_stat_dict0 = [row['mean_max_corrs'][t][pre + 'fc.0.weight'] for t in ts]
             corr0.append([np.mean(d['max_corrs']) for d in mem_stat_dict0])
             corr0_adj.append([np.sum(np.multiply(d['W_norms'], d['max_corrs'])/np.sum(d['W_norms'])) for d in mem_stat_dict0])
