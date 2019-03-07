@@ -4,6 +4,7 @@ from slurmpy import Slurm
 partition = 'high'
 
 # experiments on mnist_rotate
+'''
 params_to_vary = {
     'dset': ['mnist_rotate'], # mnist, cifar10    
     'seed': range(0, 1),
@@ -25,6 +26,7 @@ params_to_vary = {
     'num_iters': [40],
     'first_layer_lr_mult': [1]
 }
+'''
 
 # experiments on mnist_permute
 '''

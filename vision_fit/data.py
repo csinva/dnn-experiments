@@ -41,7 +41,7 @@ def get_model(p, X_train=None, Y_train_onehot=None):
             model = models.LinearNet(3, 32*32*3, 256, 10)
     elif p.dset in ['bars', 'noise']:
         model = models.LinearNet(p.num_layers, 8*8, p.hidden_size, 16) 
-    if p.siamese:
+    if 'siamese' in p and p.siamese:
         model = siamese.SiameseNet(model, X_train, Y_train_onehot, p.reps, 
                                    p.similarity, p.siamese_init, p.train_prototypes, p.prototype_dim)
     return model

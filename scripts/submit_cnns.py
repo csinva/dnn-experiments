@@ -1,11 +1,11 @@
 import itertools
 from slurmpy import Slurm
 
-partition = 'low'
+partition = 'gpu_yugroup'
 
 # run (change bottom line for max_corrs or margins!)
-s = Slurm("cnn_extract", {"partition": "gpu", "time": "2-0", "gres": "gpu:1"})
-models = ['vgg11', 'resnet18', 'densenet169']
+s = Slurm("cnn_extract", {"partition": partition, "time": "2-0", "gres": "gpu:1"})
+models = ['vgg13', 'vgg16', 'vgg19', 'resnet34', 'resnet50', 'resnet101']
 #     'alexnet', 
 #           'vgg11', 'vgg13', 'vgg16', 'vgg19', 
 #           'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152',
