@@ -1,0 +1,2 @@
+rm *.pdf
+rm *.png
