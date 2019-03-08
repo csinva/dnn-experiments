@@ -18,6 +18,14 @@ import siamese
 
 # get model (based on dset, etc.)
 def get_model(p, X_train=None, Y_train_onehot=None):
+    # make sure data types are right
+    if 'num_layers' in p:
+        p['num_layers'] = int(p.num_layers)
+    if 'hidden_size' in p:
+        p['hidden_size'] = int(p.hidden_size)
+    
+    
+    # actually look for data
     if 'mnist' in p.dset:
         if p.use_conv_special:
             model = models.Linear_then_conv()
@@ -48,6 +56,8 @@ def get_model(p, X_train=None, Y_train_onehot=None):
 
 # get data and model from params p - uses p.dset, p.shuffle_labels, p.batch_size
 def get_data_loaders(p, it=0):
+    # fix data types
+    p['batch_size'] = int(p.batch_size)
     
     ## where is the data
     if 'cifar10' in p.dset:

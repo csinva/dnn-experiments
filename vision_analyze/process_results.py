@@ -27,10 +27,11 @@ def try_key_pca(d, key, t):
 # adds these scalar keys: max_train_acc, max_test_acc, _final of all the above
 # returns its (list with each epoch)
 # ts (list with each epoch for which weights were saved)
-def process_results(results):
+def process_results(results, filt_by_finished=True):
     # filter by things that finished
-    lens = np.array([len(row['mean_max_corrs'].keys()) for _, row in results.iterrows()])
-    results = results[lens == max(lens)] 
+    if filt_by_finished:
+        lens = np.array([len(row['mean_max_corrs'].keys()) for _, row in results.iterrows()])
+        results = results[lens == max(lens)] 
     
     row = results.iloc[0]
     its = row.its[:row.accs_train.size]    
@@ -40,12 +41,11 @@ def process_results(results):
     corr2, corr3 = [], []
     fc2_fro, fc3_fro = [], []
     act0_stab_rank, act1_stab_rank = [], []
-    
-    ts = np.array(sorted(row['mean_max_corrs'].keys())) #results.iloc[0]['mean_max_corrs'].keys()))
-    t_max_w = int(max(ts))
     try:
         
         for _, row in results.iterrows():
+            ts = np.array(sorted(row['mean_max_corrs'].keys()))
+            
             pre = 'model.' if ('siamese' in row and row.siamese == True) else ''
             mem_stat_dict0 = [row['mean_max_corrs'][t][pre + 'fc.0.weight'] for t in ts]
             corr0.append([np.mean(d['max_corrs']) for d in mem_stat_dict0])
@@ -95,6 +95,7 @@ def process_results(results):
     except:
         print('no reduce')
         traceback.print_exc()
+    print('end loop', results.shape)
         
 
     
