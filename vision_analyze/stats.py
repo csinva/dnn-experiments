@@ -1,5 +1,9 @@
 import numpy as np
 
+# simple pearson correlation
+def corr(vec1, vec2):
+    return np.corrcoef(vec1, vec2)[0, 1]
+
 # calc mean correlation of columns of mat1 and mat
 def calc_mean_corr(mat1, mat2):
     corrs = []

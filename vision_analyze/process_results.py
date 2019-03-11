@@ -95,7 +95,6 @@ def process_results(results, filt_by_finished=True):
     except:
         print('no reduce')
         traceback.print_exc()
-    print('end loop', results.shape)
         
 
     

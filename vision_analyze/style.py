@@ -45,3 +45,8 @@ def show(x):
     plt.imshow(x, interpolation='bilinear')
     plt.grid(False)
     plt.axis('off')
+    
+    
+# some useful colors
+cb = '#008fd5' # a nice blue
+cr = '#fc4f30' # a nice red

@@ -82,11 +82,11 @@ if __name__ == '__main__':
     use_cuda = torch.cuda.is_available()
     class p: pass
     p.seed = 13
-    p.batch_size = 50
+    p.batch_size = 200
     if 'densenet' in model_name or 'resnet101' in model_name or 'resnet152' in model_name:
-        p.batch_size = 10
+        p.batch_size = 40
     elif 'inception' in model_name:
-        p.batch_size = 2 # this still fails
+        p.batch_size = 8 # this still fails
     p.dset = 'imagenet'
     
     # get data
@@ -106,19 +106,20 @@ if __name__ == '__main__':
     f = h5py.File(out_file, "w") 
     
     # run val
-    f.create_dataset("corrs_val", (len(val_loader) * p.batch_size, 1000), dtype=np.float32)
-    print('num iters val', len(val_loader))
-    for i, x in tqdm(enumerate(val_loader)):
-        ims = x[0].cuda()
-        corrs = corrs_func(ims, model, model_name) # model(ims)
-        f['corrs_val'][i * p.batch_size: (i + 1) * p.batch_size, :] = corrs.cpu().detach().numpy()
-        
-    # run - training set is about 1.281 mil, val set about 50k (although imagenet supposedly has 14 mil)
-    f.create_dataset("corrs_train", (len(train_loader) * p.batch_size, 1000), dtype=np.float32)
-    print('num iters train', len(train_loader))
-    for i, x in tqdm(enumerate(train_loader)):
-        ims = x[0].cuda()
-        corrs = corrs_func(ims, model, model_name) # model(ims)
-        f['corrs_train'][i * p.batch_size: (i + 1) * p.batch_size, :] = corrs.cpu().detach().numpy()
+    with torch.no_grad():
+        f.create_dataset("corrs_val", (len(val_loader) * p.batch_size, 1000), dtype=np.float32)
+        print('num iters val', len(val_loader))
+        for i, x in tqdm(enumerate(val_loader)):
+            ims = x[0].cuda()
+            corrs = corrs_func(ims, model, model_name) # model(ims)
+            f['corrs_val'][i * p.batch_size: (i + 1) * p.batch_size, :] = corrs.cpu().detach().numpy()
+
+        # run - training set is about 1.281 mil, val set about 50k (although imagenet supposedly has 14 mil)
+        f.create_dataset("corrs_train", (len(train_loader) * p.batch_size, 1000), dtype=np.float32)
+        print('num iters train', len(train_loader))
+        for i, x in tqdm(enumerate(train_loader)):
+            ims = x[0].cuda()
+            corrs = corrs_func(ims, model, model_name) # model(ims)
+            f['corrs_train'][i * p.batch_size: (i + 1) * p.batch_size, :] = corrs.cpu().detach().numpy()
 
     f.close()

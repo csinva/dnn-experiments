@@ -54,7 +54,7 @@ if __name__ == '__main__':
     use_cuda = torch.cuda.is_available()
     class p: pass
     p.seed = 13
-    p.batch_size = 50
+    p.batch_size = 50 # alexnet or vgg
     if 'densenet' in model_name or 'resnet101' in model_name or 'resnet152' in model_name:
         p.batch_size = 10
     elif 'inception' in model_name:
@@ -76,19 +76,20 @@ if __name__ == '__main__':
     if os.path.exists(out_file):
         os.remove(out_file)
     f = h5py.File(out_file, "w") 
-    f.create_dataset("preds_train", (len(train_loader) * p.batch_size, 1000), dtype=np.float32)
-    f.create_dataset("preds_val", (len(val_loader) * p.batch_size, 1000), dtype=np.float32)
-    
-    # run - training set is about 1.281 mil, val set about 50k (although imagenet supposedly has 14 mil)
-    print('num iters', len(train_loader))
-    for i, x in tqdm(enumerate(train_loader)):
-        ims = x[0].cuda()
-        preds = model(ims)
-        f['preds_train'][i * p.batch_size: (i + 1) * p.batch_size, :] = preds.cpu().detach().numpy()
+    with torch.no_grad():
+        f.create_dataset("preds_train", (len(train_loader) * p.batch_size, 1000), dtype=np.float32)
+        f.create_dataset("preds_val", (len(val_loader) * p.batch_size, 1000), dtype=np.float32)
 
-    for i, x in tqdm(enumerate(val_loader)):
-        ims = x[0].cuda()
-        preds = model(ims)
-        f['preds_val'][i * p.batch_size: (i + 1) * p.batch_size, :] = preds.cpu().detach().numpy()
+        # run - training set is about 1.281 mil, val set about 50k (although imagenet supposedly has 14 mil)
+        print('num iters', len(train_loader))
+        for i, x in tqdm(enumerate(train_loader)):
+            ims = x[0].cuda()
+            preds = model(ims)
+            f['preds_train'][i * p.batch_size: (i + 1) * p.batch_size, :] = preds.cpu().detach().numpy()
+
+        for i, x in tqdm(enumerate(val_loader)):
+            ims = x[0].cuda()
+            preds = model(ims)
+            f['preds_val'][i * p.batch_size: (i + 1) * p.batch_size, :] = preds.cpu().detach().numpy()
 
     f.close()

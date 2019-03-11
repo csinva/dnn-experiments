@@ -19,10 +19,10 @@ import siamese
 # get model (based on dset, etc.)
 def get_model(p, X_train=None, Y_train_onehot=None):
     # make sure data types are right
-    if 'num_layers' in p:
-        p['num_layers'] = int(p.num_layers)
+    if 'num_layers' in p: 
+        p.num_layers = int(p.num_layers)
     if 'hidden_size' in p:
-        p['hidden_size'] = int(p.hidden_size)
+        p.hidden_size = int(p.hidden_size)
     
     
     # actually look for data
@@ -57,7 +57,7 @@ def get_model(p, X_train=None, Y_train_onehot=None):
 # get data and model from params p - uses p.dset, p.shuffle_labels, p.batch_size
 def get_data_loaders(p, it=0):
     # fix data types
-    p['batch_size'] = int(p.batch_size)
+    p.batch_size = int(p.batch_size)
     
     ## where is the data
     if 'cifar10' in p.dset:
@@ -213,15 +213,17 @@ def get_XY(loader):
 
 # data from training/testing loaders (not used in fit_vision)
 # need to load like this to ensure transformation applied
-def process_loaders(train_loader, test_loader):
-    X_train, Y_train = process_loader(train_loader)
-    X_test, Y_test = process_loader(test_loader)
+def process_loaders(train_loader, test_loader, device='cuda'):
+    X_train, Y_train = process_loader(train_loader, device)
+    X_test, Y_test = process_loader(test_loader, device)
     return X_train, Y_train, X_test, Y_test
 
-def process_loader(loader):
+def process_loader(loader, device='cuda'):
     data_list = [batch for batch in loader]
     X = np.vstack([batch[0] for batch in data_list])
-    X = torch.Tensor(X).float().cuda()
+    X = torch.Tensor(X).float()
+    if device == 'cuda':
+        X = X.cuda()
     Y = np.hstack([batch[1] for batch in data_list])
     return X, Y
 

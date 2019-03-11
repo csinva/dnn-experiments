@@ -45,14 +45,18 @@ def seed(p):
     
 # extract features from one of the last layers
 def features_func(ims, model, model_name, feat_size):
-    if model_name == 'alexnet':
-        feats = torch.zeros(ims.shape[0], feat_size)
-        layer = model.classifier[-2]
-    else:
-        feats = torch.zeros(ims.shape[0], feat_size, 1, 1)
-
+    feats = torch.zeros(ims.shape[0], feat_size)
+    if model_name == 'alexnet' or 'vgg' in model_name:
+        layer = model.classifier[-1]
+    elif 'resnet' in model_name:
+        layer = model.fc
+    elif 'densenet' in model_name:
+        layer = model.classifier
+    
+    # features will be the input of the selected layer
     def copy_data(m, i, o):
-        feats.copy_(o.data)
+        feats = i[0] # i is a tuple
+        feats.copy_(feats.reshape(feats.shape[0], -1).data)
 
     h = layer.register_forward_hook(copy_data)
     h_x = model(ims)
@@ -94,25 +98,27 @@ if __name__ == '__main__':
     if os.path.exists(out_file):
         os.remove(out_file)
     f = h5py.File(out_file, "w") 
-    feat_size_dict = {'alexnet': 4096}
-    feat_size = feat_size_dict[model_name]
+    feat_size = 4096 # true for alexnet, vgg
+    if 'resnet' in model_name:
+        feat_size = 512
+    elif 'densenet' in model_name:
+        feat_size = 1664
     
     # run val
-    f.create_dataset("feats_val", (len(val_loader) * p.batch_size, feat_size), dtype=np.float32)
-    print('num iters val', len(val_loader))
-    for i, x in tqdm(enumerate(val_loader)):
-        ims = x[0].cuda()
-        feats = features_func(ims, model, model_name, feat_size) # model(ims)
-        f['feats_val'][i * p.batch_size: (i + 1) * p.batch_size, :] = feats.cpu().detach().numpy()
-        
-    # run - training set is about 1.281 mil, val set about 50k (although imagenet supposedly has 14 mil)
-    f.create_dataset("feats_train", (len(train_loader) * p.batch_size, feat_size), dtype=np.float32)
-    print('num iters train', len(train_loader))
-    for i, x in tqdm(enumerate(train_loader)):
-        ims = x[0].cuda()
-        feats = features_func(ims, model, model_name, feat_size) # model(ims)
-        f['feats_train'][i * p.batch_size: (i + 1) * p.batch_size, :] = feats.cpu().detach().numpy()
+    with torch.no_grad():
+        f.create_dataset("feats_val", (len(val_loader) * p.batch_size, feat_size), dtype=np.float32)
+        print('num iters val', len(val_loader))
+        for i, x in tqdm(enumerate(val_loader)):
+            ims = x[0].cuda()
+            feats = features_func(ims, model, model_name, feat_size) # model(ims)
+            f['feats_val'][i * p.batch_size: (i + 1) * p.batch_size, :] = feats.cpu().detach().numpy()
 
-
+        # run - training set is about 1.281 mil, val set about 50k (although imagenet supposedly has 14 mil)
+        f.create_dataset("feats_train", (len(train_loader) * p.batch_size, feat_size), dtype=np.float32)
+        print('num iters train', len(train_loader))
+        for i, x in tqdm(enumerate(train_loader)):
+            ims = x[0].cuda()
+            feats = features_func(ims, model, model_name, feat_size) # model(ims)
+            f['feats_train'][i * p.batch_size: (i + 1) * p.batch_size, :] = feats.cpu().detach().numpy()
 
     f.close()
