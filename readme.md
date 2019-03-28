@@ -5,7 +5,7 @@
 - each folder contains a readme with code documentation, as well as comments in the code
 - the vision_fit and vision_analyze folders detail a number of experiments on multilayer perceptrons and convolutional neural networks using various datasets including MNIST, CIFAR, and custom datasets
 - the sparse_coding folder contains code for running and analyzing sparse coding on different sets of images
-- the mog_fit and mog_analyze folders contain code examples for fitting synthetic datasets generated as mixtures of Gaussians
+- the mog folder contain code examples for fitting synthetic datasets generated as mixtures of Gaussians
 - the poly_fit folder contains code for fitting simple 1D polynomials
 - the scripts folder contains scripts for launching jobs on a slurm cluster
 - the eda folder contains minimum working examples for simple setups with various pytorch and scikit-learn functions

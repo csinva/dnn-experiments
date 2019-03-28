@@ -1,0 +1,1 @@
+- contain code examples for fitting synthetic datasets generated as mixtures of Gaussians
