@@ -3,16 +3,18 @@ from numpy.random import randint
 
 class p:   
     # dset params ########
-    dset = 'mnist' # mnist, cifar10, noise, bars, mnist_single, mnist_small, cifar10_small, mnist_permute, mnist_rotate (not supported)
-    # mnist_small (less data points), [dset]_5_5 (train is first 5 digits, test is last 5)
+    dset = 'linear' #'mnist' # mnist, cifar10, noise, bars, mnist_single, mnist_small, cifar10_small, mnist_permute, mnist_rotate (not supported)
+    # mnist_small (less data points), [dset]_5_5 (train is first 5 digits, test is last 5), linear(takes additional args, uses mse)
     # [dset]_5_5_flip flips the training labels halfway
     shuffle_labels = False # shuffles only training labels
-    num_points = 100 # only comes in to play when using mnist_small
+    num_points = 100 # only comes in to play when using linear or mnist_small
+    num_features = 100 # p for generating linear dset
+    w_type = 'ones' # how to set weights for generating linear data (ones, onehot)
     flip_freeze = False # boolean, whether to freeze early layers when flipping, only comes in to play when using [dset]_flip
     change_freq = 5 # frequency to change (permute/rotate) dset, only if using [dset]_permute or [dset]_rotate
     
     # init / prototypes ########
-    siamese = True # default to False
+    siamese = False # default to False
     reps = 1 # for kernel weight-init, how many reps per point
     similarity = 'cosine'
     siamese_init = 'unif' # points, unif

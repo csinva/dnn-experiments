@@ -88,6 +88,8 @@ def fit_vision(p):
     
     model = model.to(device)
     criterion = nn.CrossEntropyLoss()
+    if 'linear' in p.dset:
+        criterion = nn.MSELoss()
     reg_model = reg_init(p)
 
     # things to record
@@ -102,8 +104,8 @@ def fit_vision(p):
     for i, it in enumerate(tqdm(range(0, p.num_iters))):
         
         # calc stats and record
-        s.losses_train[it], s.accs_train[it], s.confidence_unn_train[it], s.confidence_norm_train[it], s.margin_unn_train[it], s.margin_norm_train[it] = stats.calc_loss_acc_margins(train_loader, p.batch_size, use_cuda, model, criterion)
-        s.losses_test[it], s.accs_test[it], s.confidence_unn_test[it], s.confidence_norm_test[it], s.margin_unn_test[it], s.margin_norm_test[it] = stats.calc_loss_acc_margins(test_loader, p.batch_size, use_cuda, model, criterion, print_loss=True)
+        s.losses_train[it], s.accs_train[it], s.confidence_unn_train[it], s.confidence_norm_train[it], s.margin_unn_train[it], s.margin_norm_train[it] = stats.calc_loss_acc_margins(train_loader, p.batch_size, use_cuda, model, criterion, p.dset)
+        s.losses_test[it], s.accs_test[it], s.confidence_unn_test[it], s.confidence_norm_test[it], s.margin_unn_test[it], s.margin_norm_test[it] = stats.calc_loss_acc_margins(test_loader, p.batch_size, use_cuda, model, criterion, p.dset, print_loss=True)
         
         # record weights
         weight_dict = deepcopy({x[0]:x[1].data.cpu().numpy() for x in model.named_parameters()})
@@ -131,8 +133,8 @@ def fit_vision(p):
         # reduced model
         if p.save_reduce:
             model_r = reduce_model(model)
-            s.losses_train_r[it], s.accs_train_r[it] = stats.calc_loss_acc_margins(train_loader, p.batch_size, use_cuda, model_r, criterion)[:2]
-            s.losses_test_r[it], s.accs_test_r[it] = stats.calc_loss_acc_margins(test_loader, p.batch_size, use_cuda, model_r, criterion)[:2]
+            s.losses_train_r[it], s.accs_train_r[it] = stats.calc_loss_acc_margins(train_loader, p.batch_size, use_cuda, model_r, criterion, p.dset)[:2]
+            s.losses_test_r[it], s.accs_test_r[it] = stats.calc_loss_acc_margins(test_loader, p.batch_size, use_cuda, model_r, criterion, p.dset)[:2]
         
         # training
         for batch_idx, (x, target) in enumerate(train_loader):

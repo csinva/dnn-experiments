@@ -111,7 +111,8 @@ def process_results(results, filt_by_finished=True):
     def add_final(key): return np.array([get_last(key, i) for i in idxs])    
     for key in ['corr0', 'corr1', 'corr0_adj', 'corr1_adj', 'corr2', 'corr3',
                 'fc0_fro', 'fc1_fro', 'fc2_fro', 'fc3_fro',
-                'fc0_stab_rank', 'fc1_stab_rank', 'act0_stab_rank', 'act1_stab_rank']:
+                'fc0_stab_rank', 'fc1_stab_rank', 'act0_stab_rank', 'act1_stab_rank',
+                'losses_train', 'losses_test']:
         results[key + '_final'] = add_final(key)
     
     return its, ts, results

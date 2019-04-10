@@ -5,24 +5,37 @@ partition = 'low'
 
 # sweep different ways to initialize weights
 params_to_vary = {
-    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/init/freeze_sweep_4lay'],
-    'init': ['default', 'w_lay_final', 'w_bias_zero_lay1'], # 'default', 'bias_zero_lay1', 'w_bias_zero_lay1'
-    'dset': ['mnist', 'cifar10'], # mnist, cifar10    
-    'save_all_freq': [10],
-    'save_reduce': ['False'],
-    'seed': range(0, 1),
-    'lr': [0.01, 0.1],
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/linear/sweep2'],
+
+    # sweep these
+    'num_points': [20, 100, 1000],
+    'num_features': [10, 100, 1000],
+    'w_type': ['ones', 'onehot'],
+    'hidden_size': [10, 128, 512, 1024, 2048], # 128, 512    
+    'num_layers': [2], # 2, 4, 7    
+
+    # condition on these
+    'lr': [0.001, 0.01, 0.1],
     'optimizer': ['sgd', 'adam'],
-    'num_layers': [4], # 2, 4, 7
-    'batch_size': [100], # 10, 100, 1000
-    'shuffle_labels': ['False'], # loop
-    'hidden_size': [128], # 128, 512
-    'freeze': ['False', 'firstlast', 'first', 'last'],
-    'num_iters': [35],
-    'first_layer_lr_mult': [1],
-    'use_conv': ['False'], 
+
+    'seed': range(0, 1),    
+    'batch_size': [20], # 10, 100, 1000
+    'init': ['default'], 
+    'dset': ['linear'],
+    
+    'save_all_freq': [100],
+    'save_reduce': ['False'],    
+    'save_singular_vals': ['False'],
+    'save_all_weights_freq': [30],
+    'calc_activations': ['False'],
     'saves_per_iter': [10],
     'num_iters_small': [3],
+    
+    'shuffle_labels': ['False'], # loop
+    'freeze': ['False'],
+    'num_iters': [100],
+    'first_layer_lr_mult': [1],
+    'use_conv': ['False'], 
 }
 
 # run

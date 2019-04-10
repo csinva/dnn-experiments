@@ -30,7 +30,7 @@ def show(X):
 # plot all the weights
 def plot_weights(W, dset='mnist', conv=False, dpi=80, C=None, interpolation=None, small_fig=False): # W is num_filters x im_size
     num_filters = W.shape[0]
-    d = int(np.sqrt(W.size / num_filters))
+    
     if 'cifar10' in dset:
         W = (W - np.min(W)) / (np.max(W) - np.min(W))
         filts = W.reshape((num_filters, 3, 32, 32))
@@ -38,7 +38,14 @@ def plot_weights(W, dset='mnist', conv=False, dpi=80, C=None, interpolation=None
     elif 'rgb' in dset:
         W = (W - np.min(W)) / (np.max(W) - np.min(W))
         filts = W.reshape((num_filters, 32, 32, 3))
+    elif 'conv' in dset:
+        d = int(np.sqrt(W.size / num_filters / 3))
+        W = (W - np.min(W)) / (np.max(W) - np.min(W))
+        filts = W.reshape((num_filters, 3, d, d))
+        filts = filts.transpose((0, 2, 3, 1))
+    # assume mlp    
     else:
+        d = int(np.sqrt(W.size / num_filters))
         filts = W.reshape((num_filters, d, d))        
     if C is None:
         C = math.floor(np.sqrt(num_filters))

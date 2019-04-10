@@ -27,7 +27,7 @@ def layer_norms(weight_dict):
 
 
 # calculate loss, accuracy, and margin
-def calc_loss_acc_margins(loader, batch_size, use_cuda, model, criterion, print_loss=False):
+def calc_loss_acc_margins(loader, batch_size, use_cuda, model, criterion, dset, print_loss=False):
     correct_cnt, tot_loss_test = 0, 0
     n_test = len(loader) * batch_size
     margin_sum_norm, margin_sum_unnormalized = 0, 0
@@ -38,49 +38,50 @@ def calc_loss_acc_margins(loader, batch_size, use_cuda, model, criterion, print_
                 x, class_label = x.cuda(), class_label.cuda()
             out = model(x)
 
-            # calc acc
-            _, class_max_pred = torch.max(out.data, 1)
-            correct_cnt += (class_max_pred == class_label.data).sum().item()
 
-            # calc loss
+            # calc loss + acc
+            _, class_max_pred = torch.max(out.data, 1)
             loss = criterion(out, class_label)
             tot_loss_test += loss.item()
-            class_label = class_label.cpu()
+            if not 'linear' in dset: # only do all this for classification
+                correct_cnt += (class_max_pred == class_label.data).sum().item()            
 
-            # set up margins (unn - before softmax, norm - with softmax)
-            n = out.data.shape[0]
-            preds_unn = out.data.cpu().numpy()
-            preds_norm = F.softmax(out, dim=1).data.cpu().numpy()
-            class_max_pred = class_max_pred.cpu()
-            mask_max_pred = np.ones(preds_unn.shape).astype(bool)
-            mask_max_pred[np.arange(n), class_max_pred] = False
-            mask_label = np.ones(preds_unn.shape).astype(bool)
-            mask_label[np.arange(n), class_label] = False
 
-            # confidence (top pred - 2nd pred) - this cannot be negative
-            preds_unn_class = preds_unn[np.arange(n), class_max_pred] # top pred class
-            preds_unn_alt = preds_unn[mask_max_pred].reshape(n, -1) # remove top pred class
-            preds_unn_class2 = np.max(preds_unn_alt, axis=1) # 2nd top pred class
-            confidence_sum_unnormalized += np.sum(preds_unn_class) - np.sum(preds_unn_class2)
+                # set up margins (unn - before softmax, norm - with softmax)
+                class_label = class_label.cpu()
+                n = out.data.shape[0]
+                preds_unn = out.data.cpu().numpy()
+                preds_norm = F.softmax(out, dim=1).data.cpu().numpy()
+                class_max_pred = class_max_pred.cpu()
+                mask_max_pred = np.ones(preds_unn.shape).astype(bool)
+                mask_max_pred[np.arange(n), class_max_pred] = False
+                mask_label = np.ones(preds_unn.shape).astype(bool)
+                mask_label[np.arange(n), class_label] = False
 
-            preds_norm_class = preds_norm[np.arange(n), class_max_pred]
-            preds_norm_alt = preds_norm[mask_max_pred].reshape(n, -1)
-            preds_norm_class2 = np.max(preds_norm_alt, axis=1)
-            confidence_sum_norm += np.sum(preds_norm_class) - np.sum(preds_norm_class2)
+                # confidence (top pred - 2nd pred) - this cannot be negative
+                preds_unn_class = preds_unn[np.arange(n), class_max_pred] # top pred class
+                preds_unn_alt = preds_unn[mask_max_pred].reshape(n, -1) # remove top pred class
+                preds_unn_class2 = np.max(preds_unn_alt, axis=1) # 2nd top pred class
+                confidence_sum_unnormalized += np.sum(preds_unn_class) - np.sum(preds_unn_class2)
 
-            # margins (label - top non-label pred) - this can be negative
-            preds_unn_class = preds_unn[np.arange(n), class_label] # label class
-            preds_unn_alt = preds_unn[mask_label].reshape(n, -1) # remove label class
-            preds_unn_class2 = np.max(preds_unn_alt, axis=1) # 2nd top pred class
-            margin_sum_unnormalized += np.sum(preds_unn_class) - np.sum(preds_unn_class2)
+                preds_norm_class = preds_norm[np.arange(n), class_max_pred]
+                preds_norm_alt = preds_norm[mask_max_pred].reshape(n, -1)
+                preds_norm_class2 = np.max(preds_norm_alt, axis=1)
+                confidence_sum_norm += np.sum(preds_norm_class) - np.sum(preds_norm_class2)
 
-            preds_norm_class = preds_norm[np.arange(n), class_label]
-            preds_norm_alt = preds_norm[mask_label].reshape(n, -1)
-            preds_norm_class2 = np.max(preds_norm_alt, axis=1)
-            margin_sum_norm += np.sum(preds_norm_class) - np.sum(preds_norm_class2)        
-        
-    if print_loss:    
-        print('==>>> loss: {:.6f}, acc: {:.3f}, margin: {:.3f}'.format(tot_loss_test / n_test, correct_cnt * 1.0 / n_test, margin_sum_norm / n_test))
+                # margins (label - top non-label pred) - this can be negative
+                preds_unn_class = preds_unn[np.arange(n), class_label] # label class
+                preds_unn_alt = preds_unn[mask_label].reshape(n, -1) # remove label class
+                preds_unn_class2 = np.max(preds_unn_alt, axis=1) # 2nd top pred class
+                margin_sum_unnormalized += np.sum(preds_unn_class) - np.sum(preds_unn_class2)
+
+                preds_norm_class = preds_norm[np.arange(n), class_label]
+                preds_norm_alt = preds_norm[mask_label].reshape(n, -1)
+                preds_norm_class2 = np.max(preds_norm_alt, axis=1)
+                margin_sum_norm += np.sum(preds_norm_class) - np.sum(preds_norm_class2)        
+
+        if print_loss:    
+            print('==>>> loss: {:.6f}, acc: {:.3f}, margin: {:.3f}'.format(tot_loss_test / n_test, correct_cnt * 1.0 / n_test, margin_sum_norm / n_test))
     
     # returns loss, acc, margin_unnormalized, margin_normalized
     return [x / n_test for x in [tot_loss_test, 1.0 * correct_cnt, 

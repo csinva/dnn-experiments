@@ -1,3 +1,4 @@
+
 import numpy as np
 import os
 import torch
@@ -14,14 +15,16 @@ import numpy as np
 import models
 import random
 import time
-import siamese
+from arch_special import siamese
+
+from torch.utils.data import Dataset
 
 # get model (based on dset, etc.)
 def get_model(p, X_train=None, Y_train_onehot=None):
     # make sure data types are right
-    if 'num_layers' in p: 
+    if 'num_layers' in vars(p).keys(): 
         p.num_layers = int(p.num_layers)
-    if 'hidden_size' in p:
+    if 'hidden_size' in vars(p).keys():
         p.hidden_size = int(p.hidden_size)
     
     
@@ -49,9 +52,11 @@ def get_model(p, X_train=None, Y_train_onehot=None):
             model = models.LinearNet(3, 32*32*3, 256, 10)
     elif p.dset in ['bars', 'noise']:
         model = models.LinearNet(p.num_layers, 8*8, p.hidden_size, 16) 
-    if 'siamese' in p and p.siamese:
+    if 'siamese' in vars(p).keys() and p.siamese:
         model = siamese.SiameseNet(model, X_train, Y_train_onehot, p.reps, 
                                    p.similarity, p.siamese_init, p.train_prototypes, p.prototype_dim)
+    if 'linear' in p.dset:
+        model = models.LinearNet(p.num_layers, p.num_features, p.hidden_size, 1) 
     return model
 
 # get data and model from params p - uses p.dset, p.shuffle_labels, p.batch_size
@@ -194,7 +199,16 @@ def get_data_loaders(p, it=0):
                 normalize])),
             batch_size=p.batch_size, shuffle=False, 
             pin_memory=True, drop_last=True)
+    elif 'linear' in p.dset:
+        train_set = linear_dset(n=p.num_points, num_features=p.num_features, w_type=p.w_type)
+        test_set = linear_dset(n=p.num_points, num_features=p.num_features, w_type=p.w_type)
 
+        train_loader = torch.utils.data.DataLoader(train_set, 
+                                                   batch_size=p.batch_size,
+                                                   shuffle=True)
+        test_loader = torch.utils.data.DataLoader(test_set, 
+                                                  batch_size=p.batch_size,
+                                                  shuffle=False)
     return train_loader, test_loader
 
 # extract only training data
@@ -226,6 +240,27 @@ def process_loader(loader, device='cuda'):
         X = X.cuda()
     Y = np.hstack([batch[1] for batch in data_list])
     return X, Y
+
+
+
+class linear_dset(Dataset):
+    def __init__(self, n=1000, num_features=100, w_type='ones'):
+        X = np.random.randn(n, num_features)
+        if w_type == 'ones':
+            w = np.ones(num_features) / np.sqrt(num_features)
+        elif w_type == 'onehot':
+            w = np.zeros(num_features)
+            w[0] = 1
+        Y = X @ w
+        self.X = torch.Tensor(X)
+        self.Y = torch.Tensor(Y)
+        
+
+    def __len__(self):
+        return self.Y.shape[0]
+
+    def __getitem__(self, idx):
+        return self.X[idx], self.Y[idx]
 
 def get_binary_bars(numInputs, numDatapoints, probabilityOn):
     """

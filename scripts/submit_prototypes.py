@@ -5,12 +5,12 @@ partition = 'high'
 
 # sweep lambda_reg
 params_to_vary = {
-    'siamese': [True],
+    'siamese': ['True'],
     'reps': [1], # 1, 3
-    'train_prototypes': [True],
+    'train_prototypes': ['True'],
     'prototype_dim': [0], # 0, 14
     'similarity': ['dot', 'cosine'], # 'cosine'
-    'use_conv': [False], # True, False,
+    'use_conv': ['False'], # True, False,
     'siamese_init': ['unif'],
     'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/kernel_init/mnist_gan'],  
     'lr': [0.01], # 0.01 is what works for LeNet
@@ -23,12 +23,12 @@ params_to_vary = {
     'dset': ['mnist'], # mnist, cifar10  
     'num_layers': [4], # add in 2, 7
     'batch_size': [100], # 10, 100, 1000
-    'shuffle_labels': [False], # loop
+    'shuffle_labels': ['False'], # loop
     'hidden_size': [128], # 128, 512
     'freeze': ['False'],
     'first_layer_lr_mult': [1],
     'save_all_freq': [20],
-    'save_reduce': [False],
+    'save_reduce': ['False'],
     'saves_per_iter': [2],
 }
 
