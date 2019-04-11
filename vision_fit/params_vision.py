@@ -39,7 +39,9 @@ class p:
     # freezing ########
     freeze = 'False' # 'False', first, last, progress_first, progress_last, firstlast
     lr_step = 16 # used for progress (which freezes layers one by one)
-    lr_ticks = {0: 1} # {0: 1, 30: 0.5, 50: 0.25, 70: 0.125, 90: 0.1} - note these will all be subtracted by num_iters_small
+    lr_ticks = {0: 1} # {50: 0.5, 100: 0.25: 150:0.125, 200:0.0625, 250:0.03125} 
+    # no ticks: {0: 1} 
+    # used for mem runs: {0: 1, 30: 0.5, 50: 0.25, 70: 0.125, 90: 0.1} - note these will all be subtracted by num_iters_small
     
     # saving ########
     out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/test/test' # directory for saving

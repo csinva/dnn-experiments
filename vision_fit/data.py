@@ -184,8 +184,10 @@ def get_data_loaders(p, it=0):
         print('loading imagenet train dset...')
         train_loader = torch.utils.data.DataLoader(
             dset.ImageFolder(oj(root, 'train'), transforms.Compose([
-                transforms.RandomResizedCrop(224),
-                transforms.RandomHorizontalFlip(),
+                # transforms.RandomResizedCrop(224),
+                # transforms.RandomHorizontalFlip(),
+                transforms.Resize(256),
+                transforms.CenterCrop(224),
                 transforms.ToTensor(),
                 normalize])), 
             batch_size=p.batch_size, shuffle=False, drop_last=True)    

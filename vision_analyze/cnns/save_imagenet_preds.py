@@ -68,7 +68,7 @@ if __name__ == '__main__':
     print(len(train_loader), len(val_loader), p.batch_size)
     
     # set up saving
-    out_dir = '/accounts/projects/vision/scratch/yu_dl/raaz.rsk/cnns_preds'
+    out_dir = '/accounts/projects/vision/scratch/yu_dl/raaz.rsk/cnns_preds_new'
     os.makedirs(out_dir, exist_ok=True)
     
     # preds file

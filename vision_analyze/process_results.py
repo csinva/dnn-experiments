@@ -56,11 +56,18 @@ def process_results(results, filt_by_finished=True):
 
             fc0_fro.append([row['weight_norms'][t][pre + 'fc.0.weight_fro'] for t in ts])
             fc1_fro.append([row['weight_norms'][t][pre + 'fc.1.weight_fro'] for t in ts])    
-            fc0_stab_rank.append(np.array(np.apply_along_axis(stable_rank, axis=1, arr=[try_key_pca(row, 'singular_val_dicts', t)[pre  + 'fc.0.weight'] for t in ts])))
-            fc1_stab_rank.append(np.apply_along_axis(stable_rank, axis=1, arr=[try_key_pca(row, 'singular_val_dicts', t)[pre + 'fc.1.weight'] for t in ts]))
-            act0_stab_rank.append(np.apply_along_axis(stable_rank, axis=1, arr=[try_key_pca(row, 'act_singular_val_dicts_train', t)['fc.0'] for t in ts]))
-            act1_stab_rank.append(np.apply_along_axis(stable_rank, axis=1, arr=[try_key_fc2(try_key_pca(row, 'act_singular_val_dicts_train', t)) for t in ts]))
-
+            
+            # in case singular val dicts not saved
+            try:
+                fc0_stab_rank.append(np.array(np.apply_along_axis(stable_rank, axis=1, arr=[try_key_pca(row, 'singular_val_dicts', t)[pre  + 'fc.0.weight'] for t in ts])))
+                fc1_stab_rank.append(np.apply_along_axis(stable_rank, axis=1, arr=[try_key_pca(row, 'singular_val_dicts', t)[pre + 'fc.1.weight'] for t in ts]))
+                act0_stab_rank.append(np.apply_along_axis(stable_rank, axis=1, arr=[try_key_pca(row, 'act_singular_val_dicts_train', t)['fc.0'] for t in ts]))
+                act1_stab_rank.append(np.apply_along_axis(stable_rank, axis=1, arr=[try_key_fc2(try_key_pca(row, 'act_singular_val_dicts_train', t)) for t in ts]))
+            except:
+                fc0_stab_rank.append(None)
+                fc1_stab_rank.append(None)
+                act0_stab_rank.append(None)
+                act1_stab_rank.append(None)
 
 
             if row.num_layers >= 4:
