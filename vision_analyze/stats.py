@@ -1,4 +1,5 @@
 import numpy as np
+import scipy
 
 # simple pearson correlation
 def corr(vec1, vec2):
@@ -20,39 +21,44 @@ def calc_accs(model, X_train, Y_train, X_test, Y_test):
     accs_test = preds==Y_test
     return np.mean(accs_train), np.mean(accs_test)
 
+'''
+calculate a bunch of correlations, conditioning on different things
+- can try this w/ or w/out softmax
+'''
 def calc_corrs(p1, p2, labs):
     p1_max = np.argmax(p1, axis=1)
     p2_max = np.argmax(p2, axis=1)
     idxs_both_correct = (p1_max == labs) * (p2_max == labs)
+    print('both correct', np.sum(idxs_both_correct))
 
     # try with softmax also
 
     # raw correlation
-    raw_corr = stats.corr(p1.flatten(), p2.flatten())
+    raw_corr = corr(p1.flatten(), p2.flatten())
 #     print(f'raw corr: {raw_corr: 0.5f}')
 
     # correlation within each class for all columns
     class_corrs = np.zeros(1000)
     for lab_num in range(1000):
         idxs = labs == lab_num
-        class_corrs[lab_num] = stats.corr(p1[idxs].flatten(), p2[idxs].flatten())
-    intra_class_corr_all = np.mean(class_corrs)
+        class_corrs[lab_num] = corr(p1[idxs].flatten(), p2[idxs].flatten())
+    intra_class_corr_all = np.nanmean(class_corrs)
 #     print(f'intra-class corr all columns: {intra_class_corr_all: 0.5f}')
 
     # correlation within each class for just correct column
     class_corrs = np.zeros(1000)
     for lab_num in range(1000):
         idxs = labs == lab_num
-        class_corrs[lab_num] = stats.corr(p1[idxs][:, lab_num], p2[idxs][:, lab_num])
-    intra_class_corr_column = np.mean(class_corrs)    
+        class_corrs[lab_num] = corr(p1[idxs][:, lab_num], p2[idxs][:, lab_num])
+    intra_class_corr_column = np.nanmean(class_corrs)    
 #     print(f'\tintra-class corr class-column: {np.mean(intra_class_corr_correct): 0.5f}')
 
     # correlation when both networks correct
     class_corrs = np.zeros(1000)
     for lab_num in range(1000):
         idxs = (labs == lab_num) * (idxs_both_correct)
-        class_corrs[lab_num] = stats.corr(p1[idxs].flatten(), p2[idxs].flatten())
-    intra_class_corr_correct = np.mean(class_corrs)
+        class_corrs[lab_num] = corr(p1[idxs].flatten(), p2[idxs].flatten())
+    intra_class_corr_correct = np.nanmean(class_corrs)
 #     print(f'intra-class corr for correct points: {intra_class_corr_correct: 0.5f}')
 
     # rank correlation
@@ -60,7 +66,7 @@ def calc_corrs(p1, p2, labs):
     for lab_num in range(1000):
         idxs = (labs == lab_num)
         rank_corrs[lab_num] = scipy.stats.spearmanr(p1[idxs].flatten(), p2[idxs].flatten())[0]
-    intra_class_rank_corr = np.mean(rank_corrs)
+    intra_class_rank_corr = np.nanmean(rank_corrs)
     
     
     return {'raw_corr': raw_corr, 
