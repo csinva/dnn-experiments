@@ -21,8 +21,8 @@ def generate_gaussian_data(N, means=[0, 1], sds=[1, 1], labs=[0, 1]):
         y_one_hot[i, labs[z]] = 1
     return X, y_one_hot, y_plot
 
-def get_data(n=10, p=10000, noise_mult=0.1):
-    np.random.seed(seed=13)
+def get_data(n=10, p=10000, noise_mult=0.1, seed=703858704):
+    np.random.seed(seed=seed)
     
     # data
     X = np.random.randn(n, p)
