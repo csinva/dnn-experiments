@@ -17,6 +17,8 @@ from copy import deepcopy
 import pandas as pd
 import seaborn as sns
 from data import *
+import os
+import time, sys
 
 
 ## network
@@ -47,6 +49,7 @@ def fit(p):
     device = 'cuda'
     X_t, Y_t = torch.Tensor(X).to(device), torch.Tensor(Y).to(device)
     r = {}
+    out_name = p._str(p)
     seed(p.seed)
     model = LinearNet(num_layers=p.num_layers, input_size=p.d, hidden_size=p.hidden_size, output_size=1, use_bias=p.use_bias).to(device)
 
@@ -78,6 +81,24 @@ def fit(p):
 
         if loss.item() < p.loss_thresh:
             break
+            
+            
+    # calculate test stats
+    X_test, Y_test = get_data(p.d, p.n_test, p.func, seed_val=p.seed + 1)
+    
+
+    pred = model(torch.Tensor(X_test).to(device)).cpu().detach().numpy()
+    test_mse = np.sum((pred - Y_test)**2) / p.n_test
+    
+    test_mse_alt = np.zeros(p.d)
+    for shufflevar in range(p.d):
+        X_test_alt, Y_test_alt = get_data(p.d, p.n_test, p.func, shufflevar=shufflevar, seed_val=p.seed + 1)
+        pred_alt = model(torch.Tensor(X_test_alt).to(device)).cpu().detach().numpy()
+        test_mse_alt[shufflevar] = np.sum((pred_alt - Y_test_alt)**2) / p.n_test
+#         print(f'using only var $x_{num}$ num_lays {i} mse {test_mse:0.2e}')
+        
+#     output[num, i] = -1 * (test_mse - test_mse_alt)
+#         accs[num, i] = test_mse
 
 
     # saving
@@ -85,8 +106,14 @@ def fit(p):
     r['loss'] = losses
     r['w'] = ws
     r['grad'] = grads
+    r['mse_test'] = test_mse
+    r['mse_test_alt'] = test_mse_alt
+    
+    results = {**r, **p._dict(p)}
+    os.makedirs(p.out_dir, exist_ok=True)
+    pkl.dump(results, open(oj(p.out_dir, out_name + '.pkl'), 'wb'))
 
-    return {**r, **p._dict(p)}, X, Y
+    return results, X, Y
 
 def seed(s):
     # set random seed        
@@ -94,3 +121,24 @@ def seed(s):
     torch.manual_seed(s)    
     random.seed(s)
     
+if __name__ == '__main__':
+    t0 = time.time()
+    from params_interactions import p
+    
+    # set params
+    for i in range(1, len(sys.argv), 2):
+        t = type(getattr(p, sys.argv[i]))
+        if sys.argv[i+1] == 'True':
+            setattr(p, sys.argv[i], t(True))            
+        elif sys.argv[i+1] == 'False':
+            setattr(p, sys.argv[i], t(False))
+        else:
+            setattr(p, sys.argv[i], t(sys.argv[i+1]))
+    
+    print('fname ', p._str(p))
+    for key, val in p._dict(p).items():
+        print('  ', key, val)
+    print('starting...')
+    fit(p)
+    
+    print('success! saved to ', p.out_dir, 'in ', time.time() - t0, 'sec')

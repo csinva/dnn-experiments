@@ -20,7 +20,7 @@ from fit import seed
 
 def get_data(d, N, func='x0', grid=False, keepvar=None, shufflevar=None, seed_val=1):
     seed(seed_val)
-    X = npr.randn(N, d) # * 1e5
+    X = npr.randn(N, d)
     
     if grid:
         x0 = X[:, 0]
@@ -31,6 +31,9 @@ def get_data(d, N, func='x0', grid=False, keepvar=None, shufflevar=None, seed_va
     
     if func == 'y=x_0=2x_1':
         X[:, 1] = deepcopy(X[:, 0] / 2)
+        
+    if func == 'y=x_0=x_1+eps':
+        X[:, 1] = deepcopy(X[:, 0]) + npr.randn(N) * 1e-2
         
     # randomize everything except the keepvar    
     if not keepvar == None:
