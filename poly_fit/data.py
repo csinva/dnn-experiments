@@ -16,10 +16,13 @@ import numpy.linalg as npl
 from copy import deepcopy
 import pandas as pd
 import seaborn as sns
-from fit import seed
+import fit
 
-def get_data(d, N, func='x0', grid=False, keepvar=None, shufflevar=None, seed_val=1):
-    seed(seed_val)
+def get_data(d, N, func='x0', grid=True, shufflevar=None, seed_val=None, gt=False, eps=0.0):
+    if gt:
+        fit.seed(703858)
+    elif not seed_val == None:
+        fit.seed(seed_val)
     X = npr.randn(N, d)
     
     if grid:
@@ -33,13 +36,8 @@ def get_data(d, N, func='x0', grid=False, keepvar=None, shufflevar=None, seed_va
         X[:, 1] = deepcopy(X[:, 0] / 2)
         
     if func == 'y=x_0=x_1+eps':
-        X[:, 1] = deepcopy(X[:, 0]) + npr.randn(N) * 1e-2
+        X[:, 1] = deepcopy(X[:, 0]) + eps * npr.randn(N)
         
-    # randomize everything except the keepvar    
-    if not keepvar == None:
-        for i in range(d):
-            if not i == keepvar:
-                X[:, i] = npr.randn(N)
     
     if not shufflevar == None:
         X[:, shufflevar] = npr.randn(N)

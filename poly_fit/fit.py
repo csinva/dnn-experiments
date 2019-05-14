@@ -19,7 +19,14 @@ import seaborn as sns
 from data import *
 import os
 import time, sys
+from sklearn import metrics
+from scipy.stats import pearsonr
 
+def seed(s):
+    # set random seed        
+    np.random.seed(s) 
+    torch.manual_seed(s)    
+    random.seed(s)
 
 ## network
 class LinearNet(nn.Module):
@@ -45,8 +52,8 @@ class LinearNet(nn.Module):
     
     
 def fit(p):
-    X, Y = get_data(p.d, p.N, p.func)
-    device = 'cuda'
+    X, Y = get_data(p.d, p.N, p.func, seed_val=p.seed)
+    device = 'cpu'
     X_t, Y_t = torch.Tensor(X).to(device), torch.Tensor(Y).to(device)
     r = {}
     out_name = p._str(p)
@@ -62,64 +69,60 @@ def fit(p):
 
     criterion =  torch.nn.MSELoss()
     losses = []
-    ws = []
-    grads = []
+#     ws = []
+#     grads = []
     for it in tqdm(range(p.num_iters)):
         loss = criterion(model(X_t), Y_t)
-
         optimizer.zero_grad()            
         loss.backward()
         optimizer.step()
         sched.step(loss)
 
         losses.append(loss.detach().item())
-        ws.append(model.state_dict()['fc.0.weight'].detach().flatten().cpu().numpy())
-
-
-        grads.append(model.fc[0].weight.grad.detach().flatten().cpu().numpy())
-        model.fc[0].weight.grad.data.zero_()
+#         ws.append(model.state_dict()['fc.0.weight'].detach().flatten().cpu().numpy())
+#         grads.append(model.fc[0].weight.grad.detach().flatten().cpu().numpy())
 
         if loss.item() < p.loss_thresh:
             break
             
             
     # calculate test stats
-    X_test, Y_test = get_data(p.d, p.n_test, p.func, seed_val=p.seed + 1)
-    
-
-    pred = model(torch.Tensor(X_test).to(device)).cpu().detach().numpy()
-    test_mse = np.sum((pred - Y_test)**2) / p.n_test
-    
-    test_mse_alt = np.zeros(p.d)
-    for shufflevar in range(p.d):
-        X_test_alt, Y_test_alt = get_data(p.d, p.n_test, p.func, shufflevar=shufflevar, seed_val=p.seed + 1)
-        pred_alt = model(torch.Tensor(X_test_alt).to(device)).cpu().detach().numpy()
-        test_mse_alt[shufflevar] = np.sum((pred_alt - Y_test_alt)**2) / p.n_test
-#         print(f'using only var $x_{num}$ num_lays {i} mse {test_mse:0.2e}')
+    with torch.no_grad():
+        X_test, Y_test = get_data(p.d, p.n_test, p.func, eps=p.eps)
+        pred = model(torch.Tensor(X_test).to(device)).cpu().detach().numpy()
+        print('pred shape', pred.shape, 'y shape', Y_test.shape)
+        r['mse_test'] = metrics.mean_squared_error(pred, Y_test) # np.sum((pred - Y_test)**2) / p.n_test
+        r['r2_test'] = metrics.r2_score(pred, Y_test)
+        corr = pearsonr(pred, Y_test)[0]
+        if not type(corr) == float:
+            corr = corr[0]
+        r['corr_test'] = deepcopy(corr)
         
-#     output[num, i] = -1 * (test_mse - test_mse_alt)
-#         accs[num, i] = test_mse
-
+        for shufflevar in range(p.d):
+            X_test_alt, Y_test_alt = get_data(p.d, p.n_test, p.func, shufflevar=shufflevar, gt=True, eps=p.eps)
+            pred_alt = model(torch.Tensor(X_test_alt).to(device)).cpu().detach().numpy()
+            r['mse_alt_x' + str(shufflevar)] = metrics.mean_squared_error(pred_alt, Y_test) # np.sum((pred_alt - Y_test_alt)**2) / p.n_test
+            r['r2_alt_x' + str(shufflevar)] = metrics.r2_score(pred_alt, Y_test) 
+            corr = pearsonr(pred_alt, Y_test)[0]
+            if not type(corr) == int:
+                corr = corr[0]
+            r['corr_alt_x' + str(shufflevar)] = deepcopy(corr)
 
     # saving
-    r['model'] = deepcopy(model)
-    r['loss'] = losses
-    r['w'] = ws
-    r['grad'] = grads
-    r['mse_test'] = test_mse
-    r['mse_test_alt'] = test_mse_alt
-    
-    results = {**r, **p._dict(p)}
-    os.makedirs(p.out_dir, exist_ok=True)
-    pkl.dump(results, open(oj(p.out_dir, out_name + '.pkl'), 'wb'))
+#     r['model'] = deepcopy(model)
+        r['loss'] = losses
+        r['w'] = model.state_dict()['fc.0.weight'].detach().flatten().cpu().numpy()
 
-    return results, X, Y
+    #     r['pred'] = pred
+    #     r['grad'] = grads
+#         r['mse_test'] = test_mse
+        
 
-def seed(s):
-    # set random seed        
-    np.random.seed(s) 
-    torch.manual_seed(s)    
-    random.seed(s)
+        results = {**r, **p._dict(p)}
+        os.makedirs(p.out_dir, exist_ok=True)
+        pkl.dump(results, open(oj(p.out_dir, out_name + '.pkl'), 'wb'))
+
+        return results, X, Y
     
 if __name__ == '__main__':
     t0 = time.time()
