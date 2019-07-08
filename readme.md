@@ -1,5 +1,5 @@
 # understanding how deep learning works
-- this repo contains code for running a variety of different experiments attempting to understand deep learning at a fairly small scale.
+this repo contains code for running a variety of different experiments attempting to understand deep learning via empirical experiments
 
 # organization
 - each folder contains a readme with code documentation, as well as comments in the code
