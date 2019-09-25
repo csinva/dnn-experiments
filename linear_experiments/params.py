@@ -4,15 +4,16 @@ from random import randint
 class p:
     seed = 15
     out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/double_descent/test'
-    dset = 'pmlb'
-    dset_num = 1
+    dset = 'gaussian'
+    iid = 'iid' # 'iid', 'rand', 'test_inc'
+    dset_num = 1 # only matters for pmlb
     dset_name = ''
-    ridge_param = 0
+    reg_param = 0.1
     num_features = 100
-    n_train_over_num_features = 1.0 # this and num_features sets n_train
+    n_train_over_num_features = 0.75 # this and num_features sets n_train
     n_test = 100
     noise_mult = 0.0
-    model_type = 'rf'
+    model_type = 'ridge'
     
     # for rf
     num_trees = 10

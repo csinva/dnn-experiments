@@ -17,6 +17,7 @@ from copy import deepcopy
 import pandas as pd
 import seaborn as sns
 import fit
+from scipy.stats import random_correlation
 
 '''
 def get_data(d, N, func='x0', grid=True, shufflevar=None, seed_val=None, gt=False, eps=0.0):
@@ -67,14 +68,62 @@ def generate_gaussian_data(N, means=[0, 1], sds=[1, 1], labs=[0, 1]):
         y_one_hot[i, labs[z]] = 1
     return X, y_one_hot, y_plot
 
-def get_data(n=10, p=10000, noise_mult=0.1, seed=None):
+# get means and covariances
+def get_means_and_cov(num_vars, fix_eigs=False):
+    means = np.zeros(num_vars)
+    inv_sum = num_vars
+    if fix_eigs == 'iid':
+        eigs = [1] * num_vars    
+    elif fix_eigs == True:
+        if num_vars == 5:
+            eigs = [2, 2, 1, 0, 0]
+        elif num_vars == 10:
+            eigs = [4, 3, 2, 1, 0, 0, 0, 0, 0, 0]
+            print(np.sum(eigs))
+    else:
+        eigs = []
+        while len(eigs) < num_vars - 1:
+            if inv_sum <= 1e-2:
+                eig = 0
+            else:
+                eig = np.random.uniform(0, inv_sum)
+            eigs.append(eig)
+            inv_sum -= eig
+
+        eigs.append(num_vars - np.sum(eigs))
+#     print('eigs', eigs, np.sum(eigs))
+    covs = random_correlation.rvs(eigs)
+    covs = random_correlation.rvs(eigs)
+    return means, covs
+
+def get_data(n=10, p=10000, noise_mult=0.1, seed=None, iid='iid',
+             means=None, covs=None, test=False):
+    '''Get data for simulations
+    test flag allows us to create a difference between the training and testing dataset
+    '''
     if not seed is None:
         np.random.seed(seed=seed)
     
     # data
-    X = np.random.randn(n, p)
+    if iid == 'iid' or (iid == 'test_inc' and not test):
+        X = np.random.randn(n, p)
+    elif iid == 'test_inc' and iid == 'test_inc' and test:
+        means, covs = get_means_and_cov(p, fix_eigs=False)
+        covs += 5 * np.ones(covs.shape)
+        covs /= 6
+        X = np.random.multivariate_normal(means, covs, (n,))
+    elif iid == 'rand':
+        if means is None:
+            means, covs = get_means_and_cov(p, fix_eigs=False)
+        X = np.random.multivariate_normal(means, covs, (n,))
+    
+    
+#     print('shapes', X.shape, n, p)
     # X_test = np.random.randn(n, p)
 
     Y = X[:, 0] + noise_mult * np.random.randn(n)
     
-    return X, Y
+    if not iid:
+        return X, Y, means, covs
+    else:
+        return X, Y, None, None

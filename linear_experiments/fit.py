@@ -3,7 +3,7 @@ import traceback
 import matplotlib.pyplot as plt
 import sklearn
 from sklearn.model_selection import train_test_split, cross_validate
-from sklearn.linear_model import LogisticRegression, LinearRegression
+from sklearn.linear_model import LogisticRegression, LinearRegression, Lasso, Ridge
 from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.utils import shuffle
@@ -45,12 +45,14 @@ def fit(p):
     # testing data should always be generated with the same seed
     if p.dset == 'gaussian':
         p.n_train = int(p.n_train_over_num_features * p.num_features)
-        X_test, y_test = data.get_data(p.n_test, p.num_features, 
-                                       noise_mult=p.noise_mult, seed=703858704)
+        X_test, y_test, means, covs = data.get_data(p.n_test, p.num_features, 
+                                       noise_mult=p.noise_mult, 
+                                       iid=p.iid, seed=703858704, test=True)
         seed(p.seed) # remember to re-set the seed after generating the test data
 
-        X_train, y_train = data.get_data(p.n_train, p.num_features, 
-                                         noise_mult=p.noise_mult)
+        X_train, y_train, _, _ = data.get_data(p.n_train, p.num_features, 
+                                         noise_mult=p.noise_mult, iid=p.iid,
+                                         means=means, covs=covs, test=False)
     elif p.dset == 'pmlb':
         s.dset_name = regression_dsets_large_names[p.dset_num]
         seed(703858704)
@@ -76,34 +78,67 @@ def fit(p):
             X_train = X_train[:p.n_train]
             y_train = y_train[:p.n_train]
         
-        
-
     
-    if p.model_type == 'linear':
+    
+    if p.model_type in ['linear_sta', 'ols', 'lasso', 'ridge']:
         
         # fit model
+        if p.model_type == 'linear_sta':
+            s.w = X_train.T @ y_train / X_train.shape[0]
+        else:
+            if p.model_type == 'ols':
+                m = LinearRegression(fit_intercept=False)
+            elif p.model_type == 'lasso':
+                m = Lasso(fit_intercept=False, alpha=p.reg_param)
+            elif p.model_type == 'ridge':
+                m = Ridge(fit_intercept=False, alpha=p.reg_param)
+            
+            m.fit(X_train, y_train)
+            s.w = m.coef_
+            
+            
+        '''
         cov = X_train.T @ X_train
         if p.num_features >= p.n_train:
-            inv = np.linalg.pinv(cov)
+            inv = np.linalg.pinv(cov + p.ridge_param * np.eye(cov.shape[0]))
         else:
-            inv = np.linalg.inv(cov)
-        H = X_train @ inv @ X_train.T
-        s.w = inv @ X_train.T @ y_train
+            inv = np.linalg.inv(cov + p.ridge_param * np.eye(cov.shape[0]))
+        # H = X_train @ inv @ X_train.T
+        
+        if p.model_type == 'linear':
+            s.w = inv @ X_train.T @ y_train
+        elif p.model_type == 'linear_sta':
+            s.w = X_train.T @ y_train / X_train.shape[0]
+            
+            
+        # not sure about this one
+        elif p.model_type == 'linear_univariate':
+            cov_diag = np.diag(np.diag(X_train.T @ X_train))
+            inv_diag = np.linalg.pinv(cov_diag)
+            s.w = inv_diag @ y_train
+            
+            # (Diag(X^t X / n))^{-1} X^t y / n (where we zero out the non-diagonal entries of  X^t X / n). This model corresponds to fitting d univariate linear models and concatenating them.
+        '''
+            
+            
 
         # save linear things
-        s.H_trace = np.trace(H)
+        # s.H_trace = np.trace(H)
         s.wnorm = np.linalg.norm(s.w)
-        
+        s.num_nonzero = np.count_nonzero(s.w)
+
         # make predictions
         s.preds_train = X_train @ s.w
         s.preds_test = X_test @ s.w
+        
+        
     
     elif p.model_type == 'rf':
         rf = RandomForestRegressor(n_estimators=p.num_trees, max_depth=p.max_depth)
         rf.fit(X_train, y_train)
         s.preds_train = rf.predict(X_train)
-        x.preds_test = rf.predict(X_test)
-        pass
+        s.preds_test = rf.predict(X_test)
+        
     
     # set things
     s.train_mse = metrics.mean_squared_error(s.preds_train, y_train)
