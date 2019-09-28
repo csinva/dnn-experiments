@@ -96,15 +96,15 @@ def get_means_and_cov(num_vars, fix_eigs=False):
     covs = random_correlation.rvs(eigs)
     return means, covs
 
-def get_data(n=10, p=10000, noise_mult=0.1, seed=None, iid='iid',
-             means=None, covs=None, test=False):
-    '''Get data for simulations
-    test flag allows us to create a difference between the training and testing dataset
+
+
+def get_X(n, p, iid):
+    if iid == 'iid':
+        X = np.random.randn(n, p)
+    else:
+        print(iid, ' data not supported!')
+    return X
     '''
-    if not seed is None:
-        np.random.seed(seed=seed)
-    
-    # data
     if iid == 'iid' or (iid == 'test_inc' and not test):
         X = np.random.randn(n, p)
     elif iid == 'test_inc' and iid == 'test_inc' and test:
@@ -116,14 +116,37 @@ def get_data(n=10, p=10000, noise_mult=0.1, seed=None, iid='iid',
         if means is None:
             means, covs = get_means_and_cov(p, fix_eigs=False)
         X = np.random.multivariate_normal(means, covs, (n,))
+    '''
     
-    
-#     print('shapes', X.shape, n, p)
-    # X_test = np.random.randn(n, p)
 
-    Y = X[:, 0] + noise_mult * np.random.randn(n)
+
+def get_data_train_test(n_train=10, n_test=100, p=10000, noise_mult=0.1, iid='iid', # parameters to be determined
+                        beta_type='one_hot', beta_norm=1, seed_for_training_data=None):
+
+    '''Get data for simulations - test should always be the same given all the parameters (except seed_for_training_data)
+    Warning - this sets a random seed!
+    '''
     
-    if not iid:
-        return X, Y, means, covs
-    else:
-        return X, Y, None, None
+    np.random.seed(seed=703858704)
+    
+    # get beta
+    if beta_type == 'one_hot':
+        beta = np.zeros(p)
+        beta[0] = 1
+    elif beta_type == 'gaussian':
+        beta = np.random.randn(p)
+    beta = beta / np.linalg.norm(beta) * beta_norm
+        
+    
+    # data
+    X_test = get_X(n_test, p, iid)
+    y_test = X_test @ beta + noise_mult * np.random.randn(n_test)
+    
+    # re-seed before getting betastar
+    if not seed_for_training_data is None:
+        np.random.seed(seed=seed_for_training_data)
+    
+    X_train = get_X(n_train, p, iid)
+    y_train = X_train @ beta + noise_mult * np.random.randn(n_train)
+    
+    return X_train, y_train, X_test, y_test, beta

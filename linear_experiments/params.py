@@ -5,6 +5,8 @@ class p:
     seed = 15
     out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/double_descent/test'
     dset = 'gaussian'
+    beta_type = 'gaussian' # one_hot
+    beta_norm = 1
     iid = 'iid' # 'iid', 'rand', 'test_inc'
     dset_num = 1 # only matters for pmlb
     dset_name = ''

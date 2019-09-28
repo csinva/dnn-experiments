@@ -45,14 +45,13 @@ def fit(p):
     # testing data should always be generated with the same seed
     if p.dset == 'gaussian':
         p.n_train = int(p.n_train_over_num_features * p.num_features)
-        X_test, y_test, means, covs = data.get_data(p.n_test, p.num_features, 
-                                       noise_mult=p.noise_mult, 
-                                       iid=p.iid, seed=703858704, test=True)
-        seed(p.seed) # remember to re-set the seed after generating the test data
 
-        X_train, y_train, _, _ = data.get_data(p.n_train, p.num_features, 
-                                         noise_mult=p.noise_mult, iid=p.iid,
-                                         means=means, covs=covs, test=False)
+        # warning - this reseeds!
+        X_train, y_train, X_test, y_test, s.betastar = \
+            data.get_data_train_test(n_train=p.n_train, n_test=p.n_test, p=p.num_features, 
+                                noise_mult=p.noise_mult, iid=p.iid, # parameters to be determined
+                                beta_type=p.beta_type, beta_norm=p.beta_norm, 
+                                seed_for_training_data=p.seed)
     elif p.dset == 'pmlb':
         s.dset_name = regression_dsets_large_names[p.dset_num]
         seed(703858704)
@@ -95,31 +94,7 @@ def fit(p):
             
             m.fit(X_train, y_train)
             s.w = m.coef_
-            
-            
-        '''
-        cov = X_train.T @ X_train
-        if p.num_features >= p.n_train:
-            inv = np.linalg.pinv(cov + p.ridge_param * np.eye(cov.shape[0]))
-        else:
-            inv = np.linalg.inv(cov + p.ridge_param * np.eye(cov.shape[0]))
-        # H = X_train @ inv @ X_train.T
         
-        if p.model_type == 'linear':
-            s.w = inv @ X_train.T @ y_train
-        elif p.model_type == 'linear_sta':
-            s.w = X_train.T @ y_train / X_train.shape[0]
-            
-            
-        # not sure about this one
-        elif p.model_type == 'linear_univariate':
-            cov_diag = np.diag(np.diag(X_train.T @ X_train))
-            inv_diag = np.linalg.pinv(cov_diag)
-            s.w = inv_diag @ y_train
-            
-            # (Diag(X^t X / n))^{-1} X^t y / n (where we zero out the non-diagonal entries of  X^t X / n). This model corresponds to fitting d univariate linear models and concatenating them.
-        '''
-            
             
 
         # save linear things
@@ -142,8 +117,7 @@ def fit(p):
     
     # set things
     s.train_mse = metrics.mean_squared_error(s.preds_train, y_train)
-    s.test_mse = metrics.mean_squared_error(s.preds_test, y_test)
-    
+    s.test_mse = metrics.mean_squared_error(s.preds_test, y_test)    
         
     save(out_name, p, s)
 

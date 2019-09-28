@@ -6,17 +6,16 @@ partition = 'low'
 
 # run w/ shifted test
 params_to_vary = {
-    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/double_descent/all_linear'],
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/double_descent/all_linear/beta=gaussian_noise=1e-1'],
     'seed': range(0, 5),    
     'num_features': [500],    
     'n_train_over_num_features': [1e-2, 5e-2, 1e-1, 0.5, 0.75, 0.9, 1, 1.2, 1.5, 2, 5, 7.5, 1e1, 2e1, 4e1, 1e2],    
     'dset': ['gaussian'],
     'n_test': [5000],
+    'beta_type': ['gaussian'],
     'noise_mult': [1e-1], #0.001],
-    'model_type': ['linear_sta', 'ridge', 'ols', 'lasso'],     
+    'model_type': ['linear_sta', 'ridge', 'ols', 'lasso'],  
     'iid': ['iid'],
-    
-    
     'reg_param': [0, 1e-2, 1e-1, 1, 1e1], # make sure to always have reg_param 0!
     'dset_num': [0]
     
@@ -35,20 +34,29 @@ i_reg_param = np.where(ks == 'reg_param')[0][0]
 i_dset = np.where(ks == 'dset')[0][0]
 i_dset_num = np.where(ks == 'dset_num')[0][0]
 
+
+
+params_full = []
 for t in param_combinations:
     # remove reg_param for non-ridge and non-lasso
     if t[i_reg_param] > 0 and not t[i_model_type] in ['ridge', 'lasso']:
-        param_combinations.remove(t)
+        pass
         
     # remove reg_param = 0 for ridge and lasso
-    if t[i_reg_param] == 0 and t[i_model_type] in ['ridge', 'lasso']:
-        param_combinations.remove(t)
+    elif t[i_reg_param] == 0 and t[i_model_type] in ['ridge', 'lasso']:
+        pass
     
     # remove dset_num for non-pmlb
-    if t[i_dset] is not 'pmlb' and t[i_dset_num] > 0:
-        param_combinations.remove(t)
+    elif t[i_dset] is not 'pmlb' and t[i_dset_num] > 0:
+        pass
+    
+    else:
+        params_full.append(t)
 
-print(len(param_combinations))
+print(len(params_full))
+for p in params_full:
+    print(p[i_reg_param], p[i_model_type])
+
 #             print(t[i])
 #     print(t)
 # print(param_combinations)
@@ -56,12 +64,13 @@ print(len(param_combinations))
 #     param_combinations.remove(param_delete)
 
 # iterate
-for i in range(len(param_combinations)):
+
+for i in range(len(params_full)):
     param_str = 'module load python; python3 ../linear_experiments/fit.py '
     for j, key in enumerate(ks):
-        param_str += key + ' ' + str(param_combinations[i][j]) + ' '
+        param_str += key + ' ' + str(params_full[i][j]) + ' '
     s.run(param_str)
-    
+
     
     
 # sweep different ways to initialize weights
