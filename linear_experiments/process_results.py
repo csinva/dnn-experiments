@@ -115,6 +115,7 @@ if __name__ == '__main__':
     # all linear
     # all_linear_clustered
     # all_linear_vary_noise_distr
+    # all_linear_pmlb
     out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/double_descent/all_linear_vary_noise_distr/'
     for folder in tqdm(sorted(os.listdir(out_dir))):
         folder_path = oj(out_dir, folder)

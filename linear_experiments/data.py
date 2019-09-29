@@ -118,6 +118,8 @@ def get_Y(X, beta, noise_mult, noise_distr):
         return X @ beta + noise_mult * t.rvs(df=3, size=X.shape[0])
     elif noise_distr == 'gaussian_scale_var': # want variance of noise to scale with squared norm of x
         return X @ beta + noise_mult * np.multiply(np.random.randn(X.shape[0]), np.linalg.norm(X, axis=1))
+    elif noise_distr == 'thresh':
+        return (X > 0).astype(np.float32) @ beta + noise_mult * np.random.randn(X.shape[0])
     
 
 def get_data_train_test(n_train=10, n_test=100, p=10000, noise_mult=0.1, noise_distr='gaussian', iid='iid', # parameters to be determined

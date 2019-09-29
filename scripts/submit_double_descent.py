@@ -6,18 +6,18 @@ partition = 'low'
 
 # run w/ shifted test
 params_to_vary = {
-    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/double_descent/all_linear_pmlb/dset1'],
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/double_descent/all_linear_vary_noise_distr/beta=gaussian_noise=1e-1_noisedistr=thresh'],
     'seed': range(0, 5),    
     'num_features': [500],    
     'n_train_over_num_features': [1e-2, 5e-2, 1e-1, 0.5, 0.75, 0.9, 1, 1.2, 1.5, 2, 5, 7.5, 1e1, 2e1, 4e1, 1e2],    
     'n_test': [5000],
     
-    'dset': ['pmlb'], # gaussian
-    'dset_num': [1],
+    'dset': ['gaussian'], # gaussian
+    'dset_num': [0],
     
     'iid': ['iid'], # iid, clustered
-    'beta_type': ['gaussian'], # one_hot
-    'noise_distr': ['gaussian'], # t, gaussian_scale_var, gaussian
+    'beta_type': ['gaussian'], # one_hot, gaussian
+    'noise_distr': ['thresh'], # t, gaussian_scale_var, gaussian, thresh
     'noise_mult': [1e-1], #0.001],
 
     'model_type': ['linear_sta', 'ridge', 'ols', 'lasso'],      

@@ -4,7 +4,7 @@ from random import randint
 class p:
     seed = 15
     out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/double_descent/test'
-    dset = 'pmlb' # gaussian
+    dset = 'gaussian' # gaussian
     beta_type = 'gaussian' # one_hot
     beta_norm = 1
     iid = 'iid' # 'iid', 'clustered'
@@ -15,7 +15,7 @@ class p:
     n_train_over_num_features = 0.75 # this and num_features sets n_train
     n_test = 100
     noise_mult = 0.0
-    noise_distr = 'gaussian_scale_var' # gaussian, t, gaussian_scale_var
+    noise_distr = 'gaussian' # gaussian, t, gaussian_scale_var, thresh
     model_type = 'ridge'
     
     # for rf
