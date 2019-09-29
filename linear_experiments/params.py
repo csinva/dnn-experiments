@@ -4,10 +4,10 @@ from random import randint
 class p:
     seed = 15
     out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/double_descent/test'
-    dset = 'gaussian'
+    dset = 'pmlb' # gaussian
     beta_type = 'gaussian' # one_hot
     beta_norm = 1
-    iid = 'iid' # 'iid', 'rand', 'test_inc'
+    iid = 'iid' # 'iid', 'clustered'
     dset_num = 1 # only matters for pmlb
     dset_name = ''
     reg_param = 0.1
@@ -15,6 +15,7 @@ class p:
     n_train_over_num_features = 0.75 # this and num_features sets n_train
     n_test = 100
     noise_mult = 0.0
+    noise_distr = 'gaussian_scale_var' # gaussian, t, gaussian_scale_var
     model_type = 'ridge'
     
     # for rf

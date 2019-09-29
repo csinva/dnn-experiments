@@ -49,7 +49,7 @@ def fit(p):
         # warning - this reseeds!
         X_train, y_train, X_test, y_test, s.betastar = \
             data.get_data_train_test(n_train=p.n_train, n_test=p.n_test, p=p.num_features, 
-                                noise_mult=p.noise_mult, iid=p.iid, # parameters to be determined
+                                noise_mult=p.noise_mult, noise_distr=p.noise_distr, iid=p.iid, # parameters to be determined
                                 beta_type=p.beta_type, beta_norm=p.beta_norm, 
                                 seed_for_training_data=p.seed)
     elif p.dset == 'pmlb':

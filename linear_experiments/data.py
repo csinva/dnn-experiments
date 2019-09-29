@@ -18,6 +18,7 @@ import pandas as pd
 import seaborn as sns
 import fit
 from scipy.stats import random_correlation
+from scipy.stats import t
 
 '''
 def get_data(d, N, func='x0', grid=True, shufflevar=None, seed_val=None, gt=False, eps=0.0):
@@ -98,29 +99,28 @@ def get_means_and_cov(num_vars, fix_eigs=False):
 
 
 
-def get_X(n, p, iid):
+def get_X(n, p, iid, means=None, covs=None):
     if iid == 'iid':
         X = np.random.randn(n, p)
-    else:
-        print(iid, ' data not supported!')
-    return X
-    '''
-    if iid == 'iid' or (iid == 'test_inc' and not test):
-        X = np.random.randn(n, p)
-    elif iid == 'test_inc' and iid == 'test_inc' and test:
-        means, covs = get_means_and_cov(p, fix_eigs=False)
-        covs += 5 * np.ones(covs.shape)
-        covs /= 6
-        X = np.random.multivariate_normal(means, covs, (n,))
-    elif iid == 'rand':
+    elif iid == 'clustered':
         if means is None:
             means, covs = get_means_and_cov(p, fix_eigs=False)
         X = np.random.multivariate_normal(means, covs, (n,))
-    '''
+    else:
+        print(iid, ' data not supported!')
+    return X, means, covs
     
 
+def get_Y(X, beta, noise_mult, noise_distr):
+    if noise_distr == 'gaussian':
+        return X @ beta + noise_mult * np.random.randn(X.shape[0])
+    elif noise_distr == 't': # student's t w/ 3 degrees of freedom
+        return X @ beta + noise_mult * t.rvs(df=3, size=X.shape[0])
+    elif noise_distr == 'gaussian_scale_var': # want variance of noise to scale with squared norm of x
+        return X @ beta + noise_mult * np.multiply(np.random.randn(X.shape[0]), np.linalg.norm(X, axis=1))
+    
 
-def get_data_train_test(n_train=10, n_test=100, p=10000, noise_mult=0.1, iid='iid', # parameters to be determined
+def get_data_train_test(n_train=10, n_test=100, p=10000, noise_mult=0.1, noise_distr='gaussian', iid='iid', # parameters to be determined
                         beta_type='one_hot', beta_norm=1, seed_for_training_data=None):
 
     '''Get data for simulations - test should always be the same given all the parameters (except seed_for_training_data)
@@ -139,14 +139,14 @@ def get_data_train_test(n_train=10, n_test=100, p=10000, noise_mult=0.1, iid='ii
         
     
     # data
-    X_test = get_X(n_test, p, iid)
-    y_test = X_test @ beta + noise_mult * np.random.randn(n_test)
+    X_test, means, covs = get_X(n_test, p, iid)
+    y_test = get_Y(X_test, beta, noise_mult, noise_distr)
     
     # re-seed before getting betastar
     if not seed_for_training_data is None:
         np.random.seed(seed=seed_for_training_data)
     
-    X_train = get_X(n_train, p, iid)
-    y_train = X_train @ beta + noise_mult * np.random.randn(n_train)
+    X_train, _, _ = get_X(n_train, p, iid, means, covs)
+    y_train = get_Y(X_train, beta, noise_mult, noise_distr)
     
     return X_train, y_train, X_test, y_test, beta

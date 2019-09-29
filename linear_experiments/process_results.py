@@ -31,6 +31,8 @@ def process_results(results):
         results['beta_norm'] = 1
     if 'beta_type' not in results:
         results['beta_type'] = 'one_hot'
+    if 'noise_distr' not in results:
+        results['noise_distr'] = 'gaussian'
     return results
 
 
@@ -63,7 +65,7 @@ def aggregate_results(results, group_idxs, out_dir):
                 dset_name = ''
                 _, _, _, y_true, betastar = \
                     data.get_data_train_test(n_test=p.n_test, p=p.num_features, 
-                                             noise_mult=0, iid=p.iid, # parameters to be determined
+                                             noise_mult=0, noise_distr=p.noise_distr, iid=p.iid, # parameters to be determined
                                              beta_type=p.beta_type, beta_norm=p.beta_norm)
                 y_true = y_true.reshape(1, -1) # 1 x n_test
             elif dset == 'pmlb':
@@ -110,7 +112,10 @@ def aggregate_results(results, group_idxs, out_dir):
 
 # run this to process / save some dsets
 if __name__ == '__main__':
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/double_descent/all_linear/'
+    # all linear
+    # all_linear_clustered
+    # all_linear_vary_noise_distr
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/double_descent/all_linear_vary_noise_distr/'
     for folder in tqdm(sorted(os.listdir(out_dir))):
         folder_path = oj(out_dir, folder)
         if not 'processed.pkl' in os.listdir(folder_path):
@@ -122,8 +127,11 @@ if __name__ == '__main__':
 
 
 
-                group_idxs = ['dset', 'noise_mult', 'dset_num',  # dset
-                              'model_type', 'reg_param'] # model
+                group_idxs = ['dset', 'dset_num',
+                              'beta_type', 'model_type', 'reg_param',
+                              'beta_norm',
+                              'noise_mult', 'noise_distr',   # dset
+                             ] # model
                 results = process_results(results)
                 df = aggregate_results(results, group_idxs, folder_path)
             except Exception as e:
