@@ -19,7 +19,7 @@ import os
 import data
 import viz
 import sys
-from params_save import S
+from params_save import S as S_save
 import pmlb
 
 def seed(s):
@@ -38,7 +38,7 @@ def save(out_name, p, s):
 def fit(p):
     out_name = p._str(p) # generate random fname str before saving
     seed(p.seed)
-    s = S(p)
+    s = S_save(p)
     
     
     
@@ -95,13 +95,25 @@ def fit(p):
             m.fit(X_train, y_train)
             s.w = m.coef_
         
-            
-
-        # save linear things
+        
+        # save df
+        if p.model_type == 'ridge':
+            S = X_train @ np.linalg.pinv(X_train.T @ X_train + p.reg_param * np.eye(X_train.shape[1])) @ X_train.T
+            s.df1 = np.trace(S @ S.T)
+            s.df2 = np.trace(2 * S - S.T @ S)
+            s.df3 = np.trace(S)
+        else:
+            s.df1 = min(p.n_train, p.num_features)
+            s.df2 = s.df1
+            s.df3 = s.df1
+#         elif p.model_type == 'ols':
+#             S = X_train @ np.linalg.pinv(X_train.T @ X_train) @ X_train.T
+        
         # s.H_trace = np.trace(H)
         s.wnorm = np.linalg.norm(s.w)
         s.num_nonzero = np.count_nonzero(s.w)
-
+        
+        
         # make predictions
         s.preds_train = X_train @ s.w
         s.preds_test = X_test @ s.w

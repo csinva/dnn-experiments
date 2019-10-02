@@ -35,12 +35,37 @@ def process_results(results):
         results['noise_distr'] = 'gaussian'
     return results
 
+def best_ridge(df):
+    '''Takes in results, already aggregated over seeds and selects best ridge axes to plot
+    
+    Returns
+    -------
+    row: row of pd.Dataframe with row.df1, row.df2, row.df3
+    '''
+    name_best = ''
+    auc_best = 1e10
+    for name, curve in tqdm(df.iterrows()):
+    #     print(name, curve)
+        model_type = name[3]
+        reg_param = name[4]
+        l = str(model_type) + ' ' + str(reg_param)
+        if model_type == 'ridge':
+            auc = np.trapz(y=np.log(curve.mse_noiseless), x=curve.ratio)
+            auc = np.trapz(y=curve.mse_noiseless) #, x=np.log(curve.ratio))
+            if auc < auc_best:
+                auc_best = auc
+                name_best = name
+    row = df.loc[name_best]
+    return row
+
 
 def aggregate_results(results, group_idxs, out_dir):
+    '''Takes in results and makes curves when varying n_train + aggregates over seeds
+    '''
     r2 = results.groupby(group_idxs)
     ind = pd.MultiIndex.from_tuples(r2.indices, names=group_idxs)
     df = pd.DataFrame(index=ind)
-    keys = ['ratio', 'bias', 'var', 'wnorm', 'mse_train', 'mse_test', 'num_nonzero', 'mse_noiseless']
+    keys = ['ratio', 'bias', 'var', 'wnorm', 'mse_train', 'mse_test', 'num_nonzero', 'mse_noiseless', 'df1', 'df2', 'df3']
     for key in keys:
         df[key] = None
     for name, gr in tqdm(r2):
@@ -97,7 +122,9 @@ def aggregate_results(results, group_idxs, out_dir):
             row['mse_train'].append(gr2.train_mse.mean())
             row['mse_test'].append(gr2.test_mse.mean())
             row['mse_noiseless'].append(mse_noiseless)
-            row['num_nonzero'].append(gr2.num_nonzero.mean())
+            for key in ['num_nonzero', 'df1', 'df2', 'df3']:
+                print(key, gr2[key].mean())
+                row[key].append(gr2[key].mean())
 #             row['mse_zero'].append(metrics.mean_squared_error(y_true, np.zeros(y_true.size).reshape(y_true.shape))) # metrics.mean_squared_error(y_true, np.zeros(y_true.size).reshape(y_true.shape))
 
         for k in keys:
@@ -112,11 +139,22 @@ def aggregate_results(results, group_idxs, out_dir):
 
 # run this to process / save some dsets
 if __name__ == '__main__':
-    # all linear
-    # all_linear_clustered
-    # all_linear_vary_noise_distr
-    # all_linear_pmlb
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/double_descent/all_linear_vary_noise_distr/'
+# all_linear_old
+    # these all have ols, ridge, sta, lasso with appropriate hyperparams
+    # beta=gaussian_noise=1e-1
+    # beta=gaussian_noise=0 
+    # beta=onehot_noise=0  
+    # beta=onehot_noise=1e-1 
+# all_linear_clustered
+# all_linear_vary_noise_distr
+# all_linear_pmlb
+
+
+
+
+# df/basic
+
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/double_descent/df'
     for folder in tqdm(sorted(os.listdir(out_dir))):
         folder_path = oj(out_dir, folder)
         if not 'processed.pkl' in os.listdir(folder_path):

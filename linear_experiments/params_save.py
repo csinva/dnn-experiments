@@ -10,9 +10,6 @@ class S:
         # accs / losses
         train_mse, test_mse, wnorm, pseudo_trace, cov_trace, nuclear_norm, H_trace = [], [], [], [], [], [], []
         
-#         self.losses_train = np.zeros(p.num_iters) # training loss curve (should be plotted against p.its)
-#         self.losses_test = np.zeros(p.num_iters)  # testing loss curve (should be plotted against p.its)
-#         self.accs_train = np.zeros(p.num_iters)   # training acc curve (should be plotted against p.its)               
     
     # dictionary of everything but weights
     def _dict(self):
