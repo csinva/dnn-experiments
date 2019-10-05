@@ -4,10 +4,9 @@ import numpy as np
 
 partition = 'low'
 
-# run w/ shifted test
 params_to_vary = {
-    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/double_descent/df/basic'],
-    'seed': range(0, 3),    
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/double_descent/df/spike'],
+    'seed': range(0, 2),    
     'num_features': [500],    
     'n_train_over_num_features': [1e-2, 5e-2, 1e-1, 0.5, 0.75, 0.9, 1, 1.2, 1.5, 2, 5, 7.5, 1e1, 2e1, 4e1, 1e2],    
     'n_test': [5000],
@@ -15,7 +14,7 @@ params_to_vary = {
     'dset': ['gaussian'], # gaussian, pmlb
     'dset_num': [0],
     
-    'iid': ['iid'], # iid, clustered
+    'iid': ['spike'], # iid, clustered, spike
     'beta_type': ['gaussian'], # one_hot, gaussian
     'noise_distr': ['gaussian'], # gaussian, t, gaussian_scale_var, thresh
     'noise_mult': [1e-1], #0.001],

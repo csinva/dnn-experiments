@@ -7,7 +7,7 @@ class p:
     dset = 'gaussian' # gaussian
     beta_type = 'gaussian' # one_hot
     beta_norm = 1
-    iid = 'iid' # 'iid', 'clustered'
+    iid = 'iid' # 'iid', 'clustered', 'spike'
     dset_num = 1 # only matters for pmlb
     dset_name = ''
     reg_param = 0.1

@@ -78,6 +78,10 @@ def aggregate_results(results, group_idxs, out_dir):
         num_features = p.num_features
         curve = gr.groupby(['n_train']) #.sort_index()
         row = {k: [] for k in keys}
+        row['model_type'] = model_type
+        row['reg_param'] = reg_param
+        row['num_features'] = num_features
+        row['noise_mult'] = noise_mult
     #         print(curve.describe())
     
 #         if reg_param > 9 and model_type == 'lasso':
@@ -123,7 +127,7 @@ def aggregate_results(results, group_idxs, out_dir):
             row['mse_test'].append(gr2.test_mse.mean())
             row['mse_noiseless'].append(mse_noiseless)
             for key in ['num_nonzero', 'df1', 'df2', 'df3']:
-                print(key, gr2[key].mean())
+#                 print(key, gr2[key].mean())
                 row[key].append(gr2[key].mean())
 #             row['mse_zero'].append(metrics.mean_squared_error(y_true, np.zeros(y_true.size).reshape(y_true.shape))) # metrics.mean_squared_error(y_true, np.zeros(y_true.size).reshape(y_true.shape))
 
@@ -169,7 +173,7 @@ if __name__ == '__main__':
                 group_idxs = ['dset', 'dset_num',
                               'beta_type', 'model_type', 'reg_param',
                               'beta_norm',
-                              'noise_mult', 'noise_distr',   # dset
+                              'noise_mult', 'noise_distr', 'iid',  # dset
                              ] # model
                 results = process_results(results)
                 df = aggregate_results(results, group_idxs, folder_path)

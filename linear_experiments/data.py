@@ -70,18 +70,10 @@ def generate_gaussian_data(N, means=[0, 1], sds=[1, 1], labs=[0, 1]):
     return X, y_one_hot, y_plot
 
 # get means and covariances
-def get_means_and_cov(num_vars, fix_eigs=False):
+def get_means_and_cov(num_vars, iid='clustered'):
     means = np.zeros(num_vars)
     inv_sum = num_vars
-    if fix_eigs == 'iid':
-        eigs = [1] * num_vars    
-    elif fix_eigs == True:
-        if num_vars == 5:
-            eigs = [2, 2, 1, 0, 0]
-        elif num_vars == 10:
-            eigs = [4, 3, 2, 1, 0, 0, 0, 0, 0, 0]
-            print(np.sum(eigs))
-    else:
+    if iid == 'clustered':
         eigs = []
         while len(eigs) < num_vars - 1:
             if inv_sum <= 1e-2:
@@ -92,9 +84,10 @@ def get_means_and_cov(num_vars, fix_eigs=False):
             inv_sum -= eig
 
         eigs.append(num_vars - np.sum(eigs))
-#     print('eigs', eigs, np.sum(eigs))
-    covs = random_correlation.rvs(eigs)
-    covs = random_correlation.rvs(eigs)
+        covs = random_correlation.rvs(eigs)
+    elif iid == 'spike':
+        covs = random_correlation.rvs(np.ones(num_vars)) # basically identity with some noise
+        covs = covs + 0.5 * np.ones(covs.shape)
     return means, covs
 
 
@@ -102,9 +95,8 @@ def get_means_and_cov(num_vars, fix_eigs=False):
 def get_X(n, p, iid, means=None, covs=None):
     if iid == 'iid':
         X = np.random.randn(n, p)
-    elif iid == 'clustered':
-        if means is None:
-            means, covs = get_means_and_cov(p, fix_eigs=False)
+    elif iid in ['clustered', 'spike']:
+        means, covs = get_means_and_cov(p, iid)
         X = np.random.multivariate_normal(means, covs, (n,))
     else:
         print(iid, ' data not supported!')
