@@ -65,9 +65,9 @@ best_prec1 = 0
 
 def main():
     global args, best_prec1
-    torch.manual_seed(0)
-    np.random.seed(0)
-    random.seed(0)
+    torch.manual_seed(3)
+    np.random.seed(3)
+    random.seed(3)
     
     args = parser.parse_args()
     print('saving to', args.save_dir)
