@@ -3,8 +3,8 @@ def set_style():
     import matplotlib as mpl
     import matplotlib.pylab as pylab
     from cycler import cycler
-    plt.style.use('fivethirtyeight')
-    label_size = 12
+#     plt.style.use('fivethirtyeight')
+    label_size = 15
     mpl.rcParams['xtick.labelsize'] = label_size 
     mpl.rcParams['ytick.labelsize'] = label_size 
     mpl.rcParams['axes.labelsize'] = label_size
@@ -12,7 +12,7 @@ def set_style():
     mpl.rcParams['figure.titlesize'] = label_size
     mpl.rcParams['lines.markersize'] = 10
     mpl.rcParams['lines.linewidth'] = 3.
-    mpl.rcParams['grid.linewidth'] = 1.
+#     mpl.rcParams['grid.linewidth'] = 1.
     mpl.rcParams['legend.fontsize'] = label_size
     pylab.rcParams['xtick.major.pad']=3
     pylab.rcParams['ytick.major.pad']=3
