@@ -70,7 +70,7 @@ def generate_gaussian_data(N, means=[0, 1], sds=[1, 1], labs=[0, 1]):
     return X, y_one_hot, y_plot
 
 # get means and covariances
-def get_means_and_cov(num_vars, iid='clustered'):
+def get_means_and_cov(num_vars, iid='clustered', cov_param=None):
     means = np.zeros(num_vars)
     inv_sum = num_vars
     if iid == 'clustered':
@@ -88,15 +88,18 @@ def get_means_and_cov(num_vars, iid='clustered'):
     elif iid == 'spike':
         covs = random_correlation.rvs(np.ones(num_vars)) # basically identity with some noise
         covs = covs + 0.5 * np.ones(covs.shape)
+    elif iid == 'decay':
+        eigs = np.array([1/((i + 1) ** cov_param) for i in range(num_vars)])
+        eigs = eigs * num_vars / eigs.sum()
+        covs = random_correlation.rvs(eigs)
     return means, covs
 
 
-
-def get_X(n, p, iid, means=None, covs=None):
+def get_X(n, p, iid, means=None, covs=None, cov_param=None):
     if iid == 'iid':
         X = np.random.randn(n, p)
-    elif iid in ['clustered', 'spike']:
-        means, covs = get_means_and_cov(p, iid)
+    elif iid in ['clustered', 'spike', 'decay']:
+        means, covs = get_means_and_cov(p, iid, cov_param)
         X = np.random.multivariate_normal(means, covs, (n,))
     else:
         print(iid, ' data not supported!')
@@ -115,7 +118,7 @@ def get_Y(X, beta, noise_mult, noise_distr):
     
 
 def get_data_train_test(n_train=10, n_test=100, p=10000, noise_mult=0.1, noise_distr='gaussian', iid='iid', # parameters to be determined
-                        beta_type='one_hot', beta_norm=1, seed_for_training_data=None):
+                        beta_type='one_hot', beta_norm=1, seed_for_training_data=None, cov_param=None):
 
     '''Get data for simulations - test should always be the same given all the parameters (except seed_for_training_data)
     Warning - this sets a random seed!
@@ -133,14 +136,14 @@ def get_data_train_test(n_train=10, n_test=100, p=10000, noise_mult=0.1, noise_d
         
     
     # data
-    X_test, means, covs = get_X(n_test, p, iid)
+    X_test, means, covs = get_X(n_test, p, iid, cov_param=cov_param)
     y_test = get_Y(X_test, beta, noise_mult, noise_distr)
     
     # re-seed before getting betastar
     if not seed_for_training_data is None:
         np.random.seed(seed=seed_for_training_data)
     
-    X_train, _, _ = get_X(n_train, p, iid, means, covs)
+    X_train, _, _ = get_X(n_train, p, iid, means, covs, cov_param)
     y_train = get_Y(X_train, beta, noise_mult, noise_distr)
     
     return X_train, y_train, X_test, y_test, beta

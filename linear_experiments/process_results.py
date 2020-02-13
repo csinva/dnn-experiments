@@ -23,7 +23,8 @@ import fit
 
 
 def process_results(results):
-    # add keys for things which weren't recorded at the teim
+    '''add keys for things which weren't recorded at the time
+    '''
     for key in ['H_trace']:
         if key not in results:
             results[key] = None
@@ -88,14 +89,12 @@ def aggregate_results(results, group_idxs, out_dir):
 #             print(gr.preds_test.values)
 
         for curve_name, gr2 in curve:
-            
-
             if dset == 'gaussian':
                 dset_name = ''
                 _, _, _, y_true, betastar = \
                     data.get_data_train_test(n_test=p.n_test, p=p.num_features, 
                                              noise_mult=0, noise_distr=p.noise_distr, iid=p.iid, # parameters to be determined
-                                             beta_type=p.beta_type, beta_norm=p.beta_norm)
+                                             beta_type=p.beta_type, beta_norm=p.beta_norm, cov_param=p.cov_param)
                 y_true = y_true.reshape(1, -1) # 1 x n_test
             elif dset == 'pmlb':
                 dset_name = regression_dsets_large_names[dset_num]
@@ -142,7 +141,6 @@ def aggregate_results(results, group_idxs, out_dir):
 
 
 # run this to process / save some dsets
-if __name__ == '__main__':
 # all_linear_old
     # these all have ols, ridge, sta, lasso with appropriate hyperparams
     # beta=gaussian_noise=1e-1
@@ -152,30 +150,25 @@ if __name__ == '__main__':
 # all_linear_clustered
 # all_linear_vary_noise_distr
 # all_linear_pmlb
-
-
-
-
-# df/basic
-
+if __name__ == '__main__':
     out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/double_descent/df'
     for folder in tqdm(sorted(os.listdir(out_dir))):
         folder_path = oj(out_dir, folder)
         if not 'processed.pkl' in os.listdir(folder_path):
-            try:
-                fnames = sorted([fname for fname in os.listdir(folder_path)])
-                results_list = [pd.Series(pkl.load(open(oj(folder_path, fname), "rb"))) for fname in tqdm(fnames)
-                                if not fname.startswith('processed')]
-                results = pd.concat(results_list, axis=1).T.infer_objects()
+#             try:
+            fnames = sorted([fname for fname in os.listdir(folder_path)])
+            results_list = [pd.Series(pkl.load(open(oj(folder_path, fname), "rb"))) for fname in tqdm(fnames)
+                            if not fname.startswith('processed')]
+            results = pd.concat(results_list, axis=1).T.infer_objects()
 
 
 
-                group_idxs = ['dset', 'dset_num',
-                              'beta_type', 'model_type', 'reg_param',
-                              'beta_norm',
-                              'noise_mult', 'noise_distr', 'iid',  # dset
-                             ] # model
-                results = process_results(results)
-                df = aggregate_results(results, group_idxs, folder_path)
-            except Exception as e:
-                print('failed', folder, e)
+            group_idxs = ['dset', 'dset_num',
+                          'beta_type', 'model_type', 'reg_param',
+                          'beta_norm',
+                          'noise_mult', 'noise_distr', 'iid',  'cov_param',# dset
+                         ] # model
+            results = process_results(results)
+            df = aggregate_results(results, group_idxs, folder_path)
+#             except Exception as e:
+#                 print('failed', folder, e)

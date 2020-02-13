@@ -7,7 +7,7 @@ class p:
     dset = 'gaussian' # gaussian
     beta_type = 'gaussian' # one_hot
     beta_norm = 1
-    iid = 'iid' # 'iid', 'clustered', 'spike'
+    iid = 'decay' # 'iid', 'clustered', 'spike', decay
     dset_num = 1 # only matters for pmlb
     dset_name = ''
     reg_param = 0.1
@@ -17,6 +17,7 @@ class p:
     noise_mult = 0.0
     noise_distr = 'gaussian' # gaussian, t, gaussian_scale_var, thresh
     model_type = 'ridge'
+    cov_param = 0.0
     
     # for rf
     num_trees = 10

@@ -41,7 +41,6 @@ def fit(p):
     s = S_save(p)
     
     
-    
     # testing data should always be generated with the same seed
     if p.dset == 'gaussian':
         p.n_train = int(p.n_train_over_num_features * p.num_features)
@@ -51,7 +50,7 @@ def fit(p):
             data.get_data_train_test(n_train=p.n_train, n_test=p.n_test, p=p.num_features, 
                                 noise_mult=p.noise_mult, noise_distr=p.noise_distr, iid=p.iid, # parameters to be determined
                                 beta_type=p.beta_type, beta_norm=p.beta_norm, 
-                                seed_for_training_data=p.seed)
+                                seed_for_training_data=p.seed, cov_param=p.cov_param)
     elif p.dset == 'pmlb':
         s.dset_name = regression_dsets_large_names[p.dset_num]
         seed(703858704)
