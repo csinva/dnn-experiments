@@ -11,13 +11,15 @@ from skimage.util import img_as_float
 import os
 from sklearn import metrics
 import h5py
+from scipy.io import loadmat
 from copy import deepcopy
 from skimage.filters import gabor_kernel
 import gabor_feats
 from sklearn.linear_model import RidgeCV
 import seaborn as sns
+from scipy.io import loadmat
 import numpy.linalg as npl
-out_dir = '/scratch/users/vision/data/gallant/vim_2_crcns'
+
 
 def save_h5(data, fname):
     if os.path.exists(fname):
@@ -42,31 +44,40 @@ def save_pkl(d, fname):
     
 if __name__ == '__main__':
     # fit linear models
+    out_dir = '/scratch/users/vision/data/gallant/vim_2_crcns'
+    save_dir = oj(out_dir, 'mot_energy3')
     suffix = '_feats' # _feats, '' for pixels
-    rois = ['v1lh', 'v1rh', 'v2lh', 'v2rh', 'v4lh', 'v4rh']
-    NUM = 20
-    save_dir = '/scratch/users/vision/data/gallant/vim_2_crcns/feats1'
-    feats_name = oj(out_dir, f'out_st{suffix}.h5')
-    feats_test_name = oj(out_dir, f'out_sv{suffix}.h5')
-    resps_name = oj(out_dir, 'VoxelResponses_subject1.mat')
+    norm = '_norm' # ''
+    rois = ['v1lh', 'v2lh', 'v4lh', 'v1rh', 'v2rh', 'v4rh']
+    NUM = 3
     
-    
+
     print('loading data...')
+    '''
+    feats_name = oj(out_dir, f'out_st{suffix}{norm}.h5')
+    feats_test_name = oj(out_dir, f'out_sv{suffix}{norm}.h5')
     X = np.array(h5py.File(feats_name, 'r')['data'])
     X = X.reshape(X.shape[0], -1)
-    Y = np.array(tables.open_file(resps_name).get_node('/rt')[:]) # training responses: 73728 (voxels) x 7200 (timepoints)
+    print('shape, Y.shape', Y.shape)
     X_test = np.array(h5py.File(feats_test_name, 'r')['data'])
     X_test = X_test.reshape(X_test.shape[0], -1)
-    Y_test = np.array(tables.open_file(resps_name).get_node('/rv')[:]) # training responses: 73728 (voxels) x 7200 (timepoints)
+    '''
+    X = np.array(loadmat(oj(out_dir, 'mot_energy_feats_st.mat'))['S_fin'])
+    X_test = np.array(loadmat(oj(out_dir, 'mot_energy_feats_sv.mat'))['S_fin'])
+    
+    
+    Y = load_h5(oj(out_dir, 'rt_norm.h5')) # np.array(tables.open_file(resps_name).get_node('/rt')[:]) # training responses: 73728 (voxels) x 7200 (timepoints)    
+    Y_test = load_h5(oj(out_dir, 'rv_norm.h5') )
     sigmas = load_h5(oj(out_dir, f'out_rva_sigmas.h5'))
-    (U, s, Vh) = pkl.load(open(oj(out_dir, f'decomp{suffix}.pkl'), 'rb'))
+    (U, s, Vh) = pkl.load(open(oj(out_dir, f'decomp_mot_energy.pkl'), 'rb'))
     
     
     # actually run
     os.makedirs(save_dir, exist_ok=True)
     f = tables.open_file(oj(out_dir, 'VoxelResponses_subject1.mat'), 'r')
     for roi in rois:
-        roi_idxs = f.get_node(f'/roi/{roi}')[:].flatten().nonzero()[0] # structure containing volume matrices (64x64x18) with indices corresponding to each roi in each hemisphere
+        roi_idxs_all = f.get_node(f'/roi/{roi}')[:].flatten().nonzero()[0] # structure containing volume matrices (64x64x18) with indices corresponding to each roi in each hemisphere
+        roi_idxs = np.array([roi_idx for roi_idx in roi_idxs_all if ~np.isnan(sigmas[roi_idx])])
         print(roi, roi_idxs.size)
         roi_idxs = roi_idxs[:NUM]
         results = {}
@@ -86,9 +97,12 @@ if __name__ == '__main__':
             d = X.shape[1]
             d_n_min = min(n, d)
             if n == y.size and num_test == y_test.size and not np.isnan(sigma): # ignore voxels w/ missing vals
-                m = RidgeCV(alphas=[6, 10, 25, 50, 100])
+                m = RidgeCV(alphas=[0.1, 1, 10])
                 m.fit(X, y)
+                preds_train = m.predict(X)
                 preds = m.predict(X_test)
+                mse_train = metrics.mean_squared_error(y, preds_train)
+                r2_train = metrics.r2_score(y, preds_train)
                 mse = metrics.mean_squared_error(y_test, preds)
                 r2 = metrics.r2_score(y_test, preds)
                 corr = np.corrcoef(y_test, preds)[0, 1]
@@ -110,13 +124,16 @@ if __name__ == '__main__':
                     'term2': term2,
                     'term3': term3,
                     'term4': term4,
-                    'complexity1': complexity1,
-                    'complexity2': complexity2,
+                    'complexity1': complexity1 / n,
+                    'complexity2': complexity2 / n,
                     'num_train': n,
                     'num_test': num_test,
                     'd': d,
+                    'mse_train': mse_train,
+                    'r2_train': r2_train,
                     'mse': mse,                
                     'r2': r2,
-                    'corr': corr
+                    'corr': corr,
+                    'idx': i
                 }
                 pkl.dump(results, open(oj(save_dir, f'ridge_{i}.pkl'), 'wb'))
