@@ -19,7 +19,8 @@ from sklearn.linear_model import RidgeCV
 import seaborn as sns
 from scipy.io import loadmat
 import numpy.linalg as npl
-
+import random
+import sys
 
 def save_h5(data, fname):
     if os.path.exists(fname):
@@ -40,16 +41,35 @@ def save_pkl(d, fname):
     with open(fname, 'wb') as f:
         pkl.dump(d, f)
     
-    
+def get_roi_and_idx(run):
+    # select roi + i (which is the roi_idx)
+    rois = ['v1lh', 'v2lh', 'v4lh', 'v1rh', 'v2rh', 'v4rh']
+    roi = rois[run % len(rois)]
+
+    f = tables.open_file(oj(out_dir, 'VoxelResponses_subject1.mat'), 'r')
+    roi_idxs_all = f.get_node(f'/roi/{roi}')[:].flatten().nonzero()[0] # structure containing volume matrices (64x64x18) with indices corresponding to each roi in each hemisphere
+    roi_idxs = np.array([roi_idx for roi_idx in roi_idxs_all if ~np.isnan(sigmas[roi_idx])])
+
+    i = roi_idxs[run // len(rois)] # i is the roi idx
+    return roi, i  
     
 if __name__ == '__main__':
+    np.random.seed(42) 
+    random.seed(42)
+    
+    
+    # set params
+    if len(sys.argv) > 1:
+        runs = [int(sys.argv[-1])]
+    else:
+        runs = list(range(300)) # this number determines which neuron we will pick
+    print(runs)
+    
     # fit linear models
     out_dir = '/scratch/users/vision/data/gallant/vim_2_crcns'
-    save_dir = oj(out_dir, 'mot_energy3')
+    save_dir = oj(out_dir, 'mot_energy8')
     suffix = '_feats' # _feats, '' for pixels
     norm = '_norm' # ''
-    rois = ['v1lh', 'v2lh', 'v4lh', 'v1rh', 'v2rh', 'v4rh']
-    NUM = 3
     
 
     print('loading data...')
@@ -65,75 +85,76 @@ if __name__ == '__main__':
     X = np.array(loadmat(oj(out_dir, 'mot_energy_feats_st.mat'))['S_fin'])
     X_test = np.array(loadmat(oj(out_dir, 'mot_energy_feats_sv.mat'))['S_fin'])
     
-    
-    Y = load_h5(oj(out_dir, 'rt_norm.h5')) # np.array(tables.open_file(resps_name).get_node('/rt')[:]) # training responses: 73728 (voxels) x 7200 (timepoints)    
+    '''
+    resps_name = oj(out_dir, 'VoxelResponses_subject1.mat')
+    Y = np.array(tables.open_file(resps_name).get_node(f'/rt')[:]) # training responses: 73728 (voxels) x 7200 (timepoints)
+    Y_test = np.array(tables.open_file(resps_name).get_node(f'/rv')[:]) 
+    '''
+    Y = load_h5(oj(out_dir, 'rt_norm.h5')) # training responses: 73728 (voxels) x 7200 (timepoints)    
     Y_test = load_h5(oj(out_dir, 'rv_norm.h5') )
     sigmas = load_h5(oj(out_dir, f'out_rva_sigmas.h5'))
-    (U, s, Vh) = pkl.load(open(oj(out_dir, f'decomp_mot_energy.pkl'), 'rb'))
+    (U, _, _) = pkl.load(open(oj(out_dir, f'decomp_mot_energy.pkl'), 'rb'))
     
-    
-    # actually run
-    os.makedirs(save_dir, exist_ok=True)
-    f = tables.open_file(oj(out_dir, 'VoxelResponses_subject1.mat'), 'r')
-    for roi in rois:
-        roi_idxs_all = f.get_node(f'/roi/{roi}')[:].flatten().nonzero()[0] # structure containing volume matrices (64x64x18) with indices corresponding to each roi in each hemisphere
-        roi_idxs = np.array([roi_idx for roi_idx in roi_idxs_all if ~np.isnan(sigmas[roi_idx])])
-        print(roi, roi_idxs.size)
-        roi_idxs = roi_idxs[:NUM]
+    # loop over individual neurons
+    for run in runs:
+        roi, i = get_roi_and_idx(run)
         results = {}
+        os.makedirs(save_dir, exist_ok=True)
+        print('fitting', roi, 'idx', i)
 
-        for i in tqdm(roi_idxs):
-            y = Y[i]
-            y_test = Y_test[i]
-            w = U.T @ y
-            
-            sigma = sigmas[i]
-            var = sigma**2
-            
-            idxs_cv = ~np.isnan(y)
-            idxs_test = ~np.isnan(y_test)
-            n = np.sum(idxs_cv)
-            num_test = np.sum(idxs_test)
-            d = X.shape[1]
-            d_n_min = min(n, d)
-            if n == y.size and num_test == y_test.size and not np.isnan(sigma): # ignore voxels w/ missing vals
-                m = RidgeCV(alphas=[0.1, 1, 10])
-                m.fit(X, y)
-                preds_train = m.predict(X)
-                preds = m.predict(X_test)
-                mse_train = metrics.mean_squared_error(y, preds_train)
-                r2_train = metrics.r2_score(y, preds_train)
-                mse = metrics.mean_squared_error(y_test, preds)
-                r2 = metrics.r2_score(y_test, preds)
-                corr = np.corrcoef(y_test, preds)[0, 1]
-#                 print('w', npl.norm(w), 'y', npl.norm(y), 'var', var)
-                term1 = 0.5 * (npl.norm(y) ** 2 - npl.norm(w) ** 2) / var
-                term2 = 0.5 * np.sum([np.log(1 + w[i]**2 / var) for i in range(d_n_min)])
-                complexity1 = term1 + term2
-#                 print('term1', term1, 'term2', term2) #, 'alpha', m.alpha_)
+        # load stuff
+        y = Y[i]
+        y_test = Y_test[i]
+        w = U.T @ y
+        sigma = sigmas[i]
+        var = sigma**2
 
-                idxs = np.abs(w) > sigma
-                term3 = 0.5 * np.sum([np.log(1 + w[i]**2 / var) for i in np.arange(n)[idxs]])
-                term4 = 0.5 * np.sum([w[i]**2 / var for i in np.arange(n)[~idxs]])
-                complexity2 = term1 + term3 + term4
+        # ignore voxels w/ missing vals
+        idxs_cv = ~np.isnan(y)
+        idxs_test = ~np.isnan(y_test)
+        n = np.sum(idxs_cv)
+        num_test = np.sum(idxs_test)
+        d = X.shape[1]
+        d_n_min = min(n, d)
 
-                results = {
-                    'roi': roi,
-                    'model': m,
-                    'term1': term1,
-                    'term2': term2,
-                    'term3': term3,
-                    'term4': term4,
-                    'complexity1': complexity1 / n,
-                    'complexity2': complexity2 / n,
-                    'num_train': n,
-                    'num_test': num_test,
-                    'd': d,
-                    'mse_train': mse_train,
-                    'r2_train': r2_train,
-                    'mse': mse,                
-                    'r2': r2,
-                    'corr': corr,
-                    'idx': i
-                }
-                pkl.dump(results, open(oj(save_dir, f'ridge_{i}.pkl'), 'wb'))
+        if n == y.size and num_test == y_test.size: 
+            m = RidgeCV(alphas=[1e1, 1e2, 1e3, 5e3, 1e4, 5e4, 1e5])
+            m.fit(X, y)
+            preds_train = m.predict(X)
+            preds = m.predict(X_test)
+            mse_train = metrics.mean_squared_error(y, preds_train)
+            r2_train = metrics.r2_score(y, preds_train)
+            mse = metrics.mean_squared_error(y_test, preds)
+            r2 = metrics.r2_score(y_test, preds)
+            corr = np.corrcoef(y_test, preds)[0, 1]
+    #                 print('w', npl.norm(w), 'y', npl.norm(y), 'var', var)
+            term1 = 0.5 * (npl.norm(y) ** 2 - npl.norm(w) ** 2) / var
+            term2 = 0.5 * np.sum([np.log(1 + w[i]**2 / var) for i in range(d_n_min)])
+            complexity1 = term1 + term2
+    #                 print('term1', term1, 'term2', term2) #, 'alpha', m.alpha_)
+
+            idxs = np.abs(w) > sigma
+            term3 = 0.5 * np.sum([np.log(1 + w[i]**2 / var) for i in np.arange(n)[idxs]])
+            term4 = 0.5 * np.sum([w[i]**2 / var for i in np.arange(n)[~idxs]])
+            complexity2 = term1 + term3 + term4
+
+            results = {
+                'roi': roi,
+                'model': m,
+                'term1': term1,
+                'term2': term2,
+                'term3': term3,
+                'term4': term4,
+                'complexity1': complexity1 / n,
+                'complexity2': complexity2 / n,
+                'num_train': n,
+                'num_test': num_test,
+                'd': d,
+                'mse_train': mse_train,
+                'r2_train': r2_train,
+                'mse': mse,                
+                'r2': r2,
+                'corr': corr,
+                'idx': i
+            }
+            pkl.dump(results, open(oj(save_dir, f'ridge_{i}.pkl'), 'wb'))
