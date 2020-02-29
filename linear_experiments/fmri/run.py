@@ -67,7 +67,7 @@ if __name__ == '__main__':
     
     # fit linear models
     out_dir = '/scratch/users/vision/data/gallant/vim_2_crcns'
-    save_dir = oj(out_dir, 'mot_energy8')
+    save_dir = oj(out_dir, 'mot_energy_final')
     suffix = '_feats' # _feats, '' for pixels
     norm = '_norm' # ''
     
@@ -118,7 +118,7 @@ if __name__ == '__main__':
         d_n_min = min(n, d)
 
         if n == y.size and num_test == y_test.size: 
-            m = RidgeCV(alphas=[1e1, 1e2, 1e3, 5e3, 1e4, 5e4, 1e5])
+            m = RidgeCV(alphas=[1e3, 5e3, 1e4, 5e4, 1e5, 5e5, 1e6])
             m.fit(X, y)
             preds_train = m.predict(X)
             preds = m.predict(X_test)
@@ -147,14 +147,14 @@ if __name__ == '__main__':
                 'term4': term4,
                 'complexity1': complexity1 / n,
                 'complexity2': complexity2 / n,
-                'num_train': n,
-                'num_test': num_test,
+                'n_train': n,
+                'n_test': num_test,
                 'd': d,
                 'mse_train': mse_train,
                 'r2_train': r2_train,
-                'mse': mse,                
-                'r2': r2,
-                'corr': corr,
+                'mse_test': mse,                
+                'r2_test': r2,
+                'corr_test': corr,
                 'idx': i
             }
             pkl.dump(results, open(oj(save_dir, f'ridge_{i}.pkl'), 'wb'))

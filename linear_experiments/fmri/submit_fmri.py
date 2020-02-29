@@ -2,15 +2,15 @@ import itertools
 from slurmpy import Slurm
 import numpy as np
 
-partition = 'low'
+partition = 'high'
 
 params_to_vary = {
-    'run': list(range(200)),
+    'run': list(range(900)),
 }
 
 
 # run
-s = Slurm("fmri", {"partition": partition, "time": "3-0"})
+s = Slurm("fmri", {"partition": partition, "time": "1-0"})
 ks = sorted(params_to_vary.keys())
 vals = [params_to_vary[k] for k in ks]
 param_combinations = list(itertools.product(*vals)) # list of tuples
