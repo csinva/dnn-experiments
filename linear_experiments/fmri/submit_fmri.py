@@ -5,7 +5,7 @@ import numpy as np
 partition = 'high'
 
 params_to_vary = {
-    'run': list(range(900)),
+    'run': list(range(100)),
 }
 
 

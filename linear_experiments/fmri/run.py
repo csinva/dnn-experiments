@@ -67,7 +67,7 @@ if __name__ == '__main__':
     
     # fit linear models
     out_dir = '/scratch/users/vision/data/gallant/vim_2_crcns'
-    save_dir = oj(out_dir, 'mot_energy_final')
+    save_dir = oj(out_dir, 'mar3_1')
     suffix = '_feats' # _feats, '' for pixels
     norm = '_norm' # ''
     
@@ -93,7 +93,7 @@ if __name__ == '__main__':
     Y = load_h5(oj(out_dir, 'rt_norm.h5')) # training responses: 73728 (voxels) x 7200 (timepoints)    
     Y_test = load_h5(oj(out_dir, 'rv_norm.h5') )
     sigmas = load_h5(oj(out_dir, f'out_rva_sigmas.h5'))
-    (U, _, _) = pkl.load(open(oj(out_dir, f'decomp_mot_energy.pkl'), 'rb'))
+    (U, alphas, _) = pkl.load(open(oj(out_dir, f'decomp_mot_energy.pkl'), 'rb'))
     
     # loop over individual neurons
     for run in runs:
@@ -118,7 +118,8 @@ if __name__ == '__main__':
         d_n_min = min(n, d)
 
         if n == y.size and num_test == y_test.size: 
-            m = RidgeCV(alphas=[1e3, 5e3, 1e4, 5e4, 1e5, 5e5, 1e6])
+            m = RidgeCV(alphas=[1e3, 2.5e3, 5e3, 7.5e3, 1e4, 2.5e4, 5e4, 
+                                7.5e4, 1e5, 2.5e5, 5e5, 7.5e5, 1e6])
             m.fit(X, y)
             preds_train = m.predict(X)
             preds = m.predict(X_test)
@@ -137,6 +138,10 @@ if __name__ == '__main__':
             term3 = 0.5 * np.sum([np.log(1 + w[i]**2 / var) for i in np.arange(n)[idxs]])
             term4 = 0.5 * np.sum([w[i]**2 / var for i in np.arange(n)[~idxs]])
             complexity2 = term1 + term3 + term4
+            
+            snr = (npl.norm(y) ** 2 - n * var) / (n * var)
+            y_norm = npl.norm(y)
+            
 
             results = {
                 'roi': roi,
@@ -147,9 +152,12 @@ if __name__ == '__main__':
                 'term4': term4,
                 'complexity1': complexity1 / n,
                 'complexity2': complexity2 / n,
+                'snr': snr,
+                'lambda_best':  m.alpha_,
                 'n_train': n,
                 'n_test': num_test,
                 'd': d,
+                'y_norm': y_norm,
                 'mse_train': mse_train,
                 'r2_train': r2_train,
                 'mse_test': mse,                
