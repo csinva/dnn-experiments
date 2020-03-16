@@ -151,7 +151,7 @@ def aggregate_results(results, group_idxs, out_dir):
 # all_linear_vary_noise_distr
 # all_linear_pmlb
 if __name__ == '__main__':
-    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/double_descent/df'
+    out_dir = '/scratch/users/vision/yu_dl/raaz.rsk/mdl_sim'
     for folder in tqdm(sorted(os.listdir(out_dir))):
         folder_path = oj(out_dir, folder)
         if not 'processed.pkl' in os.listdir(folder_path):

@@ -21,6 +21,8 @@ import viz
 import sys
 from params_save import S as S_save
 import pmlb
+from scipy.optimize import minimize
+import numpy.linalg as npl
 
 def seed(s):
     '''set random seed        
@@ -78,11 +80,21 @@ def fit(p):
         
     
     
-    if p.model_type in ['linear_sta', 'ols', 'lasso', 'ridge']:
+    if p.model_type in ['linear_sta', 'ols', 'lasso', 'ridge', 'mdl']:
         
         # fit model
         if p.model_type == 'linear_sta':
             s.w = X_train.T @ y_train / X_train.shape[0]
+        elif p.model_type == 'mdl':
+            # find lambda_opt
+            def lambda_loss(l):
+                return np.sum(np.square(a) / (1 + np.square(sv) / l) + np.log(1 + np.square(sv) / l))
+            U, sv, Vh = npl.svd(X_train / np.sqrt(p.n_train))
+            a = U.T @ y_train / np.sqrt(p.n_train)
+            a = a[:sv.size]
+            s.lambda_opt = minimize(lambda_loss, x0=1e-10 * np.ones(sv.size)).x
+            inv = npl.pinv(X_train.T @ X_train / p.n_train + s.lambda_opt * np.eye(p.num_features))
+            s.w = inv @ X_train.T @ y_train / p.n_train
         else:
             if p.model_type == 'ols':
                 m = LinearRegression(fit_intercept=False)
@@ -105,8 +117,6 @@ def fit(p):
             s.df1 = min(p.n_train, p.num_features)
             s.df2 = s.df1
             s.df3 = s.df1
-#         elif p.model_type == 'ols':
-#             S = X_train @ np.linalg.pinv(X_train.T @ X_train) @ X_train.T
         
         # s.H_trace = np.trace(H)
         s.wnorm = np.linalg.norm(s.w)
