@@ -6,7 +6,7 @@ partition = 'low'
 
 
 params_to_vary = {
-    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/mdl_sim/sim1'],
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/mdl_sim/sim2'],
     'seed': range(0, 2),    
     'num_features': [500],    
     'n_train_over_num_features': [1e-2, 1e-1, 0.75, 0.9, 1, 1.5, 5, 7.5, 2e1, 4e1],

@@ -92,7 +92,7 @@ def fit(p):
             U, sv, Vh = npl.svd(X_train / np.sqrt(p.n_train))
             a = U.T @ y_train / np.sqrt(p.n_train)
             a = a[:sv.size]
-            s.lambda_opt = minimize(lambda_loss, x0=1e-10 * np.ones(sv.size)).x
+            s.lambda_opt = minimize(lambda_loss, x0=1e-10).x
             inv = npl.pinv(X_train.T @ X_train / p.n_train + s.lambda_opt * np.eye(p.num_features))
             s.w = inv @ X_train.T @ y_train / p.n_train
         else:
