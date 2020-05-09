@@ -90,7 +90,7 @@ def fit(p):
             def lambda_loss(l):
                 return np.sum(np.square(a) / (1 + np.square(sv) / l) + np.log(1 + np.square(sv) / l))
             U, sv, Vh = npl.svd(X_train / np.sqrt(p.n_train))
-            a = U.T @ y_train / np.sqrt(p.n_train)
+            a = U.T @ y_train # / (np.sqrt(p.n_train) * np.sqrt(p.noise_mult))
             a = a[:sv.size]
             s.lambda_opt = minimize(lambda_loss, x0=1e-10).x
             inv = npl.pinv(X_train.T @ X_train / p.n_train + s.lambda_opt * np.eye(p.num_features))

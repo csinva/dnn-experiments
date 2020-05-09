@@ -6,22 +6,22 @@ partition = 'low'
 
 
 params_to_vary = {
-    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/mdl_sim/sim2'],
+    'out_dir': ['/scratch/users/vision/yu_dl/raaz.rsk/mdl_sim_full/clustered'],
     'seed': range(0, 2),    
     'num_features': [500],    
-    'n_train_over_num_features': [1e-2, 1e-1, 0.75, 0.9, 1, 1.5, 5, 7.5, 2e1, 4e1],
-    # [1e-2, 5e-2, 1e-1, 0.5, 0.75, 0.9, 1, 1.2, 1.5, 2, 5, 7.5, 1e1, 2e1, 4e1, 1e2],    
+#     'n_train_over_num_features': [1e-2, 1e-1, 0.75, 0.9, 1, 1.5, 5, 7.5, 2e1, 4e1],
+    'n_train_over_num_features': [1e-2, 5e-2, 1e-1, 0.5, 0.75, 0.9, 1, 1.2, 1.5, 2, 5, 7.5, 1e1, 2e1, 4e1, 1e2],    
     'n_test': [5000],
     
     'dset': ['gaussian'], # gaussian, pmlb
     'dset_num': [0],
     
-    'iid': ['iid'], # iid, clustered, spike, decay
+    'iid': ['clustered'], # iid, clustered, spike, decay
     'cov_param': [0.0], #np.linspace(0, 4, 5),
     'beta_type': ['gaussian'], # one_hot, gaussian
     'noise_distr': ['gaussian'], # gaussian, t, gaussian_scale_var, thresh
     'noise_mult': [1e-1], #0.001],
-    'model_type': ['mdl'], #'mdl', linear_sta', 'ridge', 'ols', 'lasso'],      
+    'model_type': ['mdl', 'ridge'], #'mdl', linear_sta', 'ridge', 'ols', 'lasso'],      
     'reg_param': [0, 1e-2, 1e-1, 1, 1e1], # make sure to always have reg_param 0!
 }
 '''
