@@ -3,7 +3,7 @@ import traceback
 import matplotlib.pyplot as plt
 import sklearn
 from sklearn.model_selection import train_test_split, cross_validate
-from sklearn.linear_model import LogisticRegression, LinearRegression, Lasso, Ridge
+from sklearn.linear_model import LogisticRegression, LinearRegression, Lasso, Ridge, RidgeCV, LassoCV
 from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.utils import shuffle
@@ -43,6 +43,9 @@ def fit(p):
     s = S_save(p)
     
     
+    
+    #################################################################### DATA ##############################################################
+    
     # testing data should always be generated with the same seed
     if p.dset == 'gaussian':
         p.n_train = int(p.n_train_over_num_features * p.num_features)
@@ -79,6 +82,7 @@ def fit(p):
             y_train = y_train[:p.n_train]
         
     
+    #################################################################### FITTING ##############################################################
     
     if not p.model_type == 'rf':
         
@@ -114,9 +118,14 @@ def fit(p):
             elif p.model_type == 'lasso':
                 m = Lasso(fit_intercept=False, alpha=p.reg_param)
             elif p.model_type == 'ridge':
-                m = Ridge(fit_intercept=False, alpha=p.reg_param)
+                if p.reg_param == -1:
+                    m = RidgeCV(fit_intercept=False, alphas=np.logspace(-3, 3, num=10, base=10))
+                else:
+                    m = Ridge(fit_intercept=False, alpha=p.reg_param)
             
             m.fit(X_train, y_train)
+            if p.reg_param == -1:
+                s.lambda_opt = m.alpha_
             s.w = m.coef_
         
         

@@ -10,6 +10,8 @@ class S:
         # accs / losses
         train_mse, test_mse, wnorm, pseudo_trace, cov_trace, nuclear_norm, H_trace = [], [], [], [], [], [], []
         
+        self.lambda_opt = None
+        
     
     # dictionary of everything but weights
     def _dict(self):
