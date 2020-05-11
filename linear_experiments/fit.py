@@ -50,7 +50,7 @@ def fit(p):
         # warning - this reseeds!
         X_train, y_train, X_test, y_test, s.betastar = \
             data.get_data_train_test(n_train=p.n_train, n_test=p.n_test, p=p.num_features, 
-                                noise_mult=p.noise_mult, noise_distr=p.noise_distr, iid=p.iid, # parameters to be determined
+                                noise_std=p.noise_std, noise_distr=p.noise_distr, iid=p.iid, # parameters to be determined
                                 beta_type=p.beta_type, beta_norm=p.beta_norm, 
                                 seed_for_training_data=p.seed, cov_param=p.cov_param)
     elif p.dset == 'pmlb':
@@ -80,21 +80,34 @@ def fit(p):
         
     
     
-    if p.model_type in ['linear_sta', 'ols', 'lasso', 'ridge', 'mdl']:
+    if not p.model_type == 'rf':
         
         # fit model
         if p.model_type == 'linear_sta':
             s.w = X_train.T @ y_train / X_train.shape[0]
-        elif p.model_type == 'mdl':
-            # find lambda_opt
-            def lambda_loss(l):
-                return np.sum(np.square(a) / (1 + np.square(sv) / l) + np.log(1 + np.square(sv) / l))
-            U, sv, Vh = npl.svd(X_train / np.sqrt(p.n_train))
-            a = U.T @ y_train # / (np.sqrt(p.n_train) * np.sqrt(p.noise_mult))
-            a = a[:sv.size]
-            s.lambda_opt = minimize(lambda_loss, x0=1e-10).x
-            inv = npl.pinv(X_train.T @ X_train / p.n_train + s.lambda_opt * np.eye(p.num_features))
-            s.w = inv @ X_train.T @ y_train / p.n_train
+        elif 'mdl' in p.model_type:
+            if p.model_type == 'mdl_orig':
+                U, sv, Vh = npl.svd(X_train / np.sqrt(p.n_train))
+                a = U.T @ y_train # / (np.sqrt(p.n_train) * p.noise_std)
+                a = a[:sv.size]
+                def mdl_loss(l):
+                    return np.sum(np.square(a) / (1 + np.square(sv) / l) + np.log(1 + np.square(sv) / l))
+                s.lambda_opt = minimize(mdl_loss, x0=1e-10).x
+                inv = npl.pinv(X_train.T @ X_train / p.n_train + s.lambda_opt * np.eye(p.num_features))
+                s.w = inv @ X_train.T @ y_train / p.n_train
+            elif p.model_type == 'mdl_m1':
+                eigenvals, eigenvecs = npl.eig(X_train.T @ X_train)
+                var = p.noise_std**2
+                def mdl1_loss(l):
+                    inv = npl.pinv(X_train.T @ X_train + l * np.eye(p.num_features))
+                    thetahat = inv @ X_train.T @ y_train
+                    mse_norm = npl.norm(y_train - X_train @ thetahat)**2 / (2 * var)
+                    theta_norm = npl.norm(thetahat)**2 / (2 * var)
+                    eigensum = 0.5 * np.sum(np.log((eigenvals + l) / l))
+                    return mse_norm + theta_norm + eigensum
+                s.lambda_opt = minimize(mdl1_loss, x0=1e-10).x
+                inv = npl.pinv(X_train.T @ X_train + s.lambda_opt * np.eye(p.num_features))
+                s.w = inv @ X_train.T @ y_train
         else:
             if p.model_type == 'ols':
                 m = LinearRegression(fit_intercept=False)
@@ -118,12 +131,12 @@ def fit(p):
             s.df2 = s.df1
             s.df3 = s.df1
         
+        
+        print('here!')
+        # store predictions and things about w
         # s.H_trace = np.trace(H)
         s.wnorm = np.linalg.norm(s.w)
         s.num_nonzero = np.count_nonzero(s.w)
-        
-        
-        # make predictions
         s.preds_train = X_train @ s.w
         s.preds_test = X_test @ s.w
         

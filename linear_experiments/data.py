@@ -106,18 +106,18 @@ def get_X(n, p, iid, means=None, covs=None, cov_param=None):
     return X, means, covs
     
 
-def get_Y(X, beta, noise_mult, noise_distr):
+def get_Y(X, beta, noise_std, noise_distr):
     if noise_distr == 'gaussian':
-        return X @ beta + noise_mult * np.random.randn(X.shape[0])
+        return X @ beta + noise_std * np.random.randn(X.shape[0])
     elif noise_distr == 't': # student's t w/ 3 degrees of freedom
-        return X @ beta + noise_mult * t.rvs(df=3, size=X.shape[0])
+        return X @ beta + noise_std * t.rvs(df=3, size=X.shape[0])
     elif noise_distr == 'gaussian_scale_var': # want variance of noise to scale with squared norm of x
-        return X @ beta + noise_mult * np.multiply(np.random.randn(X.shape[0]), np.linalg.norm(X, axis=1))
+        return X @ beta + noise_std * np.multiply(np.random.randn(X.shape[0]), np.linalg.norm(X, axis=1))
     elif noise_distr == 'thresh':
-        return (X > 0).astype(np.float32) @ beta + noise_mult * np.random.randn(X.shape[0])
+        return (X > 0).astype(np.float32) @ beta + noise_std * np.random.randn(X.shape[0])
     
 
-def get_data_train_test(n_train=10, n_test=100, p=10000, noise_mult=0.1, noise_distr='gaussian', iid='iid', # parameters to be determined
+def get_data_train_test(n_train=10, n_test=100, p=10000, noise_std=0.1, noise_distr='gaussian', iid='iid', # parameters to be determined
                         beta_type='one_hot', beta_norm=1, seed_for_training_data=None, cov_param=None):
 
     '''Get data for simulations - test should always be the same given all the parameters (except seed_for_training_data)
@@ -137,13 +137,13 @@ def get_data_train_test(n_train=10, n_test=100, p=10000, noise_mult=0.1, noise_d
     
     # data
     X_test, means, covs = get_X(n_test, p, iid, cov_param=cov_param)
-    y_test = get_Y(X_test, beta, noise_mult, noise_distr)
+    y_test = get_Y(X_test, beta, noise_std, noise_distr)
     
     # re-seed before getting betastar
     if not seed_for_training_data is None:
         np.random.seed(seed=seed_for_training_data)
     
     X_train, _, _ = get_X(n_train, p, iid, means, covs, cov_param)
-    y_train = get_Y(X_train, beta, noise_mult, noise_distr)
+    y_train = get_Y(X_train, beta, noise_std, noise_distr)
     
     return X_train, y_train, X_test, y_test, beta

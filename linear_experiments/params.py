@@ -14,9 +14,9 @@ class p:
     num_features = 100
     n_train_over_num_features = 0.75 # this and num_features sets n_train
     n_test = 100
-    noise_mult = 0.0
+    noise_std = 1e-1
     noise_distr = 'gaussian' # gaussian, t, gaussian_scale_var, thresh
-    model_type = 'ridge'
+    model_type = 'mdl_m1' # mdl_orig, 
     cov_param = 0.0
     
     # for rf
