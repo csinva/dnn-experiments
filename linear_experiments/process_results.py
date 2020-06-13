@@ -66,7 +66,8 @@ def aggregate_results(results, group_idxs, out_dir):
     r2 = results.groupby(group_idxs)
     ind = pd.MultiIndex.from_tuples(r2.indices, names=group_idxs)
     df = pd.DataFrame(index=ind)
-    keys = ['ratio', 'bias', 'var', 'wnorm', 'mse_train', 'mse_test', 'num_nonzero', 'mse_noiseless', 'df1', 'df2', 'df3']
+    keys = ['ratio', 'bias', 'var', 'wnorm', 'mse_train', 'mse_test', 'num_nonzero',
+            'mse_noiseless', 'df1', 'df2', 'df3']
     for key in keys:
         df[key] = None
     for name, gr in tqdm(r2):

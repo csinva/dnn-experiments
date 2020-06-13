@@ -19,6 +19,7 @@ from sklearn.linear_model import RidgeCV
 import seaborn as sns
 from scipy.io import loadmat
 import numpy.linalg as npl
+from scipy.optimize import minimize
 import random
 import sys
 
@@ -67,7 +68,7 @@ if __name__ == '__main__':
     
     # fit linear models
     out_dir = '/scratch/users/vision/data/gallant/vim_2_crcns'
-    save_dir = oj(out_dir, 'mar3_1')
+    save_dir = oj(out_dir, 'test')
     suffix = '_feats' # _feats, '' for pixels
     norm = '_norm' # ''
     

@@ -96,7 +96,9 @@ def fit(p):
                 a = a[:sv.size]
                 def mdl_loss(l):
                     return np.sum(np.square(a) / (1 + np.square(sv) / l) + np.log(1 + np.square(sv) / l))
-                s.lambda_opt = minimize(mdl_loss, x0=1e-10).x
+                opt_solved = minimize(mdl_loss, x0=1e-10)
+                s.lambda_opt = opt_solved.x
+                s.loss_val = opt_solved.fun
                 inv = npl.pinv(X_train.T @ X_train / p.n_train + s.lambda_opt * np.eye(p.num_features))
                 s.w = inv @ X_train.T @ y_train / p.n_train
             elif p.model_type == 'mdl_m1':
@@ -109,7 +111,9 @@ def fit(p):
                     theta_norm = npl.norm(thetahat)**2 / (2 * var)
                     eigensum = 0.5 * np.sum(np.log((eigenvals + l) / l))
                     return mse_norm + theta_norm + eigensum
-                s.lambda_opt = minimize(mdl1_loss, x0=1e-10).x
+                opt_solved = minimize(mdl1_loss, x0=1e-10)
+                s.lambda_opt = opt_solved.x
+                s.loss_val = opt_solved.fun
                 inv = npl.pinv(X_train.T @ X_train + s.lambda_opt * np.eye(p.num_features))
                 s.w = inv @ X_train.T @ y_train
         else:

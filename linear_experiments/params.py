@@ -10,7 +10,7 @@ class p:
     iid = 'iid' # 'iid', 'clustered', 'spike', decay
     dset_num = 1 # only matters for pmlb
     dset_name = ''
-    reg_param = -1 # -1 use csv
+    reg_param = -1.0 # -1 use csv
     num_features = 100
     n_train_over_num_features = 0.75 # this and num_features sets n_train
     n_test = 100

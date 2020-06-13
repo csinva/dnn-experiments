@@ -4,7 +4,7 @@ import numpy as np
 from copy import deepcopy
 partition = 'low'
 
-OUT_BASE = '/scratch/users/vision/yu_dl/raaz.rsk/mdl_sim_may/'
+OUT_BASE = '/scratch/users/vision/yu_dl/raaz.rsk/mdl_sim_may/may11/'
 PARAMS_BASE = {
     'out_dir': [OUT_BASE + 'test'],
     'seed': range(0, 2),    
